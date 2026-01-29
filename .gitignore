@@ -1,0 +1,101 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+.AppleDouble
+.LSOverride
+
+# IDE / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.history/
+*.sublime-project
+*.sublime-workspace
+.fleet/
+.project
+.classpath
+.settings/
+
+# Build outputs
+dist/
+build/
+out/
+coverage/
+
+# Database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Uploads & temporary files
+uploads/
+temp/
+tmp/
+*.tmp
+
+# Cache
+.npm
+.eslintcache
+.cache/
+.parcel-cache/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Testing
+.nyc_output/
+*.lcov
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# System Files
+*.pid
+*.seed
+*.pid.lock
