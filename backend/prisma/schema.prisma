@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(uuid())
+  username     String     @unique
+  email        String     @unique
+  password     String
+  role         UserRole   @default(DONANTE)
+  location     String?
+  authProvider String     @default("local")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  donations    Donation[]
+  messages     Message[]
+  ong          Ong?       @relation("OngUser")
+
+  @@map("users")
+}
+
+model Ong {
+  id              String       @id @default(uuid())
+  name            String
+  cif             String       @unique
+  type            OngType
+  description     String?
+  location        String
+  latitude        Float?
+  longitude       Float?
+  contactEmail    String
+  contactPhone    String
+  documentUrl     String?
+  status          OngStatus    @default(PENDING)
+  rejectionReason String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  approvedAt      DateTime?
+  userId          String       @unique
+  assignments     Assignment[]
+  donations       Donation[]   @relation("OngDonations")
+  messages        Message[]
+  user            User         @relation("OngUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ongs")
+}
+
+model Donation {
+  id            String         @id @default(uuid())
+  title         String
+  description   String
+  category      String
+  quantity      String
+  latitude      Float?
+  longitude     Float?
+  status        DonationStatus @default(DISPONIBLE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  donorId       String
+  assignedOngId String?
+  city          String
+  address       String?
+  postalCode    String?
+  province      String?
+  images        String[]       @default([])
+  assignments   Assignment[]
+  conversations Conversation[]
+  assignedOng   Ong?           @relation("OngDonations", fields: [assignedOngId], references: [id])
+  donor         User           @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@map("donations")
+}
+
+model Conversation {
+  id         String    @id @default(uuid())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  donationId String
+  donation   Donation  @relation(fields: [donationId], references: [id], onDelete: Cascade)
+  messages   Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  content        String
+  createdAt      DateTime     @default(now())
+  conversationId String
+  senderId       String
+  ongId          String?
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  ong            Ong?         @relation(fields: [ongId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id])
+
+  @@map("messages")
+}
+
+model Assignment {
+  id            String   @id @default(uuid())
+  priority      Float
+  urgency       Float
+  vulnerability Float
+  proximity     Float
+  balance       Float
+  suggested     Boolean  @default(true)
+  accepted      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  donationId    String
+  ongId         String
+  donation      Donation @relation(fields: [donationId], references: [id], onDelete: Cascade)
+  ong           Ong      @relation(fields: [ongId], references: [id], onDelete: Cascade)
+
+  @@map("assignments")
+}
+
+enum UserRole {
+  DONANTE
+  ONG
+  ADMIN
+}
+
+enum OngStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OngType {
+  ONG
+  ASOCIACION
+  FUNDACION
+  ENTIDAD_SOCIAL
+}
+
+enum DonationStatus {
+  DISPONIBLE
+  ASIGNADO
+  ENTREGADO
+}
