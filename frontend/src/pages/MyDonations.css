@@ -86,12 +86,31 @@
     align-items: center;
     gap: 12px;
     font-weight: 500;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .alert-error {
     background-color: #fee;
     color: #c33;
     border-left: 4px solid #c33;
+}
+
+.alert-success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-left: 4px solid #4caf50;
 }
 
 .alert i {

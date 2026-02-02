@@ -1,17 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { donationAPI } from '../services/api';
 import './MyDonations.css';
 
 function MyDonations() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [donations, setDonations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
         loadMyDonations();
-    }, []);
+
+        // Mostrar mensaje de éxito si viene del estado de navegación
+        if (location.state?.message) {
+            setSuccessMessage(location.state.message);
+            // Limpiar el estado para que no se muestre de nuevo al refrescar
+            window.history.replaceState({}, document.title);
+
+            // Ocultar el mensaje después de 5 segundos
+            setTimeout(() => {
+                setSuccessMessage('');
+            }, 5000);
+        }
+    }, [location]);
 
     const loadMyDonations = async () => {
         try {
@@ -32,15 +46,34 @@ function MyDonations() {
             try {
                 await donationAPI.deleteDonation(id);
                 setDonations(donations.filter(d => d.id !== id));
+                setSuccessMessage('Donación eliminada exitosamente');
+                setTimeout(() => setSuccessMessage(''), 5000);
             } catch (err) {
                 console.error('Error al eliminar:', err);
-                alert('Error al eliminar la donación');
+                setError(err.response?.data?.error || 'Error al eliminar la donación');
+                setTimeout(() => setError(''), 5000);
             }
         }
     };
 
     const handleEdit = (id) => {
         navigate(`/donations/${id}/edit`);
+    };
+
+    const handleMarkAsDelivered = async (id) => {
+        if (window.confirm('¿Confirmas que esta donación ha sido entregada?')) {
+            try {
+                await donationAPI.markAsDelivered(id);
+                // Recargar las donaciones para mostrar el estado actualizado
+                loadMyDonations();
+                setSuccessMessage('Donación marcada como entregada');
+                setTimeout(() => setSuccessMessage(''), 5000);
+            } catch (err) {
+                console.error('Error al marcar como entregada:', err);
+                setError(err.response?.data?.error || 'Error al marcar como entregada');
+                setTimeout(() => setError(''), 5000);
+            }
+        }
     };
 
     const getStatusBadge = (status) => {
@@ -88,6 +121,13 @@ function MyDonations() {
                     Nueva Donación
                 </button>
             </div>
+
+            {successMessage && (
+                <div className="alert alert-success">
+                    <i className="bi bi-check-circle"></i>
+                    {successMessage}
+                </div>
+            )}
 
             {error && (
                 <div className="alert alert-error">
@@ -210,7 +250,7 @@ function MyDonations() {
                                 {donation.status === 'ASIGNADO' && (
                                     <button
                                         className="btn-delivered"
-                                        onClick={() => {/* TODO: marcar como entregado */ }}
+                                        onClick={() => handleMarkAsDelivered(donation.id)}
                                         title="Marcar como entregado"
                                     >
                                         <i className="bi bi-check-circle"></i>
