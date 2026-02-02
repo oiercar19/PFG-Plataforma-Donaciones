@@ -20,7 +20,7 @@ async function createDonation(req, res) {
                 title,
                 description,
                 category,
-                quantity,
+                quantity: String(quantity),
                 city,
                 address: address || null,
                 postalCode: postalCode || null,
@@ -192,7 +192,7 @@ async function updateDonation(req, res) {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const { title, description, category, quantity, location, latitude, longitude, imageUrl } = req.body;
+        const { title, description, category, quantity, city, address, postalCode, province, images } = req.body;
 
         // Verificar que la donación existe y pertenece al usuario
         const existingDonation = await prisma.donation.findUnique({
@@ -214,14 +214,15 @@ async function updateDonation(req, res) {
 
         // Actualizar la donación
         const updateData = {};
-        if (title) updateData.title = title;
-        if (description) updateData.description = description;
-        if (category) updateData.category = category;
-        if (quantity) updateData.quantity = quantity;
-        if (location) updateData.location = location;
-        if (latitude !== undefined) updateData.latitude = latitude ? parseFloat(latitude) : null;
-        if (longitude !== undefined) updateData.longitude = longitude ? parseFloat(longitude) : null;
-        if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description;
+        if (category !== undefined) updateData.category = category;
+        if (quantity !== undefined) updateData.quantity = String(quantity);
+        if (city !== undefined) updateData.city = city;
+        if (address !== undefined) updateData.address = address;
+        if (postalCode !== undefined) updateData.postalCode = postalCode;
+        if (province !== undefined) updateData.province = province;
+        if (images !== undefined) updateData.images = images;
 
         const donation = await prisma.donation.update({
             where: { id },
