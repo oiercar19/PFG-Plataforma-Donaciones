@@ -56,15 +56,20 @@ async function createDonation(req, res) {
 
 /**
  * Obtener todas las donaciones disponibles
- * Cualquier usuario autenticado puede ver las donaciones
+ * Cualquier usuario autenticado puede ver las donaciones (excepto las propias)
  */
 async function getAvailableDonations(req, res) {
     try {
+        const userId = req.user.id;
         const { category, location, search } = req.query;
 
         // Construir filtros
         const where = {
             status: 'DISPONIBLE',
+            // Excluir las donaciones propias
+            donorId: {
+                not: userId,
+            },
         };
 
         if (category) {
