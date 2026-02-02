@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Button, Badge, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { donationAPI } from '../services/api';
 import './MyDonations.css';
@@ -35,7 +36,8 @@ function MyDonations() {
             setError('');
         } catch (err) {
             console.error('Error al cargar donaciones:', err);
-            setError('Error al cargar tus donaciones');
+            const errorMsg = err.response?.data?.error || err.message || 'Error al cargar tus donaciones';
+            setError(errorMsg + '. Por favor, intenta cerrar sesión y volver a iniciar sesión.');
         } finally {
             setLoading(false);
         }
@@ -76,14 +78,35 @@ function MyDonations() {
         }
     };
 
-    const getStatusBadge = (status) => {
+    const getStatusBadgeVariant = (status) => {
         const badges = {
-            DISPONIBLE: { text: 'Disponible', class: 'status-available' },
-            ASIGNADO: { text: 'Asignado', class: 'status-assigned' },
-            ENTREGADO: { text: 'Entregado', class: 'status-delivered' }
+            DISPONIBLE: 'success',
+            ASIGNADO: 'warning',
+            ENTREGADO: 'secondary'
         };
-        const badge = badges[status] || { text: status, class: '' };
-        return <span className={`status-badge ${badge.class}`}>{badge.text}</span>;
+        return badges[status] || 'secondary';
+    };
+
+    const getStatusText = (status) => {
+        const texts = {
+            DISPONIBLE: 'Disponible',
+            ASIGNADO: 'Asignado',
+            ENTREGADO: 'Entregado'
+        };
+        return texts[status] || status;
+    };
+
+    const getCategoryBadgeVariant = (category) => {
+        const badges = {
+            ALIMENTOS: 'success',
+            ROPA: 'info',
+            MEDICINAS: 'danger',
+            JUGUETES: 'warning',
+            MUEBLES: 'secondary',
+            ELECTRONICA: 'primary',
+            OTRO: 'dark'
+        };
+        return badges[category] || 'secondary';
     };
 
     const formatDate = (dateString) => {
@@ -97,172 +120,194 @@ function MyDonations() {
 
     if (loading) {
         return (
-            <div className="my-donations-container">
-                <div className="loading">
-                    <div className="spinner"></div>
-                    <p>Cargando tus donaciones...</p>
-                </div>
-            </div>
+            <Container className="py-5 text-center">
+                <Spinner animation="border" variant="primary" />
+                <p className="mt-3">Cargando tus donaciones...</p>
+            </Container>
         );
     }
 
     return (
-        <div className="my-donations-container">
-            <div className="donations-header">
-                <h1>
-                    <i className="bi bi-box-seam"></i>
-                    Mis Donaciones
-                </h1>
-                <button
-                    className="btn-create-new"
-                    onClick={() => navigate('/create-donation')}
-                >
-                    <i className="bi bi-plus-circle"></i>
-                    Nueva Donación
-                </button>
+        <Container className="py-4">
+            <div className="page-header mb-4">
+                <div className="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <h1>
+                            <i className="bi bi-box-seam me-2"></i>
+                            Mis Donaciones
+                        </h1>
+                        <p className="text-muted">Gestiona tus donaciones creadas</p>
+                    </div>
+                    <Button
+                        variant="primary"
+                        onClick={() => navigate('/create-donation')}
+                        className="d-flex align-items-center gap-2"
+                    >
+                        <i className="bi bi-plus-circle"></i>
+                        Nueva Donación
+                    </Button>
+                </div>
             </div>
 
             {successMessage && (
-                <div className="alert alert-success">
-                    <i className="bi bi-check-circle"></i>
+                <Alert variant="success" dismissible onClose={() => setSuccessMessage('')}>
+                    <i className="bi bi-check-circle me-2"></i>
                     {successMessage}
-                </div>
+                </Alert>
             )}
 
             {error && (
-                <div className="alert alert-error">
-                    <i className="bi bi-exclamation-circle"></i>
+                <Alert variant="danger" dismissible onClose={() => setError('')}>
+                    <i className="bi bi-exclamation-circle me-2"></i>
                     {error}
-                </div>
+                </Alert>
             )}
 
             {donations.length === 0 ? (
-                <div className="empty-state">
-                    <i className="bi bi-inbox"></i>
-                    <h2>No tienes donaciones</h2>
-                    <p>Cuando crees una donación, aparecerá aquí</p>
-                    <button
-                        className="btn-primary"
-                        onClick={() => navigate('/create-donation')}
-                    >
-                        Crear Primera Donación
-                    </button>
-                </div>
+                <Card className="text-center py-5">
+                    <Card.Body>
+                        <i className="bi bi-inbox display-1 text-muted"></i>
+                        <h3 className="mt-3">No tienes donaciones</h3>
+                        <p className="text-muted">Cuando crees una donación, aparecerá aquí</p>
+                        <Button
+                            variant="primary"
+                            onClick={() => navigate('/create-donation')}
+                        >
+                            Crear Primera Donación
+                        </Button>
+                    </Card.Body>
+                </Card>
             ) : (
-                <div className="donations-grid">
-                    {donations.map((donation) => (
-                        <div key={donation.id} className="donation-card">
-                            {donation.images && donation.images.length > 0 && (
-                                <div className="donation-image">
-                                    <img
-                                        src={donation.images[0]}
-                                        alt={donation.title}
-                                        onError={(e) => {
-                                            e.target.src = 'https://via.placeholder.com/300x200?text=Sin+Imagen';
-                                        }}
-                                    />
-                                    {getStatusBadge(donation.status)}
-                                </div>
-                            )}
-                            {(!donation.images || donation.images.length === 0) && (
-                                <div className="donation-image no-image">
-                                    <i className="bi bi-image"></i>
-                                    <span>Sin imagen</span>
-                                    {getStatusBadge(donation.status)}
-                                </div>
-                            )}
-
-                            <div className="donation-content">
-                                <div className="donation-category">
-                                    <i className="bi bi-tag"></i>
-                                    {donation.category}
-                                </div>
-
-                                <h3>{donation.title}</h3>
-
-                                <p className="donation-description">
-                                    {donation.description}
-                                </p>
-
-                                <div className="donation-details">
-                                    <div className="detail-item">
-                                        <i className="bi bi-box"></i>
-                                        <span>Cantidad: {donation.quantity}</span>
+                <>
+                    <div className="mb-3">
+                        <Badge bg="info">
+                            {donations.length} donación{donations.length !== 1 ? 'es' : ''}
+                        </Badge>
+                    </div>
+                    <Row>
+                        {donations.map((donation) => (
+                            <Col key={donation.id} lg={4} md={6} className="mb-4">
+                                <Card className="h-100 donation-card shadow-sm">
+                                    {/* Imagen */}
+                                    <div className="donation-image-container">
+                                        {donation.images && donation.images.length > 0 ? (
+                                            <Card.Img
+                                                variant="top"
+                                                src={donation.images[0]}
+                                                alt={donation.title}
+                                                className="donation-image"
+                                                onError={(e) => {
+                                                    e.target.src = 'https://via.placeholder.com/300x200?text=Sin+Imagen';
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="no-image">
+                                                <i className="bi bi-image"></i>
+                                                <p>Sin imagen</p>
+                                            </div>
+                                        )}
+                                        {donation.images && donation.images.length > 1 && (
+                                            <Badge bg="dark" className="image-count-badge">
+                                                <i className="bi bi-images me-1"></i>
+                                                {donation.images.length}
+                                            </Badge>
+                                        )}
+                                        <Badge bg={getStatusBadgeVariant(donation.status)} className="status-badge">
+                                            {getStatusText(donation.status)}
+                                        </Badge>
                                     </div>
-                                    <div className="detail-item">
-                                        <i className="bi bi-geo-alt"></i>
-                                        <span>
-                                            {donation.city}
-                                            {donation.postalCode && ` (${donation.postalCode})`}
-                                        </span>
-                                    </div>
-                                    {donation.address && (
-                                        <div className="detail-item">
-                                            <i className="bi bi-house"></i>
-                                            <span>{donation.address}</span>
+
+                                    <Card.Body className="d-flex flex-column">
+                                        {/* Título y categoría */}
+                                        <div className="mb-2">
+                                            <h5 className="card-title mb-2">{donation.title}</h5>
+                                            <Badge bg={getCategoryBadgeVariant(donation.category)}>
+                                                {donation.category}
+                                            </Badge>
                                         </div>
-                                    )}
-                                    <div className="detail-item">
-                                        <i className="bi bi-calendar"></i>
-                                        <span>{formatDate(donation.createdAt)}</span>
-                                    </div>
-                                </div>
 
-                                {donation.assignedOng && (
-                                    <div className="assigned-info">
-                                        <i className="bi bi-building"></i>
-                                        Asignado a: <strong>{donation.assignedOng.name}</strong>
-                                    </div>
-                                )}
-                            </div>
+                                        {/* Descripción */}
+                                        <Card.Text className="text-muted small flex-grow-1">
+                                            {donation.description.length > 100
+                                                ? `${donation.description.substring(0, 100)}...`
+                                                : donation.description}
+                                        </Card.Text>
 
-                            <div className="donation-actions">
-                                <button
-                                    className="btn-view"
-                                    onClick={() => navigate(`/donations/${donation.id}`)}
-                                    title="Ver detalles"
-                                >
-                                    <i className="bi bi-eye"></i>
-                                    Ver
-                                </button>
+                                        {/* Información adicional */}
+                                        <div className="donation-info mb-3">
+                                            <div className="info-item">
+                                                <i className="bi bi-box-seam text-primary"></i>
+                                                <span>Cantidad: {donation.quantity}</span>
+                                            </div>
+                                            <div className="info-item">
+                                                <i className="bi bi-geo-alt text-danger"></i>
+                                                <span>{donation.city}</span>
+                                            </div>
+                                            <div className="info-item">
+                                                <i className="bi bi-calendar text-info"></i>
+                                                <span>{formatDate(donation.createdAt)}</span>
+                                            </div>
+                                            {donation.assignedOng && (
+                                                <div className="info-item">
+                                                    <i className="bi bi-building text-success"></i>
+                                                    <span>{donation.assignedOng.name}</span>
+                                                </div>
+                                            )}
+                                        </div>
 
-                                {donation.status === 'DISPONIBLE' && (
-                                    <>
-                                        <button
-                                            className="btn-edit"
-                                            onClick={() => handleEdit(donation.id)}
-                                            title="Editar donación"
-                                        >
-                                            <i className="bi bi-pencil"></i>
-                                            Editar
-                                        </button>
-                                        <button
-                                            className="btn-delete"
-                                            onClick={() => handleDelete(donation.id)}
-                                            title="Eliminar donación"
-                                        >
-                                            <i className="bi bi-trash"></i>
-                                            Eliminar
-                                        </button>
-                                    </>
-                                )}
+                                        {/* Botones */}
+                                        <div className="d-flex gap-2">
+                                            <Button
+                                                variant="primary"
+                                                size="sm"
+                                                className="flex-fill"
+                                                onClick={() => navigate(`/donations/${donation.id}`)}
+                                            >
+                                                <i className="bi bi-eye me-1"></i>
+                                                Ver
+                                            </Button>
 
-                                {donation.status === 'ASIGNADO' && (
-                                    <button
-                                        className="btn-delivered"
-                                        onClick={() => handleMarkAsDelivered(donation.id)}
-                                        title="Marcar como entregado"
-                                    >
-                                        <i className="bi bi-check-circle"></i>
-                                        Marcar Entregado
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                                            {donation.status === 'DISPONIBLE' && (
+                                                <>
+                                                    <Button
+                                                        variant="warning"
+                                                        size="sm"
+                                                        className="flex-fill"
+                                                        onClick={() => handleEdit(donation.id)}
+                                                    >
+                                                        <i className="bi bi-pencil me-1"></i>
+                                                        Editar
+                                                    </Button>
+                                                    <Button
+                                                        variant="danger"
+                                                        size="sm"
+                                                        onClick={() => handleDelete(donation.id)}
+                                                    >
+                                                        <i className="bi bi-trash"></i>
+                                                    </Button>
+                                                </>
+                                            )}
+
+                                            {donation.status === 'ASIGNADO' && (
+                                                <Button
+                                                    variant="success"
+                                                    size="sm"
+                                                    className="flex-fill"
+                                                    onClick={() => handleMarkAsDelivered(donation.id)}
+                                                >
+                                                    <i className="bi bi-check-circle me-1"></i>
+                                                    Entregado
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        ))}
+                    </Row>
+                </>
             )}
-        </div>
+        </Container>
     );
 }
 
