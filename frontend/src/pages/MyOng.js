@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI, donationAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -23,17 +23,7 @@ const MyOng = () => {
     const navigate = useNavigate();
     const { user, isOng } = useAuth();
 
-    useEffect(() => {
-        // Verificar si el usuario es una ONG antes de cargar datos
-        if (!isOng()) {
-            setError('Solo los usuarios con rol de ONG pueden acceder a esta página');
-            setLoading(false);
-            return;
-        }
-        loadData();
-    }, []);
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         try {
             setLoading(true);
             setError('');
@@ -73,7 +63,17 @@ const MyOng = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [navigate, user]);
+
+    useEffect(() => {
+        // Verificar si el usuario es una ONG antes de cargar datos
+        if (!isOng()) {
+            setError('Solo los usuarios con rol de ONG pueden acceder a esta página');
+            setLoading(false);
+            return;
+        }
+        loadData();
+    }, [isOng, loadData]);
 
     const handleEditChange = (e) => {
         setEditFormData({
