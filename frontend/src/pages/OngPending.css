@@ -1,0 +1,86 @@
+.ong-pending-container {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #dbeafe 100%);
+}
+
+.pending-card {
+    max-width: 650px;
+    text-align: center;
+    background: white;
+    box-shadow: var(--shadow-xl);
+}
+
+.pending-icon {
+    font-size: 6rem;
+    margin-bottom: 1.5rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+.pending-card h1 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+}
+
+.pending-message {
+    font-size: 1.25rem;
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.pending-info {
+    color: var(--text-light);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    font-size: 1.05rem;
+}
+
+.pending-steps {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    padding: 1.75rem;
+    border-radius: 0.75rem;
+    text-align: left;
+    margin-bottom: 2rem;
+    border: 2px solid var(--border-color);
+}
+
+.pending-steps h3 {
+    color: var(--primary-color);
+    margin-bottom: 1.25rem;
+    font-size: 1.35rem;
+}
+
+.pending-steps ol {
+    padding-left: 1.5rem;
+    color: var(--text-color);
+}
+
+.pending-steps li {
+    margin-bottom: 0.875rem;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.pending-steps li::marker {
+    color: var(--primary-color);
+    font-weight: bold;
+}
