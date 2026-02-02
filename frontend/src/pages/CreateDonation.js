@@ -18,8 +18,7 @@ function CreateDonation() {
         postalCode: '',
     });
 
-    const [imageFile, setImageFile] = useState(null);
-    const [imagePreview, setImagePreview] = useState('');
+    const [images, setImages] = useState([]); // Array de imágenes con preview y base64
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -47,35 +46,49 @@ function CreateDonation() {
     };
 
     const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            // Validar tamaño (máximo 5MB)
+        const files = Array.from(e.target.files);
+        const totalImages = images.length + files.length;
+
+        if (totalImages > 5) {
+            setError('Máximo 5 imágenes permitidas');
+            return;
+        }
+
+        // Validar cada archivo
+        for (const file of files) {
             if (file.size > 5 * 1024 * 1024) {
-                setError('La imagen debe pesar menos de 5MB');
+                setError('Cada imagen debe pesar menos de 5MB');
                 return;
             }
-
-            // Validar tipo de archivo
             if (!file.type.startsWith('image/')) {
                 setError('Solo se permiten archivos de imagen');
                 return;
             }
-
-            setImageFile(file);
-
-            // Crear vista previa
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
-            setError('');
         }
+
+        // Convertir archivos a base64
+        const promises = files.map(file => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    resolve({
+                        file,
+                        preview: reader.result,
+                        base64: reader.result
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        Promise.all(promises).then(results => {
+            setImages(prev => [...prev, ...results]);
+            setError('');
+        });
     };
 
-    const removeImage = () => {
-        setImageFile(null);
-        setImagePreview('');
+    const removeImage = (index) => {
+        setImages(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleSubmit = async (e) => {
@@ -92,13 +105,9 @@ function CreateDonation() {
         setLoading(true);
 
         try {
-            // Preparar datos con imagen en base64 si existe
+            // Preparar datos con imágenes en base64
             const donationData = { ...formData };
-            if (imageFile) {
-                donationData.images = [imagePreview]; // array con base64
-            } else {
-                donationData.images = [];
-            }
+            donationData.images = images.map(img => img.base64);
 
             await donationAPI.createDonation(donationData);
 
@@ -114,8 +123,7 @@ function CreateDonation() {
                 address: '',
                 postalCode: '',
             });
-            setImageFile(null);
-            setImagePreview('');
+            setImages([]);
 
             // Redirigir después de 2 segundos
             setTimeout(() => {
@@ -285,38 +293,57 @@ function CreateDonation() {
                     </div>
 
                     <div className="form-section">
-                        <h2>Imagen (opcional)</h2>
+                        <h2>Imágenes (opcional)</h2>
+                        <p className="section-description">
+                            Sube hasta 5 imágenes desde tu PC (máximo 5MB cada una)
+                        </p>
 
-                        <div className="form-group">
-                            <label htmlFor="image">
-                                Sube una imagen desde tu PC
-                            </label>
-                            <input
-                                type="file"
-                                id="image"
-                                name="image"
-                                onChange={handleImageChange}
-                                accept="image/*"
-                                className="file-input"
-                            />
-                            <small className="form-help">
-                                Máximo 5MB. Formatos: JPG, PNG, GIF, WEBP
-                            </small>
-                        </div>
-
-                        {imagePreview && (
-                            <div className="image-preview-container">
-                                <div className="image-preview">
-                                    <img src={imagePreview} alt="Vista previa" />
-                                    <button
-                                        type="button"
-                                        className="remove-image-btn"
-                                        onClick={removeImage}
-                                        title="Eliminar imagen"
-                                    >
-                                        <i className="bi bi-x-circle-fill"></i>
-                                    </button>
+                        {/* Mostrar imágenes seleccionadas */}
+                        {images.length > 0 && (
+                            <div className="images-preview-section">
+                                <div className="images-grid">
+                                    {images.map((image, index) => (
+                                        <div key={index} className="image-preview-item">
+                                            <img src={image.preview} alt={`Imagen ${index + 1}`} />
+                                            <button
+                                                type="button"
+                                                className="btn-remove-preview"
+                                                onClick={() => removeImage(index)}
+                                                title="Eliminar imagen"
+                                            >
+                                                <i className="bi bi-x-circle-fill"></i>
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
+                            </div>
+                        )}
+
+                        {/* Input para añadir imágenes */}
+                        {images.length < 5 && (
+                            <div className="form-group">
+                                <label htmlFor="images" className="file-input-label">
+                                    <i className="bi bi-cloud-upload"></i>
+                                    Seleccionar imágenes desde el PC
+                                </label>
+                                <input
+                                    type="file"
+                                    id="images"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={handleImageChange}
+                                    className="file-input-hidden"
+                                />
+                                <small className="form-help">
+                                    Puedes seleccionar múltiples imágenes. Máximo 5MB por imagen.
+                                </small>
+                            </div>
+                        )}
+
+                        {images.length === 5 && (
+                            <div className="info-box">
+                                <i className="bi bi-info-circle"></i>
+                                Has alcanzado el límite de 5 imágenes
                             </div>
                         )}
                     </div>

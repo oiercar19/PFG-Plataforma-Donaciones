@@ -13,6 +13,8 @@ import AdminPanel from './pages/admin/AdminPanel';
 import EditProfile from './pages/EditProfile';
 import CreateDonation from './pages/CreateDonation';
 import MyDonations from './pages/MyDonations';
+import DonationDetails from './pages/DonationDetails';
+import EditDonation from './pages/EditDonation';
 
 function App() {
     return (
@@ -80,6 +82,33 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <CreateDonation />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/my-donations"
+                                element={
+                                    <ProtectedRoute>
+                                        <MyDonations />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/donations/:id"
+                                element={
+                                    <ProtectedRoute>
+                                        <DonationDetails />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/donations/:id/edit"
+                                element={
+                                    <ProtectedRoute>
+                                        <EditDonation />
                                     </ProtectedRoute>
                                 }
                             />

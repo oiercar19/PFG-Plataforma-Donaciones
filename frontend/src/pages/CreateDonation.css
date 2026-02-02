@@ -246,7 +246,97 @@
     transform: none;
 }
 
-/* Estilos para input de archivo */
+/* Estilos para múltiples imágenes */
+.section-description {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.images-preview-section {
+    margin-bottom: 1.5rem;
+}
+
+.images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.image-preview-item {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    /* Aspecto cuadrado */
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    background: #f8f9fa;
+}
+
+.image-preview-item img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.btn-remove-preview {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(244, 67, 54, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+}
+
+.btn-remove-preview:hover {
+    background: #c62828;
+    transform: scale(1.1);
+}
+
+.file-input-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: rgba(102, 126, 234, 0.05);
+    border: 2px dashed rgba(102, 126, 234, 0.3);
+    border-radius: 8px;
+    color: #667eea;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+.file-input-label:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: #667eea;
+}
+
+.file-input-label i {
+    font-size: 1.5rem;
+}
+
+.file-input-hidden {
+    display: none;
+}
+
+/* Estilos antiguos de input de archivo (mantener por compatibilidad) */
 .file-input {
     padding: 12px;
     cursor: pointer;
@@ -276,7 +366,7 @@
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
-/* Vista previa de imagen */
+/* Vista previa de imagen antigua (mantener por compatibilidad) */
 .image-preview-container {
     margin-top: 20px;
 }
