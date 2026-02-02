@@ -43,6 +43,8 @@ export const authAPI = {
     login: (data) => api.post('/auth/login', data),
     getProfile: () => api.get('/auth/profile'),
     updateProfile: (data) => api.put('/auth/profile', data),
+    getMyOngData: () => api.get('/auth/my-ong'),
+    updateMyOngData: (data) => api.put('/auth/my-ong', data),
 };
 
 // Admin endpoints
