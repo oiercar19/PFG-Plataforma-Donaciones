@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Container, Card, Row, Col, Button, Badge, Alert, Spinner } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { donationAPI } from '../services/api';
 import './DonationDetails.css';
@@ -9,6 +10,7 @@ function DonationDetails() {
     const [donation, setDonation] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [selectedImage, setSelectedImage] = useState(0);
 
     const loadDonation = useCallback(async () => {
@@ -38,7 +40,7 @@ function DonationDetails() {
                 });
             } catch (err) {
                 console.error('Error al eliminar:', err);
-                alert(err.response?.data?.error || 'Error al eliminar la donación');
+                setError(err.response?.data?.error || 'Error al eliminar la donación');
             }
         }
     };
@@ -47,251 +49,272 @@ function DonationDetails() {
         if (window.confirm('¿Confirmas que esta donación ha sido entregada?')) {
             try {
                 await donationAPI.markAsDelivered(id);
+                setSuccess('Donación marcada como entregada exitosamente');
                 loadDonation();
             } catch (err) {
                 console.error('Error al marcar como entregada:', err);
-                alert('Error al marcar como entregada');
+                setError(err.response?.data?.error || 'Error al marcar como entregada');
             }
         }
     };
 
-    const getStatusBadge = (status) => {
+    const getCategoryBadge = (category) => {
         const badges = {
-            DISPONIBLE: { text: 'Disponible', class: 'status-available', icon: 'bi-check-circle' },
-            ASIGNADO: { text: 'Asignado', class: 'status-assigned', icon: 'bi-clock-history' },
-            ENTREGADO: { text: 'Entregado', class: 'status-delivered', icon: 'bi-check-all' }
+            ALIMENTOS: 'success',
+            ROPA: 'info',
+            MEDICINAS: 'danger',
+            JUGUETES: 'warning',
+            MUEBLES: 'secondary',
+            ELECTRONICA: 'primary',
+            OTRO: 'dark'
         };
-        const badge = badges[status] || { text: status, class: '', icon: 'bi-circle' };
-        return (
-            <span className={`status-badge-large ${badge.class}`}>
-                <i className={`bi ${badge.icon}`}></i>
-                {badge.text}
-            </span>
-        );
+        return badges[category] || 'secondary';
     };
 
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+    const getStatusBadge = (status) => {
+        const badges = {
+            DISPONIBLE: { bg: 'success', text: 'Disponible' },
+            ASIGNADO: { bg: 'warning', text: 'Asignado' },
+            ENTREGADO: { bg: 'secondary', text: 'Entregado' }
+        };
+        return badges[status] || { bg: 'secondary', text: status };
     };
 
     if (loading) {
         return (
-            <div className="donation-details-container">
-                <div className="loading">
-                    <div className="spinner"></div>
-                    <p>Cargando detalles...</p>
-                </div>
-            </div>
+            <Container className="py-5 text-center">
+                <Spinner animation="border" variant="primary" />
+                <p className="mt-3">Cargando detalles...</p>
+            </Container>
         );
     }
 
-    if (error || !donation) {
+    if (error && !donation) {
         return (
-            <div className="donation-details-container">
-                <div className="error-state">
-                    <i className="bi bi-exclamation-circle"></i>
-                    <h2>{error || 'Donación no encontrada'}</h2>
-                    <button onClick={() => navigate('/my-donations')}>
-                        Volver a Mis Donaciones
-                    </button>
-                </div>
-            </div>
+            <Container className="py-5">
+                <Alert variant="danger">
+                    <i className="bi bi-exclamation-triangle me-2"></i>
+                    {error || 'Donación no encontrada'}
+                </Alert>
+                <Button variant="secondary" onClick={() => navigate('/my-donations')}>
+                    <i className="bi bi-arrow-left me-2"></i>
+                    Volver a Mis Donaciones
+                </Button>
+            </Container>
         );
     }
+
+    if (!donation) {
+        return null;
+    }
+
+    const statusBadge = getStatusBadge(donation.status);
+
 
     return (
-        <div className="donation-details-container">
-            <div className="details-header">
-                <button className="btn-back" onClick={() => navigate('/my-donations')}>
-                    <i className="bi bi-arrow-left"></i>
-                    Volver
-                </button>
-                <div className="header-actions">
+        <Container className="py-4">
+            {/* Botón volver */}
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <Button
+                    variant="outline-secondary"
+                    onClick={() => navigate('/my-donations')}
+                >
+                    <i className="bi bi-arrow-left me-2"></i>
+                    Volver a Mis Donaciones
+                </Button>
+
+                {/* Botones de acción */}
+                <div className="d-flex gap-2">
                     {donation.status === 'DISPONIBLE' && (
                         <>
-                            <button
-                                className="btn-edit"
+                            <Button
+                                variant="outline-warning"
                                 onClick={() => navigate(`/donations/${id}/edit`)}
                             >
-                                <i className="bi bi-pencil"></i>
+                                <i className="bi bi-pencil me-2"></i>
                                 Editar
-                            </button>
-                            <button
-                                className="btn-delete"
+                            </Button>
+                            <Button
+                                variant="outline-danger"
                                 onClick={handleDelete}
                             >
-                                <i className="bi bi-trash"></i>
+                                <i className="bi bi-trash me-2"></i>
                                 Eliminar
-                            </button>
+                            </Button>
                         </>
                     )}
                     {donation.status === 'ASIGNADO' && (
-                        <button
-                            className="btn-delivered"
+                        <Button
+                            variant="success"
                             onClick={handleMarkAsDelivered}
                         >
-                            <i className="bi bi-check-circle"></i>
+                            <i className="bi bi-check-circle me-2"></i>
                             Marcar como Entregado
-                        </button>
+                        </Button>
                     )}
                 </div>
             </div>
 
-            <div className="details-content">
-                <div className="details-main">
-                    {/* Galería de imágenes */}
-                    {donation.images && donation.images.length > 0 ? (
-                        <div className="image-gallery">
-                            <div className="main-image">
-                                <img
-                                    src={donation.images[selectedImage]}
-                                    alt={donation.title}
-                                    onError={(e) => {
-                                        e.target.src = 'https://via.placeholder.com/600x400?text=Sin+Imagen';
-                                    }}
-                                />
+            {success && (
+                <Alert variant="success" dismissible onClose={() => setSuccess('')}>
+                    <i className="bi bi-check-circle me-2"></i>
+                    {success}
+                </Alert>
+            )}
+
+            {error && (
+                <Alert variant="danger" dismissible onClose={() => setError('')}>
+                    <i className="bi bi-exclamation-triangle me-2"></i>
+                    {error}
+                </Alert>
+            )}
+
+            <Card className="donation-details-card shadow">
+                <Card.Body className="p-4">
+                    {/* Encabezado */}
+                    <div className="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <h2 className="mb-2">{donation.title}</h2>
+                            <div className="d-flex gap-2 flex-wrap">
+                                <Badge bg={getCategoryBadge(donation.category)}>
+                                    <i className="bi bi-tag me-1"></i>
+                                    {donation.category}
+                                </Badge>
+                                <Badge bg={statusBadge.bg}>
+                                    <i className="bi bi-circle-fill me-1"></i>
+                                    {statusBadge.text}
+                                </Badge>
                             </div>
-                            {donation.images.length > 1 && (
-                                <div className="image-thumbnails">
-                                    {donation.images.map((image, index) => (
-                                        <div
-                                            key={index}
-                                            className={`thumbnail ${index === selectedImage ? 'active' : ''}`}
-                                            onClick={() => setSelectedImage(index)}
-                                        >
-                                            <img
-                                                src={image}
-                                                alt={`${donation.title} ${index + 1}`}
-                                                onError={(e) => {
-                                                    e.target.src = 'https://via.placeholder.com/100?text=Sin+Imagen';
-                                                }}
-                                            />
+                        </div>
+                    </div>
+
+                    <Row>
+                        {/* Galería de imágenes */}
+                        <Col lg={6} className="mb-4">
+                            {donation.images && donation.images.length > 0 ? (
+                                <div className="image-gallery">
+                                    <div className="main-image-container">
+                                        <img
+                                            src={donation.images[selectedImage]}
+                                            alt={donation.title}
+                                            className="main-image"
+                                            onError={(e) => {
+                                                e.target.src = 'https://via.placeholder.com/600x400?text=Sin+Imagen';
+                                            }}
+                                        />
+                                    </div>
+                                    {donation.images.length > 1 && (
+                                        <div className="thumbnail-container">
+                                            {donation.images.map((image, index) => (
+                                                <img
+                                                    key={index}
+                                                    src={image}
+                                                    alt={`${donation.title} ${index + 1}`}
+                                                    className={`thumbnail ${selectedImage === index ? 'active' : ''}`}
+                                                    onClick={() => setSelectedImage(index)}
+                                                    onError={(e) => {
+                                                        e.target.src = 'https://via.placeholder.com/100?text=Sin+Imagen';
+                                                    }}
+                                                />
+                                            ))}
                                         </div>
-                                    ))}
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="no-image-placeholder">
+                                    <i className="bi bi-image"></i>
+                                    <p>Sin imágenes disponibles</p>
                                 </div>
                             )}
-                        </div>
-                    ) : (
-                        <div className="no-image-large">
-                            <i className="bi bi-image"></i>
-                            <p>Sin imágenes disponibles</p>
-                        </div>
-                    )}
+                        </Col>
 
-                    {/* Información principal */}
-                    <div className="info-section">
-                        <div className="title-row">
-                            <h1>{donation.title}</h1>
-                            {getStatusBadge(donation.status)}
-                        </div>
+                        {/* Información */}
+                        <Col lg={6}>
+                            {/* Descripción */}
+                            <div className="mb-4">
+                                <h5 className="text-primary mb-3">
+                                    <i className="bi bi-file-text me-2"></i>
+                                    Descripción
+                                </h5>
+                                <p className="description-text">{donation.description}</p>
+                            </div>
 
-                        <div className="category-tag">
-                            <i className="bi bi-tag"></i>
-                            {donation.category}
-                        </div>
-
-                        <div className="description-section">
-                            <h2>Descripción</h2>
-                            <p>{donation.description}</p>
-                        </div>
-
-                        <div className="details-grid">
-                            <div className="detail-card">
-                                <i className="bi bi-box"></i>
-                                <div>
-                                    <span className="detail-label">Cantidad</span>
-                                    <span className="detail-value">{donation.quantity}</span>
+                            {/* Detalles */}
+                            <div className="mb-4">
+                                <h5 className="text-primary mb-3">
+                                    <i className="bi bi-info-circle me-2"></i>
+                                    Detalles
+                                </h5>
+                                <div className="details-grid">
+                                    <div className="detail-item">
+                                        <i className="bi bi-box-seam text-primary"></i>
+                                        <div>
+                                            <strong>Cantidad</strong>
+                                            <p>{donation.quantity}</p>
+                                        </div>
+                                    </div>
+                                    <div className="detail-item">
+                                        <i className="bi bi-geo-alt text-danger"></i>
+                                        <div>
+                                            <strong>Ubicación</strong>
+                                            <p>
+                                                {donation.city}
+                                                {donation.province && `, ${donation.province}`}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {donation.address && (
+                                        <div className="detail-item">
+                                            <i className="bi bi-pin-map text-info"></i>
+                                            <div>
+                                                <strong>Dirección</strong>
+                                                <p>{donation.address}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {donation.postalCode && (
+                                        <div className="detail-item">
+                                            <i className="bi bi-mailbox text-warning"></i>
+                                            <div>
+                                                <strong>Código Postal</strong>
+                                                <p>{donation.postalCode}</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
-                            <div className="detail-card">
-                                <i className="bi bi-calendar"></i>
-                                <div>
-                                    <span className="detail-label">Fecha de creación</span>
-                                    <span className="detail-value">{formatDate(donation.createdAt)}</span>
+                            {/* Información de ONG asignada */}
+                            {donation.assignedOng && (
+                                <div className="mb-4">
+                                    <h5 className="text-primary mb-3">
+                                        <i className="bi bi-building me-2"></i>
+                                        ONG Asignada
+                                    </h5>
+                                    <Card className="bg-light border-0">
+                                        <Card.Body>
+                                            <h6 className="mb-2">{donation.assignedOng.name}</h6>
+                                            {donation.assignedOng.contactEmail && (
+                                                <p className="mb-1">
+                                                    <i className="bi bi-envelope me-2"></i>
+                                                    <small>{donation.assignedOng.contactEmail}</small>
+                                                </p>
+                                            )}
+                                            {donation.assignedOng.contactPhone && (
+                                                <p className="mb-0">
+                                                    <i className="bi bi-telephone me-2"></i>
+                                                    <small>{donation.assignedOng.contactPhone}</small>
+                                                </p>
+                                            )}
+                                        </Card.Body>
+                                    </Card>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="details-sidebar">
-                    {/* Ubicación */}
-                    <div className="info-card">
-                        <h3>
-                            <i className="bi bi-geo-alt"></i>
-                            Ubicación
-                        </h3>
-                        <div className="location-info">
-                            <p><strong>{donation.city}</strong></p>
-                            {donation.province && <p>{donation.province}</p>}
-                            {donation.postalCode && <p>CP: {donation.postalCode}</p>}
-                            {donation.address && (
-                                <p className="address">
-                                    <i className="bi bi-house"></i>
-                                    {donation.address}
-                                </p>
                             )}
-                        </div>
-                    </div>
-
-                    {/* Información del donante */}
-                    <div className="info-card">
-                        <h3>
-                            <i className="bi bi-person"></i>
-                            Donante
-                        </h3>
-                        <div className="donor-info">
-                            <p><strong>{donation.donor.username}</strong></p>
-                            {donation.donor.location && (
-                                <p>
-                                    <i className="bi bi-geo"></i>
-                                    {donation.donor.location}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Información de asignación */}
-                    {donation.assignedOng && (
-                        <div className="info-card assigned-card">
-                            <h3>
-                                <i className="bi bi-building"></i>
-                                Asignado a
-                            </h3>
-                            <div className="ong-info">
-                                <p className="ong-name">{donation.assignedOng.name}</p>
-                                {donation.assignedOng.contactEmail && (
-                                    <p>
-                                        <i className="bi bi-envelope"></i>
-                                        {donation.assignedOng.contactEmail}
-                                    </p>
-                                )}
-                                {donation.assignedOng.contactPhone && (
-                                    <p>
-                                        <i className="bi bi-telephone"></i>
-                                        {donation.assignedOng.contactPhone}
-                                    </p>
-                                )}
-                                {donation.assignedOng.location && (
-                                    <p>
-                                        <i className="bi bi-geo"></i>
-                                        {donation.assignedOng.location}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+                        </Col>
+                    </Row>
+                </Card.Body>
+            </Card>
+        </Container>
     );
 }
 
