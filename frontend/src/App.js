@@ -15,6 +15,8 @@ import CreateDonation from './pages/CreateDonation';
 import MyDonations from './pages/MyDonations';
 import DonationDetails from './pages/DonationDetails';
 import EditDonation from './pages/EditDonation';
+import AvailableDonations from './pages/AvailableDonations';
+import AvailableDonationDetails from './pages/AvailableDonationDetails';
 
 function App() {
     return (
@@ -117,10 +119,16 @@ function App() {
                                 path="/available-donations"
                                 element={
                                     <ProtectedRoute>
-                                        <div className="container" style={{ marginTop: '50px' }}>
-                                            <h1>Donaciones Disponibles</h1>
-                                            <p>Lista en construcción...</p>
-                                        </div>
+                                        <AvailableDonations />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/available-donations/:id"
+                                element={
+                                    <ProtectedRoute>
+                                        <AvailableDonationDetails />
                                     </ProtectedRoute>
                                 }
                             />
