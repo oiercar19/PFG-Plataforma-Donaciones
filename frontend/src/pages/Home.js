@@ -82,15 +82,22 @@ const Home = () => {
                                         <>
                                             <p className="lead">Como ONG aprobada, puedes:</p>
                                             <ul className="list-unstyled mb-4">
+                                                <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Publicar anuncios de donación</li>
                                                 <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Ver donaciones disponibles</li>
                                                 <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Solicitar recursos</li>
-                                                <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Comunicarte con donantes</li>
+                                                <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Comunicarte con donantes y otras ONGs</li>
                                                 <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Gestionar tu perfil</li>
                                             </ul>
-                                            <Button as={Link} to="/available-donations" variant="success" size="lg">
-                                                <i className="bi bi-search me-2"></i>
-                                                Ver Donaciones Disponibles
-                                            </Button>
+                                            <div className="d-flex gap-3 flex-wrap">
+                                                <Button as={Link} to="/create-donation" variant="primary" size="lg">
+                                                    <i className="bi bi-plus-circle me-2"></i>
+                                                    Crear Nueva Donación
+                                                </Button>
+                                                <Button as={Link} to="/available-donations" variant="success" size="lg">
+                                                    <i className="bi bi-search me-2"></i>
+                                                    Buscar Donaciones
+                                                </Button>
+                                            </div>
                                         </>
                                     )}
 
