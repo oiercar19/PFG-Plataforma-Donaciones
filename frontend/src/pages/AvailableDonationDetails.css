@@ -1,0 +1,154 @@
+.donation-details-card {
+    border: none;
+    border-radius: 12px;
+}
+
+.donation-details-card h2 {
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+/* Galería de imágenes */
+.image-gallery {
+    width: 100%;
+}
+
+.main-image-container {
+    width: 100%;
+    height: 400px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #f8f9fa;
+    margin-bottom: 1rem;
+}
+
+.main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.thumbnail-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+}
+
+.thumbnail {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.thumbnail:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+.thumbnail.active {
+    border-color: #0d6efd;
+    box-shadow: 0 0 8px rgba(13, 110, 253, 0.5);
+}
+
+.no-image-placeholder {
+    width: 100%;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 12px;
+    color: #6c757d;
+}
+
+.no-image-placeholder i {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+}
+
+/* Descripción */
+.description-text {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #495057;
+    text-align: justify;
+}
+
+/* Grid de detalles */
+.details-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    align-items: flex-start;
+}
+
+.detail-item i {
+    font-size: 1.5rem;
+    margin-top: 0.25rem;
+}
+
+.detail-item strong {
+    display: block;
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+}
+
+.detail-item p {
+    margin: 0;
+    color: #495057;
+}
+
+/* Donante */
+.donor-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    font-size: 1.5rem;
+}
+
+/* Botones de acción */
+.action-buttons .btn {
+    font-weight: 600;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 992px) {
+    .main-image-container {
+        height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-image-container {
+        height: 250px;
+    }
+
+    .thumbnail-container {
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    }
+
+    .thumbnail {
+        height: 60px;
+    }
+
+    .description-text {
+        font-size: 1rem;
+    }
+}
