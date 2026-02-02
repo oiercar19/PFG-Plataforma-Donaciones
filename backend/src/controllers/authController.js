@@ -348,10 +348,107 @@ async function updateProfile(req, res) {
     }
 }
 
+/**
+ * Obtener datos de la ONG del usuario actual
+ */
+async function getMyOngData(req, res) {
+    try {
+        const userId = req.user.id;
+        console.log('🔍 getMyOngData - Usuario ID:', userId);
+
+        // Verificar que el usuario es una ONG
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                ong: true,
+            },
+        });
+
+        console.log('👤 Usuario encontrado:', user ? 'Sí' : 'No');
+        console.log('📋 Rol del usuario:', user?.role);
+        console.log('🏢 Tiene ONG:', user?.ong ? 'Sí' : 'No');
+
+        if (!user || user.role !== 'ONG') {
+            console.log('❌ Error: Usuario no es ONG o no existe');
+            return res.status(403).json({ error: 'Solo las ONGs pueden acceder a esta información' });
+        }
+
+        if (!user.ong) {
+            console.log('❌ Error: Usuario es ONG pero no tiene datos de ONG');
+            return res.status(404).json({ error: 'No se encontró información de la ONG' });
+        }
+
+        console.log('✅ ONG encontrada:', user.ong.name);
+        res.json({ ong: user.ong });
+    } catch (error) {
+        console.error('💥 Error al obtener datos de ONG:', error);
+        console.error('💥 Stack trace:', error.stack);
+        res.status(500).json({ error: 'Error al obtener información de la ONG' });
+    }
+}
+
+/**
+ * Actualizar información de la ONG
+ */
+async function updateMyOngData(req, res) {
+    try {
+        const userId = req.user.id;
+        const {
+            name,
+            description,
+            location,
+            latitude,
+            longitude,
+            contactEmail,
+            contactPhone,
+        } = req.body;
+
+        // Verificar que el usuario es una ONG
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { ong: true },
+        });
+
+        if (!user || user.role !== 'ONG') {
+            return res.status(403).json({ error: 'Solo las ONGs pueden actualizar esta información' });
+        }
+
+        if (!user.ong) {
+            return res.status(404).json({ error: 'No se encontró información de la ONG' });
+        }
+
+        // Preparar datos para actualizar
+        const updateData = {};
+        if (name) updateData.name = name;
+        if (description !== undefined) updateData.description = description;
+        if (location) updateData.location = location;
+        if (latitude !== undefined) updateData.latitude = latitude ? parseFloat(latitude) : null;
+        if (longitude !== undefined) updateData.longitude = longitude ? parseFloat(longitude) : null;
+        if (contactEmail) updateData.contactEmail = contactEmail;
+        if (contactPhone) updateData.contactPhone = contactPhone;
+
+        // Actualizar ONG
+        const updatedOng = await prisma.ong.update({
+            where: { id: user.ong.id },
+            data: updateData,
+        });
+
+        res.json({
+            message: 'Información de ONG actualizada exitosamente',
+            ong: updatedOng,
+        });
+    } catch (error) {
+        console.error('Error al actualizar ONG:', error);
+        res.status(500).json({ error: 'Error al actualizar información de la ONG' });
+    }
+}
+
 module.exports = {
     registerDonor,
     registerOng,
     login,
     getProfile,
     updateProfile,
+    getMyOngData,
+    updateMyOngData,
 };

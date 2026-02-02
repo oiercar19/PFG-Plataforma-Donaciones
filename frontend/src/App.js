@@ -17,6 +17,7 @@ import DonationDetails from './pages/DonationDetails';
 import EditDonation from './pages/EditDonation';
 import AvailableDonations from './pages/AvailableDonations';
 import AvailableDonationDetails from './pages/AvailableDonationDetails';
+import MyOng from './pages/MyOng';
 
 function App() {
     return (
@@ -137,10 +138,7 @@ function App() {
                                 path="/my-ong"
                                 element={
                                     <ProtectedRoute>
-                                        <div className="container" style={{ marginTop: '50px' }}>
-                                            <h1>Mi ONG</h1>
-                                            <p>Página en construcción...</p>
-                                        </div>
+                                        <MyOng />
                                     </ProtectedRoute>
                                 }
                             />

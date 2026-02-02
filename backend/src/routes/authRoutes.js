@@ -12,4 +12,8 @@ router.post('/login', authController.login);
 router.get('/profile', authenticate, authController.getProfile);
 router.put('/profile', authenticate, authController.updateProfile);
 
+// Rutas para ONGs
+router.get('/my-ong', authenticate, authController.getMyOngData);
+router.put('/my-ong', authenticate, authController.updateMyOngData);
+
 module.exports = router;
