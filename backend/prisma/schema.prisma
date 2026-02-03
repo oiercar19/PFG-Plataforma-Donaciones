@@ -98,6 +98,8 @@ model Conversation {
   updatedAt  DateTime  @updatedAt
   status     ConversationStatus @default(OPEN)
   closedAt   DateTime?
+  donorLastReadAt DateTime?
+  ongLastReadAt   DateTime?
   donationId String
   ongId      String?
   donation   Donation  @relation(fields: [donationId], references: [id], onDelete: Cascade)
