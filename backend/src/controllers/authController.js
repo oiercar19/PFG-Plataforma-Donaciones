@@ -110,9 +110,6 @@ async function registerOng(req, res) {
             return res.status(409).json({ error: 'El CIF ya está registrado' });
         }
 
-        // Obtener rutas de archivos subidos
-        const documentPaths = req.files ? req.files.map(file => `/uploads/ong-documents/${file.filename}`) : [];
-
         // Hash de contraseña
         const hashedPassword = await hashPassword(password);
 
@@ -142,11 +139,26 @@ async function registerOng(req, res) {
                     contactEmail,
                     contactPhone,
                     documentUrl,
-                    documents: documentPaths,
                     status: 'PENDING',
                     userId: user.id,
                 },
             });
+
+            // Guardar documentos en la base de datos
+            if (req.files && req.files.length > 0) {
+                for (const file of req.files) {
+                    await tx.ongDocument.create({
+                        data: {
+                            filename: `${Date.now()}-${file.originalname}`,
+                            originalName: file.originalname,
+                            mimetype: file.mimetype,
+                            size: file.size,
+                            data: file.buffer,
+                            ongId: ong.id,
+                        },
+                    });
+                }
+            }
 
             return { user, ong };
         });
