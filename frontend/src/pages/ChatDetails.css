@@ -1,0 +1,56 @@
+.chat-details-card {
+    border-radius: 12px;
+}
+
+.chat-messages-card {
+    border-radius: 12px;
+    min-height: 320px;
+}
+
+.chat-messages {
+    max-height: 520px;
+    overflow-y: auto;
+}
+
+.chat-message {
+    display: flex;
+    margin-bottom: 12px;
+}
+
+.chat-message.mine {
+    justify-content: flex-end;
+}
+
+.message-bubble {
+    max-width: 75%;
+    background: #f3f4f6;
+    border-radius: 12px;
+    padding: 10px 12px;
+}
+
+.chat-message.mine .message-bubble {
+    background: #e0f2fe;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.message-content {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.chat-input {
+    display: flex;
+    gap: 8px;
+}
+
+.chat-input .form-control {
+    flex: 1;
+}

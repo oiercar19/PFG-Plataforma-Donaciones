@@ -1,0 +1,27 @@
+.chat-list {
+    display: grid;
+    gap: 16px;
+}
+
+.chat-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+.chat-card .card-body {
+    padding: 18px;
+}
+
+.chat-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 576px) {
+    .chat-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

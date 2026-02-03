@@ -18,6 +18,8 @@ import EditDonation from './pages/EditDonation';
 import AvailableDonations from './pages/AvailableDonations';
 import AvailableDonationDetails from './pages/AvailableDonationDetails';
 import MyOng from './pages/MyOng';
+import Chats from './pages/Chats';
+import ChatDetails from './pages/ChatDetails';
 
 function App() {
     return (
@@ -139,6 +141,24 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <MyOng />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/chats"
+                                element={
+                                    <ProtectedRoute>
+                                        <Chats />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/chats/:id"
+                                element={
+                                    <ProtectedRoute>
+                                        <ChatDetails />
                                     </ProtectedRoute>
                                 }
                             />
