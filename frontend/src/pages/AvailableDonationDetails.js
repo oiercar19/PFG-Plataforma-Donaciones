@@ -303,14 +303,14 @@ const AvailableDonationDetails = () => {
                                 </div>
                             )}
 
-                            {donation.status === 'ASIGNADA' || donation.status === 'ASIGNADO' && (
+                            {(donation.status === 'ASIGNADA' || donation.status === 'ASIGNADO') && (
                                 <Alert variant="warning">
                                     <i className="bi bi-clock-history me-2"></i>
                                     Esta donación ya ha sido asignada a otra organización.
                                 </Alert>
                             )}
 
-                            {donation.status === 'ENTREGADA' || donation.status === 'ENTREGADO' && (
+                            {(donation.status === 'ENTREGADA' || donation.status === 'ENTREGADO') && (
                                 <Alert variant="secondary">
                                     <i className="bi bi-check-circle me-2"></i>
                                     Esta donación ya ha sido entregada.
