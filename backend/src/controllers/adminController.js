@@ -1,4 +1,5 @@
 const prisma = require('../config/database');
+const path = require('path');
 
 /**
  * Obtener todas las ONGs pendientes de validación
@@ -237,6 +238,42 @@ async function getAdminStats(req, res) {
     }
 }
 
+/**
+ * Descargar documento de una ONG
+ */
+async function downloadDocument(req, res) {
+    try {
+        const { id, filename } = req.params;
+
+        // Verificar que la ONG existe
+        const ong = await prisma.ong.findUnique({
+            where: { id },
+        });
+
+        if (!ong) {
+            return res.status(404).json({ error: 'ONG no encontrada' });
+        }
+
+        // Verificar que el documento pertenece a esta ONG
+        const documentPath = `/uploads/ong-documents/${filename}`;
+        if (!ong.documents.includes(documentPath)) {
+            return res.status(403).json({ error: 'Acceso denegado al documento' });
+        }
+
+        // Enviar archivo
+        const filePath = path.join(__dirname, '../../uploads/ong-documents', filename);
+        res.download(filePath, (err) => {
+            if (err) {
+                console.error('Error al descargar archivo:', err);
+                res.status(500).json({ error: 'Error al descargar archivo' });
+            }
+        });
+    } catch (error) {
+        console.error('Error al descargar documento:', error);
+        res.status(500).json({ error: 'Error al descargar documento' });
+    }
+}
+
 module.exports = {
     getPendingOngs,
     getOngById,
@@ -244,4 +281,5 @@ module.exports = {
     rejectOng,
     getAllOngs,
     getAdminStats,
+    downloadDocument,
 };
