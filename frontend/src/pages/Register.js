@@ -21,6 +21,7 @@ const Register = () => {
         contactPhone: '',
         documentUrl: '',
     });
+    const [documents, setDocuments] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -34,6 +35,16 @@ const Register = () => {
         });
     };
 
+    const handleFileChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 5) {
+            setError('Máximo 5 archivos permitidos');
+            e.target.value = '';
+            return;
+        }
+        setDocuments(files);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -43,22 +54,30 @@ const Register = () => {
             let result;
 
             if (isOng) {
-                // Registro de ONG
-                const ongData = {
-                    username: formData.username,
-                    email: formData.email,
-                    password: formData.password,
-                    location: formData.ongLocation,
-                    name: formData.name,
-                    cif: formData.cif,
-                    type: formData.type,
-                    description: formData.description,
-                    contactEmail: formData.contactEmail,
-                    contactPhone: formData.contactPhone,
-                    documentUrl: formData.documentUrl || undefined,
-                };
+                // Registro de ONG con archivos
+                const ongFormData = new FormData();
 
-                result = await registerOng(ongData);
+                // Agregar datos básicos
+                ongFormData.append('username', formData.username);
+                ongFormData.append('email', formData.email);
+                ongFormData.append('password', formData.password);
+                ongFormData.append('location', formData.ongLocation);
+                ongFormData.append('name', formData.name);
+                ongFormData.append('cif', formData.cif);
+                ongFormData.append('type', formData.type);
+                ongFormData.append('description', formData.description);
+                ongFormData.append('contactEmail', formData.contactEmail);
+                ongFormData.append('contactPhone', formData.contactPhone);
+                if (formData.documentUrl) {
+                    ongFormData.append('documentUrl', formData.documentUrl);
+                }
+
+                // Agregar archivos
+                documents.forEach((file) => {
+                    ongFormData.append('documents', file);
+                });
+
+                result = await registerOng(ongFormData);
 
                 if (result.success) {
                     navigate('/ong-pending');
@@ -319,6 +338,32 @@ const Register = () => {
                                                         <Form.Text className="text-muted">
                                                             Enlace a documento que acredite tu entidad (opcional)
                                                         </Form.Text>
+                                                    </Form.Group>
+                                                </Col>
+
+                                                <Col xs={12} className="mb-3">
+                                                    <Form.Group>
+                                                        <Form.Label>Documentos acreditativos *</Form.Label>
+                                                        <Form.Control
+                                                            type="file"
+                                                            multiple
+                                                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                                            onChange={handleFileChange}
+                                                            size="lg"
+                                                            required
+                                                        />
+                                                        <Form.Text className="text-muted">
+                                                            Sube documentos que acrediten tu entidad (CIF, estatutos, certificados). Máximo 5 archivos de 5MB cada uno.
+                                                            Formatos: PDF, JPG, PNG, DOC, DOCX
+                                                        </Form.Text>
+                                                        {documents.length > 0 && (
+                                                            <div className="mt-2">
+                                                                <small className="text-success">
+                                                                    <i className="bi bi-check-circle me-1"></i>
+                                                                    {documents.length} archivo(s) seleccionado(s)
+                                                                </small>
+                                                            </div>
+                                                        )}
                                                     </Form.Group>
                                                 </Col>
                                             </Row>

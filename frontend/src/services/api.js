@@ -39,7 +39,15 @@ api.interceptors.response.use(
 // Auth endpoints
 export const authAPI = {
     registerDonor: (data) => api.post('/auth/register/donor', data),
-    registerOng: (data) => api.post('/auth/register/ong', data),
+    registerOng: (data) => {
+        // Si data es FormData, cambiar el Content-Type
+        const config = data instanceof FormData ? {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        } : {};
+        return api.post('/auth/register/ong', data, config);
+    },
     login: (data) => api.post('/auth/login', data),
     getProfile: () => api.get('/auth/profile'),
     updateProfile: (data) => api.put('/auth/profile', data),
@@ -55,6 +63,11 @@ export const adminAPI = {
     getOngById: (id) => api.get(`/admin/ongs/${id}`),
     approveOng: (id) => api.put(`/admin/ongs/${id}/approve`),
     rejectOng: (id, reason) => api.put(`/admin/ongs/${id}/reject`, { reason }),
+    downloadDocument: (ongId, filename) => {
+        return api.get(`/admin/ongs/${ongId}/documents/${filename}`, {
+            responseType: 'blob',
+        });
+    },
 };
 
 // Donation endpoints

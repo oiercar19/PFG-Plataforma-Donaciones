@@ -72,8 +72,26 @@ const Home = () => {
                                         <div className="alert alert-warning d-flex align-items-center">
                                             <i className="bi bi-clock-history me-2 fs-4"></i>
                                             <div>
-                                                Tu ONG está pendiente de validación por un administrador.
-                                                Te notificaremos cuando sea aprobada.
+                                                <strong>Tu ONG está pendiente de validación por un administrador.</strong>
+                                                <br />
+                                                Te notificaremos cuando sea aprobada. Mientras tanto, no puedes buscar ni solicitar donaciones.
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {user.ong?.status === 'REJECTED' && (
+                                        <div className="alert alert-danger d-flex align-items-start">
+                                            <i className="bi bi-exclamation-triangle me-2 fs-4"></i>
+                                            <div>
+                                                <strong>Tu solicitud de ONG fue rechazada.</strong>
+                                                <br />
+                                                {user.ong?.rejectionReason && (
+                                                    <>
+                                                        <strong>Motivo:</strong> {user.ong.rejectionReason}
+                                                        <br />
+                                                    </>
+                                                )}
+                                                Por favor, corrige los problemas y contacta con soporte para más información.
                                             </div>
                                         </div>
                                     )}
@@ -99,15 +117,6 @@ const Home = () => {
                                                 </Button>
                                             </div>
                                         </>
-                                    )}
-
-                                    {user.ong?.status === 'REJECTED' && (
-                                        <div className="alert alert-danger d-flex align-items-center">
-                                            <i className="bi bi-exclamation-triangle me-2 fs-4"></i>
-                                            <div>
-                                                Tu solicitud de ONG fue rechazada. Por favor contacta con soporte para más información.
-                                            </div>
-                                        </div>
                                     )}
                                 </div>
                             )}
