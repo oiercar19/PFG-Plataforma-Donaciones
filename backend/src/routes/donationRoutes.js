@@ -29,6 +29,9 @@ router.delete('/:id', authenticate, donationController.deleteDonation);
 // Solicitar/asignar donación - Solo ONGs
 router.post('/:id/request', authenticate, donationController.requestDonation);
 
+// Rechazar donación asignada - Solo el creador
+router.post('/:id/reject', authenticate, donationController.rejectDonation);
+
 // Marcar donación como entregada - Solo el creador
 router.post('/:id/delivered', authenticate, donationController.markAsDelivered);
 

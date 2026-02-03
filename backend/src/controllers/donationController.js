@@ -365,13 +365,86 @@ async function requestDonation(req, res) {
             },
         });
 
+        // Cerrar cualquier conversación abierta previa y crear una nueva
+        await prisma.conversation.updateMany({
+            where: { donationId: id, status: 'OPEN' },
+            data: { status: 'CLOSED', closedAt: new Date() },
+        });
+
+        const conversation = await prisma.conversation.create({
+            data: {
+                donationId: id,
+                ongId: user.ong.id,
+                status: 'OPEN',
+            },
+        });
+
         res.json({
             message: 'Donación solicitada exitosamente',
             donation: updatedDonation,
+            conversation,
         });
     } catch (error) {
         console.error('Error al solicitar donación:', error);
         res.status(500).json({ error: 'Error al solicitar la donación' });
+    }
+}
+
+/**
+ * Rechazar una donación asignada
+ * Solo el creador de la donación puede rechazarla
+ */
+async function rejectDonation(req, res) {
+    try {
+        const userId = req.user.id;
+        const { id } = req.params;
+
+        const donation = await prisma.donation.findUnique({
+            where: { id },
+        });
+
+        if (!donation) {
+            return res.status(404).json({ error: 'Donación no encontrada' });
+        }
+
+        if (donation.donorId !== userId) {
+            return res.status(403).json({ error: 'Solo el creador puede rechazar la donación' });
+        }
+
+        if (donation.status !== 'ASIGNADO') {
+            return res.status(400).json({ error: 'La donación debe estar asignada para rechazarla' });
+        }
+
+        const updatedDonation = await prisma.donation.update({
+            where: { id },
+            data: {
+                status: 'DISPONIBLE',
+                assignedOngId: null,
+            },
+            include: {
+                donor: {
+                    select: {
+                        id: true,
+                        username: true,
+                        location: true,
+                    },
+                },
+            },
+        });
+
+        // Cerrar chat asociado a la donación
+        await prisma.conversation.updateMany({
+            where: { donationId: id, status: 'OPEN' },
+            data: { status: 'CLOSED', closedAt: new Date() },
+        });
+
+        res.json({
+            message: 'Donación rechazada y puesta nuevamente como disponible',
+            donation: updatedDonation,
+        });
+    } catch (error) {
+        console.error('Error al rechazar donación:', error);
+        res.status(500).json({ error: 'Error al rechazar la donación' });
     }
 }
 
@@ -421,6 +494,12 @@ async function markAsDelivered(req, res) {
                     },
                 },
             },
+        });
+
+        // Cerrar chat asociado a la donación
+        await prisma.conversation.updateMany({
+            where: { donationId: id, status: 'OPEN' },
+            data: { status: 'CLOSED', closedAt: new Date() },
         });
 
         res.json({
@@ -490,6 +569,7 @@ module.exports = {
     updateDonation,
     deleteDonation,
     requestDonation,
+    rejectDonation,
     markAsDelivered,
     getMyAssignedDonations,
 };
