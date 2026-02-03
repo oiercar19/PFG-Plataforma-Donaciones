@@ -84,6 +84,13 @@ const NavigationBar = () => {
                                     </>
                                 )}
 
+                                {(isDonor() || isOng()) && (
+                                    <Nav.Link as={Link} to="/chats" className="text-white me-2">
+                                        <i className="bi bi-chat-dots me-1"></i>
+                                        Chats
+                                    </Nav.Link>
+                                )}
+
                                 <Nav.Link as={Link} to="/map" className="text-white me-2">
                                     <i className="bi bi-geo-alt me-1"></i>
                                     Mapa
