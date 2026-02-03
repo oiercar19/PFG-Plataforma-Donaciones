@@ -1,5 +1,4 @@
 const prisma = require('../config/database');
-const path = require('path');
 
 /**
  * Obtener todas las ONGs pendientes de validación
@@ -44,6 +43,16 @@ async function getOngById(req, res) {
                         username: true,
                         email: true,
                         location: true,
+                        createdAt: true,
+                    },
+                },
+                documents: {
+                    select: {
+                        id: true,
+                        filename: true,
+                        originalName: true,
+                        mimetype: true,
+                        size: true,
                         createdAt: true,
                     },
                 },
@@ -239,35 +248,28 @@ async function getAdminStats(req, res) {
 }
 
 /**
- * Descargar documento de una ONG
+ * Descargar documento de una ONG desde la base de datos
  */
 async function downloadDocument(req, res) {
     try {
-        const { id, filename } = req.params;
+        const { documentId } = req.params;
 
-        // Verificar que la ONG existe
-        const ong = await prisma.ong.findUnique({
-            where: { id },
+        // Buscar el documento en la base de datos
+        const document = await prisma.ongDocument.findUnique({
+            where: { id: documentId },
         });
 
-        if (!ong) {
-            return res.status(404).json({ error: 'ONG no encontrada' });
+        if (!document) {
+            return res.status(404).json({ error: 'Documento no encontrado' });
         }
 
-        // Verificar que el documento pertenece a esta ONG
-        const documentPath = `/uploads/ong-documents/${filename}`;
-        if (!ong.documents.includes(documentPath)) {
-            return res.status(403).json({ error: 'Acceso denegado al documento' });
-        }
+        // Configurar headers para la descarga
+        res.setHeader('Content-Type', document.mimetype);
+        res.setHeader('Content-Disposition', `attachment; filename="${document.originalName}"`);
+        res.setHeader('Content-Length', document.size);
 
-        // Enviar archivo
-        const filePath = path.join(__dirname, '../../uploads/ong-documents', filename);
-        res.download(filePath, (err) => {
-            if (err) {
-                console.error('Error al descargar archivo:', err);
-                res.status(500).json({ error: 'Error al descargar archivo' });
-            }
-        });
+        // Enviar el buffer del archivo
+        res.send(document.data);
     } catch (error) {
         console.error('Error al descargar documento:', error);
         res.status(500).json({ error: 'Error al descargar documento' });

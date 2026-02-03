@@ -14,7 +14,7 @@ router.get('/stats', adminController.getAdminStats);
 router.get('/ongs', adminController.getAllOngs);
 router.get('/ongs/pending', adminController.getPendingOngs);
 router.get('/ongs/:id', adminController.getOngById);
-router.get('/ongs/:id/documents/:filename', adminController.downloadDocument);
+router.get('/documents/:documentId', adminController.downloadDocument);
 router.put('/ongs/:id/approve', adminController.approveOng);
 router.put('/ongs/:id/reject', adminController.rejectOng);
 
