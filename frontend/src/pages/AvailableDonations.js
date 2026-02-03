@@ -2,10 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Card, Button, Form, Badge, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { donationAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import './AvailableDonations.css';
 
 const AvailableDonations = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [donations, setDonations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -14,6 +16,13 @@ const AvailableDonations = () => {
         category: '',
         location: ''
     });
+
+    // Verificar si el usuario ONG está aprobado
+    useEffect(() => {
+        if (user?.role === 'ONG' && user?.ong?.status !== 'APPROVED') {
+            navigate('/');
+        }
+    }, [user, navigate]);
 
     const loadDonations = useCallback(async () => {
         try {

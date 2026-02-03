@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Card, Row, Col, Button, Badge, Alert, Spinner, Modal } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { donationAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import './AvailableDonationDetails.css';
 
 const AvailableDonationDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [donation, setDonation] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -14,6 +16,13 @@ const AvailableDonationDetails = () => {
     const [requesting, setRequesting] = useState(false);
     const [selectedImage, setSelectedImage] = useState(0);
     const [showRequestModal, setShowRequestModal] = useState(false);
+
+    // Verificar si el usuario ONG está aprobado
+    useEffect(() => {
+        if (user?.role === 'ONG' && user?.ong?.status !== 'APPROVED') {
+            navigate('/');
+        }
+    }, [user, navigate]);
 
     const loadDonation = useCallback(async () => {
         try {
