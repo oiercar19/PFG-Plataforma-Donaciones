@@ -110,6 +110,9 @@ async function registerOng(req, res) {
             return res.status(409).json({ error: 'El CIF ya está registrado' });
         }
 
+        // Obtener rutas de archivos subidos
+        const documentPaths = req.files ? req.files.map(file => `/uploads/ong-documents/${file.filename}`) : [];
+
         // Hash de contraseña
         const hashedPassword = await hashPassword(password);
 
@@ -139,6 +142,7 @@ async function registerOng(req, res) {
                     contactEmail,
                     contactPhone,
                     documentUrl,
+                    documents: documentPaths,
                     status: 'PENDING',
                     userId: user.id,
                 },
@@ -223,6 +227,7 @@ async function login(req, res) {
                 name: user.ong.name,
                 status: user.ong.status,
                 type: user.ong.type,
+                rejectionReason: user.ong.rejectionReason,
             };
         }
 
