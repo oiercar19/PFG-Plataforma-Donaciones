@@ -40,7 +40,7 @@ async function listConversations(req, res) {
                         status: true,
                         donor: { select: { id: true, username: true } },
                         assignedOngId: true,
-                        assignedOng: { select: { id: true, name: true } },
+                        assignedOng: { select: { id: true, name: true, contactEmail: true, contactPhone: true } },
                     },
                 },
                 ong: { select: { id: true, name: true, contactEmail: true, contactPhone: true } },
@@ -55,7 +55,24 @@ async function listConversations(req, res) {
             orderBy: { updatedAt: 'desc' },
         });
 
-        res.json({ conversations });
+        const conversationsWithUnread = await Promise.all(
+            conversations.map(async (conversation) => {
+                const lastReadAt = req.user.role === 'ONG' ? conversation.ongLastReadAt : conversation.donorLastReadAt;
+                const where = {
+                    conversationId: conversation.id,
+                    senderId: { not: userId },
+                };
+
+                if (lastReadAt) {
+                    where.createdAt = { gt: lastReadAt };
+                }
+
+                const unreadCount = await prisma.message.count({ where });
+                return { ...conversation, unreadCount };
+            })
+        );
+
+        res.json({ conversations: conversationsWithUnread });
     } catch (error) {
         console.error('Error al listar conversaciones:', error);
         res.status(500).json({ error: 'Error al obtener conversaciones' });
@@ -118,8 +135,16 @@ async function getConversationById(req, res) {
         const isDonor = conversation.donation.donorId === userId;
         const isAssignedOng = ongId && (conversation.ongId === ongId || conversation.donation.assignedOngId === ongId);
 
-        if (!isDonor && !isAssignedOng) {
-            return res.status(403).json({ error: 'No tienes permiso para acceder a este chat' });
+        if (isDonor) {
+            await prisma.conversation.update({
+                where: { id: conversation.id },
+                data: { donorLastReadAt: new Date() },
+            });
+        } else if (isAssignedOng) {
+            await prisma.conversation.update({
+                where: { id: conversation.id },
+                data: { ongLastReadAt: new Date() },
+            });
         }
 
         res.json({ conversation });
@@ -188,8 +213,16 @@ async function getConversationByDonation(req, res) {
         const isDonor = conversation.donation.donorId === userId;
         const isAssignedOng = ongId && (conversation.ongId === ongId || conversation.donation.assignedOngId === ongId);
 
-        if (!isDonor && !isAssignedOng) {
-            return res.status(403).json({ error: 'No tienes permiso para acceder a este chat' });
+        if (isDonor) {
+            await prisma.conversation.update({
+                where: { id: conversationId },
+                data: { donorLastReadAt: new Date() },
+            });
+        } else if (isAssignedOng) {
+            await prisma.conversation.update({
+                where: { id: conversationId },
+                data: { ongLastReadAt: new Date() },
+            });
         }
 
         res.json({ conversation });

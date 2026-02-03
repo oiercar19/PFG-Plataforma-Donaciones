@@ -22,6 +22,7 @@ function ChatDetails() {
             setError('');
             const response = await conversationAPI.getConversationById(id);
             setConversation(response.data.conversation);
+            window.dispatchEvent(new Event('chat-read'));
         } catch (err) {
             console.error('Error al cargar conversaci?n:', err);
             setError(err.response?.data?.error || 'Error al cargar el chat');

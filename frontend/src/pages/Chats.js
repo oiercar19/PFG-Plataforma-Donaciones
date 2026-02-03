@@ -22,6 +22,7 @@ function Chats() {
                 ...prev,
                 [status]: response.data.conversations || [],
             }));
+            window.dispatchEvent(new Event('chat-read'));
         } catch (err) {
             console.error('Error al cargar conversaciones:', err);
             setError(err.response?.data?.error || 'Error al cargar las conversaciones');
@@ -74,13 +75,20 @@ function Chats() {
                 <Card.Body>
                     <div className="d-flex justify-content-between align-items-start gap-2">
                         <div>
-                            <h5 className="mb-1">{conversation.donation?.title || 'Donación'}</h5>
+                            <h5 className="mb-1">{conversation.donation?.title || 'Donaci?n'}</h5>
                             <div className="text-muted small">
                                 <i className="bi bi-people me-1"></i>
                                 {counterpart}
                             </div>
                         </div>
-                        <Badge bg={donationBadge.bg}>{donationBadge.text}</Badge>
+                        <div className="d-flex align-items-center gap-2">
+                            {conversation.unreadCount > 0 && (
+                                <Badge bg="danger" pill>
+                                    {conversation.unreadCount}
+                                </Badge>
+                            )}
+                            <Badge bg={donationBadge.bg}>{donationBadge.text}</Badge>
+                        </div>
                     </div>
 
                     {ongInfo && (ongInfo.contactEmail || ongInfo.contactPhone) && (
@@ -150,7 +158,7 @@ function Chats() {
                 onSelect={(k) => k && setActiveKey(k)}
                 className="mb-3"
             >
-                <Tab eventKey="OPEN" title="Abiertos">
+                <Tab eventKey="OPEN" title={`Abiertos${(conversationsByStatus.OPEN || []).reduce((acc, c) => acc + (c.unreadCount || 0), 0) ? ` (${(conversationsByStatus.OPEN || []).reduce((acc, c) => acc + (c.unreadCount || 0), 0)})` : ''}`}>
                     {loading ? (
                         <div className="text-center py-5">
                             <Spinner animation="border" variant="primary" />

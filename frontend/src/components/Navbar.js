@@ -1,11 +1,64 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Navbar, Nav, Container, Button, NavDropdown } from 'react-bootstrap';
+import './Navbar.css';
+import { conversationAPI } from '../services/api';
 
 const NavigationBar = () => {
     const { user, logout, isAuthenticated, isAdmin, isDonor, isOng } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [unreadTotal, setUnreadTotal] = useState(0);
+
+    useEffect(() => {
+        let intervalId;
+
+        const loadUnread = async () => {
+            try {
+                if (!isAuthenticated || (!isDonor() && !isOng())) {
+                    setUnreadTotal(0);
+                    return;
+                }
+                const response = await conversationAPI.listConversations('OPEN');
+                const total = (response.data.conversations || []).reduce(
+                    (acc, c) => acc + (c.unreadCount || 0),
+                    0
+                );
+                setUnreadTotal(total);
+            } catch (err) {
+                console.error('Error al cargar notificaciones de chat:', err);
+            }
+        };
+
+        const handleChatRead = () => {
+            loadUnread();
+        };
+
+        loadUnread();
+        intervalId = setInterval(loadUnread, 30000);
+        window.addEventListener('chat-read', handleChatRead);
+
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+            window.removeEventListener('chat-read', handleChatRead);
+        };
+    }, [isAuthenticated, isDonor, isOng]);
+
+    useEffect(() => {
+        // Refrescar al cambiar de ruta (por ejemplo al abrir un chat)
+        if (isAuthenticated && (isDonor() || isOng())) {
+            conversationAPI.listConversations('OPEN')
+                .then((response) => {
+                    const total = (response.data.conversations || []).reduce(
+                        (acc, c) => acc + (c.unreadCount || 0),
+                        0
+                    );
+                    setUnreadTotal(total);
+                })
+                .catch(() => {});
+        }
+    }, [location.pathname, isAuthenticated, isDonor, isOng]);
 
     const handleLogout = () => {
         logout();
@@ -85,9 +138,14 @@ const NavigationBar = () => {
                                 )}
 
                                 {(isDonor() || isOng()) && (
-                                    <Nav.Link as={Link} to="/chats" className="text-white me-2">
+                                    <Nav.Link as={Link} to="/chats" className="text-white me-2 position-relative chat-nav-link">
                                         <i className="bi bi-chat-dots me-1"></i>
                                         Chats
+                                        {unreadTotal > 0 && (
+                                            <span className="chat-badge badge rounded-pill bg-danger">
+                                                {unreadTotal}
+                                            </span>
+                                        )}
                                     </Nav.Link>
                                 )}
 
