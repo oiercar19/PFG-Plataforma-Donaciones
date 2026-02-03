@@ -36,6 +36,7 @@ model Ong {
   contactEmail    String
   contactPhone    String
   documentUrl     String?
+  documents       String[]     @default([])
   status          OngStatus    @default(PENDING)
   rejectionReason String?
   createdAt       DateTime     @default(now())
