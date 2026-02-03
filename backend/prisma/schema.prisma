@@ -45,6 +45,7 @@ model Ong {
   assignments     Assignment[]
   donations       Donation[]    @relation("OngDonations")
   messages        Message[]
+  conversations   Conversation[]
   documents       OngDocument[]
   user            User          @relation("OngUser", fields: [userId], references: [id], onDelete: Cascade)
 
@@ -95,8 +96,12 @@ model Conversation {
   id         String    @id @default(uuid())
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+  status     ConversationStatus @default(OPEN)
+  closedAt   DateTime?
   donationId String
+  ongId      String?
   donation   Donation  @relation(fields: [donationId], references: [id], onDelete: Cascade)
+  ong        Ong?      @relation(fields: [ongId], references: [id])
   messages   Message[]
 
   @@map("conversations")
@@ -157,4 +162,9 @@ enum DonationStatus {
   DISPONIBLE
   ASIGNADO
   ENTREGADO
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
 }
