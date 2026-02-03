@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Card, Row, Col, Button, Badge, Alert, Spinner } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
-import { donationAPI } from '../services/api';
+import { donationAPI, conversationAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import './DonationDetails.css';
 
 function DonationDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [donation, setDonation] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -55,6 +57,30 @@ function DonationDetails() {
                 console.error('Error al marcar como entregada:', err);
                 setError(err.response?.data?.error || 'Error al marcar como entregada');
             }
+        }
+    };
+
+    const handleRejectDonation = async () => {
+        if (window.confirm('?Deseas rechazar esta donaci?n y dejarla disponible nuevamente?')) {
+            try {
+                await donationAPI.rejectDonation(id);
+                setSuccess('Donación rechazada y puesta como disponible');
+                loadDonation();
+            } catch (err) {
+                console.error('Error al rechazar:', err);
+                setError(err.response?.data?.error || 'Error al rechazar la donaci?n');
+            }
+        }
+    };
+
+    const handleOpenChat = async () => {
+        try {
+            const response = await conversationAPI.getConversationByDonation(id);
+            const conversation = response.data.conversation;
+            navigate(`/chats/${conversation.id}`);
+        } catch (err) {
+            console.error('Error al abrir chat:', err);
+            setError(err.response?.data?.error || 'Error al abrir el chat');
         }
     };
 
@@ -144,13 +170,33 @@ function DonationDetails() {
                         </>
                     )}
                     {donation.status === 'ASIGNADO' && (
-                        <Button
-                            variant="success"
-                            onClick={handleMarkAsDelivered}
-                        >
-                            <i className="bi bi-check-circle me-2"></i>
-                            Marcar como Entregado
-                        </Button>
+                        <>
+                            <Button
+                                variant="outline-primary"
+                                onClick={handleOpenChat}
+                            >
+                                <i className="bi bi-chat-dots me-2"></i>
+                                Ver chat
+                            </Button>
+                            {donation.donorId === user?.id && (
+                                <Button
+                                    variant="outline-danger"
+                                    onClick={handleRejectDonation}
+                                >
+                                    <i className="bi bi-x-circle me-2"></i>
+                                    Rechazar
+                                </Button>
+                            )}
+                            {donation.donorId === user?.id && (
+                                <Button
+                                    variant="success"
+                                    onClick={handleMarkAsDelivered}
+                                >
+                                    <i className="bi bi-check-circle me-2"></i>
+                                    Marcar como Entregado
+                                </Button>
+                            )}
+                        </>
                     )}
                 </div>
             </div>

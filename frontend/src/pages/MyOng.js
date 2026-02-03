@@ -116,8 +116,10 @@ const MyOng = () => {
     const getDonationStatusBadge = (status) => {
         const statusConfig = {
             DISPONIBLE: { variant: 'success', text: 'Disponible' },
-            ASIGNADA: { variant: 'primary', text: 'Asignada' },
-            ENTREGADA: { variant: 'secondary', text: 'Entregada' },
+            ASIGNADO: { variant: 'primary', text: 'Asignado' },
+            ASIGNADA: { variant: 'primary', text: 'Asignado' },
+            ENTREGADO: { variant: 'secondary', text: 'Entregado' },
+            ENTREGADA: { variant: 'secondary', text: 'Entregado' },
         };
         const config = statusConfig[status] || { variant: 'secondary', text: status };
         return <Badge bg={config.variant}>{config.text}</Badge>;
@@ -330,7 +332,7 @@ const MyOng = () => {
                                             <i className="bi bi-check-circle-fill"></i>
                                         </div>
                                         <h3 className="stat-number">
-                                            {assignedDonations.filter(d => d.status === 'ENTREGADA').length}
+                                            {assignedDonations.filter(d => d.status === 'ENTREGADA' || d.status === 'ENTREGADO').length}
                                         </h3>
                                         <p className="stat-label">Donaciones Recibidas</p>
                                     </Card.Body>
@@ -343,7 +345,7 @@ const MyOng = () => {
                                             <i className="bi bi-clock-fill"></i>
                                         </div>
                                         <h3 className="stat-number">
-                                            {assignedDonations.filter(d => d.status === 'ASIGNADA').length}
+                                            {assignedDonations.filter(d => d.status === 'ASIGNADA' || d.status === 'ASIGNADO').length}
                                         </h3>
                                         <p className="stat-label">Pendientes de Recibir</p>
                                     </Card.Body>

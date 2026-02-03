@@ -96,8 +96,26 @@ export const donationAPI = {
     // Solicitar donación (solo ONGs)
     requestDonation: (id) => api.post(`/donations/${id}/request`),
 
+    // Rechazar donación asignada (solo creador)
+    rejectDonation: (id) => api.post(`/donations/${id}/reject`),
+
     // Marcar como entregada (solo creador)
     markAsDelivered: (id) => api.post(`/donations/${id}/delivered`),
+};
+
+// Conversation endpoints
+export const conversationAPI = {
+    // Listar conversaciones (status: OPEN | CLOSED)
+    listConversations: (status) => api.get('/conversations', { params: { status } }),
+
+    // Obtener conversación por ID
+    getConversationById: (id) => api.get(`/conversations/${id}`),
+
+    // Obtener conversación activa por donación
+    getConversationByDonation: (donationId) => api.get(`/conversations/donation/${donationId}`),
+
+    // Enviar mensaje
+    sendMessage: (conversationId, content) => api.post(`/conversations/${conversationId}/messages`, { content }),
 };
 
 export default api;

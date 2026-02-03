@@ -46,12 +46,17 @@ const AvailableDonationDetails = () => {
         try {
             setRequesting(true);
             setError('');
-            await donationAPI.requestDonation(id);
-            setSuccess('¡Solicitud enviada correctamente! El donante será notificado.');
+            const response = await donationAPI.requestDonation(id);
+            const conversation = response.data.conversation;
+            setSuccess('¡Solicitud enviada correctamente!');
             setShowRequestModal(false);
-            setTimeout(() => {
-                navigate('/available-donations');
-            }, 2000);
+            if (conversation?.id) {
+                navigate(`/chats/${conversation.id}`);
+            } else {
+                setTimeout(() => {
+                    navigate('/available-donations');
+                }, 2000);
+            }
         } catch (err) {
             console.error('Error al solicitar donación:', err);
             setError(err.response?.data?.error || 'Error al solicitar la donación');
@@ -77,8 +82,10 @@ const AvailableDonationDetails = () => {
     const getStatusBadge = (status) => {
         const badges = {
             DISPONIBLE: { bg: 'success', text: 'Disponible' },
-            ASIGNADA: { bg: 'warning', text: 'Asignada' },
-            ENTREGADA: { bg: 'secondary', text: 'Entregada' }
+            ASIGNADO: { bg: 'warning', text: 'Asignado' },
+            ASIGNADA: { bg: 'warning', text: 'Asignado' },
+            ENTREGADO: { bg: 'secondary', text: 'Entregado' },
+            ENTREGADA: { bg: 'secondary', text: 'Entregado' }
         };
         return badges[status] || { bg: 'secondary', text: status };
     };
@@ -296,14 +303,14 @@ const AvailableDonationDetails = () => {
                                 </div>
                             )}
 
-                            {donation.status === 'ASIGNADA' && (
+                            {donation.status === 'ASIGNADA' || donation.status === 'ASIGNADO' && (
                                 <Alert variant="warning">
                                     <i className="bi bi-clock-history me-2"></i>
                                     Esta donación ya ha sido asignada a otra organización.
                                 </Alert>
                             )}
 
-                            {donation.status === 'ENTREGADA' && (
+                            {donation.status === 'ENTREGADA' || donation.status === 'ENTREGADO' && (
                                 <Alert variant="secondary">
                                     <i className="bi bi-check-circle me-2"></i>
                                     Esta donación ya ha sido entregada.
