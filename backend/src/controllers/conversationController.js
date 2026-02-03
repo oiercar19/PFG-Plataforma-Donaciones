@@ -215,12 +215,12 @@ async function getConversationByDonation(req, res) {
 
         if (isDonor) {
             await prisma.conversation.update({
-                where: { id: conversationId },
+                where: { id: conversation.id },
                 data: { donorLastReadAt: new Date() },
             });
         } else if (isAssignedOng) {
             await prisma.conversation.update({
-                where: { id: conversationId },
+                where: { id: conversation.id },
                 data: { ongLastReadAt: new Date() },
             });
         }
