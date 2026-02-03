@@ -16,6 +16,13 @@ const AvailableDonationDetails = () => {
     const [requesting, setRequesting] = useState(false);
     const [selectedImage, setSelectedImage] = useState(0);
     const [showRequestModal, setShowRequestModal] = useState(false);
+    const [showImageModal, setShowImageModal] = useState(false);
+    const [modalImage, setModalImage] = useState('');
+
+    const openImageModal = (imageUrl) => {
+        setModalImage(imageUrl);
+        setShowImageModal(true);
+    };
 
     // Verificar si el usuario ONG está aprobado
     useEffect(() => {
@@ -174,7 +181,8 @@ const AvailableDonationDetails = () => {
                                         <img
                                             src={donation.images[selectedImage]}
                                             alt={donation.title}
-                                            className="main-image"
+                                            className="main-image clickable-image"
+                                            onClick={() => openImageModal(donation.images[selectedImage])}
                                         />
                                     </div>
                                     {donation.images.length > 1 && (
@@ -186,6 +194,7 @@ const AvailableDonationDetails = () => {
                                                     alt={`${donation.title} ${index + 1}`}
                                                     className={`thumbnail ${selectedImage === index ? 'active' : ''}`}
                                                     onClick={() => setSelectedImage(index)}
+                                                    onDoubleClick={() => openImageModal(image)}
                                                 />
                                             ))}
                                         </div>
@@ -255,69 +264,65 @@ const AvailableDonationDetails = () => {
                                 </div>
                             </div>
 
-                            {/* Información del donante */}
-                            <div className="mb-4">
-                                <h5 className="text-primary mb-3">
-                                    <i className="bi bi-person me-2"></i>
-                                    Donante
-                                </h5>
-                                <Card className="bg-light border-0">
-                                    <Card.Body>
-                                        <div className="d-flex align-items-center gap-3">
-                                            <div className="donor-icon">
-                                                {donation.donor.role === 'ONG' ? (
-                                                    <i className="bi bi-building"></i>
-                                                ) : (
-                                                    <i className="bi bi-person-circle"></i>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <h6 className="mb-0">{donation.donor.username}</h6>
-                                                <small className="text-muted">
-                                                    {donation.donor.role === 'ONG' ? 'Organización' : 'Donante'}
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            </div>
-
-                            {/* Botón de solicitar */}
-                            {donation.status === 'DISPONIBLE' && (
-                                <div className="action-buttons">
-                                    <Button
-                                        variant="success"
-                                        size="lg"
-                                        className="w-100 mb-2"
-                                        onClick={() => setShowRequestModal(true)}
-                                        disabled={requesting}
-                                    >
-                                        <i className="bi bi-hand-thumbs-up me-2"></i>
-                                        Solicitar Donación
-                                    </Button>
-                                    <Alert variant="info" className="mb-0 small">
-                                        <i className="bi bi-info-circle me-1"></i>
-                                        Al solicitar esta donación, el donante recibirá una notificación.
-                                        Próximamente podrás comunicarte mediante chat.
-                                    </Alert>
-                                </div>
-                            )}
-
-                            {(donation.status === 'ASIGNADA' || donation.status === 'ASIGNADO') && (
-                                <Alert variant="warning">
-                                    <i className="bi bi-clock-history me-2"></i>
-                                    Esta donación ya ha sido asignada a otra organización.
-                                </Alert>
-                            )}
-
-                            {(donation.status === 'ENTREGADA' || donation.status === 'ENTREGADO') && (
-                                <Alert variant="secondary">
-                                    <i className="bi bi-check-circle me-2"></i>
-                                    Esta donación ya ha sido entregada.
-                                </Alert>
-                            )}
-                        </Col>
+                                                    </Col>
                     </Row>
+
+                    <div className="donor-full">
+                        <div className="donor-header">
+                            <i className="bi bi-person"></i>
+                            <h5>Donante</h5>
+                        </div>
+                        <div className="donor-content">
+                            <div className="donor-icon">
+                                {donation.donor.role === 'ONG' ? (
+                                    <i className="bi bi-building"></i>
+                                ) : (
+                                    <i className="bi bi-person-circle"></i>
+                                )}
+                            </div>
+                            <div className="donor-text">
+                                <h6>{donation.donor.username}</h6>
+                                <span>{donation.donor.role === 'ONG' ? 'Organizaci?n' : 'Donante'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="donation-actions mt-3">
+                        {/* Botón de solicitar */}
+                        {donation.status === 'DISPONIBLE' && (
+                            <div className="action-buttons">
+                                <Button
+                                    variant="success"
+                                    size="lg"
+                                    className="w-100 mb-2"
+                                    onClick={() => setShowRequestModal(true)}
+                                    disabled={requesting}
+                                >
+                                    <i className="bi bi-hand-thumbs-up me-2"></i>
+                                    Solicitar Donación
+                                </Button>
+                                <Alert variant="info" className="mb-0 small">
+                                    <i className="bi bi-info-circle me-1"></i>
+                                    Al solicitar esta donación, el donante recibirá una notificación.
+                                    Próximamente podrás comunicarte mediante chat.
+                                </Alert>
+                            </div>
+                        )}
+
+                        {(donation.status === 'ASIGNADA' || donation.status === 'ASIGNADO') && (
+                            <Alert variant="warning">
+                                <i className="bi bi-clock-history me-2"></i>
+                                Esta donación ya ha sido asignada a otra organización.
+                            </Alert>
+                        )}
+
+                        {(donation.status === 'ENTREGADA' || donation.status === 'ENTREGADO') && (
+                            <Alert variant="secondary">
+                                <i className="bi bi-check-circle me-2"></i>
+                                Esta donación ya ha sido entregada.
+                            </Alert>
+                        )}
+                    </div>
                 </Card.Body>
             </Card>
 
@@ -358,6 +363,23 @@ const AvailableDonationDetails = () => {
                         )}
                     </Button>
                 </Modal.Footer>
+            </Modal>
+
+            <Modal
+                show={showImageModal}
+                onHide={() => setShowImageModal(false)}
+                centered
+                size="lg"
+            >
+                <Modal.Body className="p-0">
+                    {modalImage && (
+                        <img
+                            src={modalImage}
+                            alt="Vista ampliada"
+                            className="w-100 modal-image"
+                        />
+                    )}
+                </Modal.Body>
             </Modal>
         </Container>
     );

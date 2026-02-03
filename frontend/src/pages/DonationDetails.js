@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Card, Row, Col, Button, Badge, Alert, Spinner } from 'react-bootstrap';
+import { Container, Card, Row, Col, Button, Badge, Alert, Spinner, Modal } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { donationAPI, conversationAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,13 @@ function DonationDetails() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [selectedImage, setSelectedImage] = useState(0);
+    const [showImageModal, setShowImageModal] = useState(false);
+    const [modalImage, setModalImage] = useState('');
+
+    const openImageModal = (imageUrl) => {
+        setModalImage(imageUrl);
+        setShowImageModal(true);
+    };
 
     const loadDonation = useCallback(async () => {
         try {
@@ -138,7 +145,8 @@ function DonationDetails() {
 
 
     return (
-        <Container className="py-4">
+        <>
+            <Container className="py-4">
             {/* Botón volver */}
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <Button
@@ -243,7 +251,8 @@ function DonationDetails() {
                                         <img
                                             src={donation.images[selectedImage]}
                                             alt={donation.title}
-                                            className="main-image"
+                                            className="main-image clickable-image"
+                                            onClick={() => openImageModal(donation.images[selectedImage])}
                                             onError={(e) => {
                                                 e.target.src = 'https://via.placeholder.com/600x400?text=Sin+Imagen';
                                             }}
@@ -258,6 +267,7 @@ function DonationDetails() {
                                                     alt={`${donation.title} ${index + 1}`}
                                                     className={`thumbnail ${selectedImage === index ? 'active' : ''}`}
                                                     onClick={() => setSelectedImage(index)}
+                                                    onDoubleClick={() => openImageModal(image)}
                                                     onError={(e) => {
                                                         e.target.src = 'https://via.placeholder.com/100?text=Sin+Imagen';
                                                     }}
@@ -331,36 +341,55 @@ function DonationDetails() {
                             </div>
 
                             {/* Información de ONG asignada */}
-                            {donation.assignedOng && (
-                                <div className="mb-4">
-                                    <h5 className="text-primary mb-3">
-                                        <i className="bi bi-building me-2"></i>
-                                        ONG Asignada
-                                    </h5>
-                                    <Card className="bg-light border-0">
-                                        <Card.Body>
-                                            <h6 className="mb-2">{donation.assignedOng.name}</h6>
-                                            {donation.assignedOng.contactEmail && (
-                                                <p className="mb-1">
-                                                    <i className="bi bi-envelope me-2"></i>
-                                                    <small>{donation.assignedOng.contactEmail}</small>
-                                                </p>
-                                            )}
-                                            {donation.assignedOng.contactPhone && (
-                                                <p className="mb-0">
-                                                    <i className="bi bi-telephone me-2"></i>
-                                                    <small>{donation.assignedOng.contactPhone}</small>
-                                                </p>
-                                            )}
-                                        </Card.Body>
-                                    </Card>
-                                </div>
-                            )}
                         </Col>
                     </Row>
+
+                    {donation.assignedOng && (
+                        <div className="ong-full">
+                            <div className="donor-header">
+                                <i className="bi bi-building"></i>
+                                <h5>ONG Asignada</h5>
+                            </div>
+                            <div className="ong-content">
+                                <div className="ong-text">
+                                    <h6>{donation.assignedOng.name}</h6>
+                                    {donation.assignedOng.contactEmail && (
+                                        <div className="ong-line">
+                                            <i className="bi bi-envelope"></i>
+                                            <span>{donation.assignedOng.contactEmail}</span>
+                                        </div>
+                                    )}
+                                    {donation.assignedOng.contactPhone && (
+                                        <div className="ong-line">
+                                            <i className="bi bi-telephone"></i>
+                                            <span>{donation.assignedOng.contactPhone}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </Card.Body>
             </Card>
-        </Container>
+            </Container>
+
+            <Modal
+                show={showImageModal}
+                onHide={() => setShowImageModal(false)}
+                centered
+                size="lg"
+            >
+                <Modal.Body className="p-0">
+                    {modalImage && (
+                        <img
+                            src={modalImage}
+                            alt="Vista ampliada"
+                            className="w-100 modal-image"
+                        />
+                    )}
+                </Modal.Body>
+            </Modal>
+        </>
     );
 }
 

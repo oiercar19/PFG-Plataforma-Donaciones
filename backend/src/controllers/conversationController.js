@@ -6,7 +6,7 @@ async function listConversations(req, res) {
         const status = (req.query.status || 'OPEN').toUpperCase();
 
         if (!['OPEN', 'CLOSED'].includes(status)) {
-            return res.status(400).json({ error: 'Estado de conversaci?n inv?lido' });
+            return res.status(400).json({ error: 'Estado de conversación inválido' });
         }
 
         let ongId = null;
@@ -149,7 +149,7 @@ async function getConversationById(req, res) {
 
         res.json({ conversation });
     } catch (error) {
-        console.error('Error al obtener conversaci?n:', error);
+        console.error('Error al obtener conversación:', error);
         res.status(500).json({ error: 'Error al obtener el chat' });
     }
 }
@@ -227,7 +227,7 @@ async function getConversationByDonation(req, res) {
 
         res.json({ conversation });
     } catch (error) {
-        console.error('Error al obtener conversaci?n:', error);
+        console.error('Error al obtener conversación:', error);
         res.status(500).json({ error: 'Error al obtener el chat' });
     }
 }
@@ -239,7 +239,7 @@ async function postMessage(req, res) {
         const content = (req.body.content || '').trim();
 
         if (!content) {
-            return res.status(400).json({ error: 'El mensaje no puede estar vac?o' });
+            return res.status(400).json({ error: 'El mensaje no puede estar vacío' });
         }
 
         const conversation = await prisma.conversation.findUnique({
@@ -259,7 +259,7 @@ async function postMessage(req, res) {
         }
 
         if (conversation.status !== 'OPEN') {
-            return res.status(400).json({ error: 'La conversaci?n no est? activa' });
+            return res.status(400).json({ error: 'La conversación no está activa' });
         }
 
         let ongId = null;

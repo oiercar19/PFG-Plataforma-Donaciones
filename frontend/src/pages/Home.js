@@ -10,7 +10,7 @@ const Home = () => {
         <div>
             {/* Hero Section */}
             <div className="text-white py-5" style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #0f766e 0%, #0284c7 100%)',
                 minHeight: '450px',
                 display: 'flex',
                 alignItems: 'center'
@@ -22,7 +22,7 @@ const Home = () => {
                                 <i className="bi bi-heart-fill me-3" style={{ color: '#ff6b9d' }}></i>
                                 Conectando Solidaridad
                             </h1>
-                            <p className="lead mb-4" style={{ fontSize: '1.3rem', opacity: 0.95 }}>
+                            <p className="lead mb-4" style={{ fontSize: '1.3rem', opacity: 1 }}>
                                 Plataforma que conecta donantes con organizaciones sociales para redistribuir recursos donde más se necesitan
                             </p>
 

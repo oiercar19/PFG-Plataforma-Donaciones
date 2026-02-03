@@ -75,7 +75,7 @@ function Chats() {
                 <Card.Body>
                     <div className="d-flex justify-content-between align-items-start gap-2">
                         <div>
-                            <h5 className="mb-1">{conversation.donation?.title || 'Donaci?n'}</h5>
+                            <h5 className="mb-1">{conversation.donation?.title || 'Donación'}</h5>
                             <div className="text-muted small">
                                 <i className="bi bi-people me-1"></i>
                                 {counterpart}
@@ -111,7 +111,7 @@ function Chats() {
                     <div className="chat-meta mt-3">
                         <div className="text-muted small">
                             <i className="bi bi-chat-dots me-1"></i>
-                            {lastPreview || 'Sin mensajes a?n'}
+                            {lastPreview || 'Sin mensajes aún'}
                         </div>
                         <div className="text-muted small">
                             <i className="bi bi-clock me-1"></i>
@@ -169,7 +169,7 @@ function Chats() {
                             <Card.Body>
                                 <i className="bi bi-inbox fs-1 text-muted"></i>
                                 <h4 className="mt-3">No tienes chats abiertos</h4>
-                                <p className="text-muted">Cuando una donaci?n sea asignada, aparecer? aqu?</p>
+                                <p className="text-muted">Cuando una donación sea asignada, aparecerá aquí</p>
                             </Card.Body>
                         </Card>
                     ) : (
@@ -189,7 +189,7 @@ function Chats() {
                             <Card.Body>
                                 <i className="bi bi-archive fs-1 text-muted"></i>
                                 <h4 className="mt-3">No tienes chats cerrados</h4>
-                                <p className="text-muted">Aqu? se guardar? el historial cuando un chat se cierre</p>
+                                <p className="text-muted">Aquí se guardará el historial cuando un chat se cierre</p>
                             </Card.Body>
                         </Card>
                     ) : (

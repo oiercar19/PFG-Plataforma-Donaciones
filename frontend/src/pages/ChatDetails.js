@@ -24,7 +24,7 @@ function ChatDetails() {
             setConversation(response.data.conversation);
             window.dispatchEvent(new Event('chat-read'));
         } catch (err) {
-            console.error('Error al cargar conversaci?n:', err);
+            console.error('Error al cargar conversación:', err);
             setError(err.response?.data?.error || 'Error al cargar el chat');
         } finally {
             setLoading(false);
@@ -136,7 +136,7 @@ function ChatDetails() {
                             <h5 className="mb-1">{donation?.title || 'Donación'}</h5>
                             <div className="text-muted small">
                                 <i className="bi bi-tag me-1"></i>
-                                {donation?.category || 'Sin categor?a'}
+                                {donation?.category || 'Sin categoría'}
                             </div>
                         </div>
                         <Button variant="outline-primary" size="sm" onClick={() => navigate(`/donations/${donation?.id}`)}>
@@ -177,7 +177,7 @@ function ChatDetails() {
             {isClosed && (
                 <Alert variant="secondary">
                     <i className="bi bi-lock me-2"></i>
-                    Este chat est? cerrado y ya no admite nuevos mensajes.
+                    Este chat está cerrado y ya no admite nuevos mensajes.
                 </Alert>
             )}
 
@@ -186,7 +186,7 @@ function ChatDetails() {
                     {conversation.messages?.length === 0 ? (
                         <div className="text-center text-muted py-4">
                             <i className="bi bi-chat-dots fs-2"></i>
-                            <p className="mt-2">A?n no hay mensajes</p>
+                            <p className="mt-2">Aún no hay mensajes</p>
                         </div>
                     ) : (
                         conversation.messages.map((msg) => {

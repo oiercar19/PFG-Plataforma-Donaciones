@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
 // Pages
 import Home from './pages/Home';
@@ -25,9 +26,13 @@ function App() {
     return (
         <Router>
             <AuthProvider>
-                <div className="App" style={{ paddingTop: 0 }}>
+                <div className="App" style={{
+                    minHeight: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}>
                     <Navbar />
-                    <div>
+                    <div style={{ flex: 1 }}>
                         <Routes>
                             {/* Rutas públicas */}
                             <Route path="/" element={<Home />} />
@@ -188,6 +193,7 @@ function App() {
                             />
                         </Routes>
                     </div>
+                    <Footer />
                 </div>
             </AuthProvider>
         </Router>
