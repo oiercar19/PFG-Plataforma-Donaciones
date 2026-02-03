@@ -10,7 +10,7 @@ const Home = () => {
         <div>
             {/* Hero Section */}
             <div className="text-white py-5" style={{
-                background: 'linear-gradient(135deg, #0f766e 0%, #0284c7 100%)',
+                background: 'linear-gradient(135deg, #0f766e 0%, #60a5fa 100%)',
                 minHeight: '450px',
                 display: 'flex',
                 alignItems: 'center'
