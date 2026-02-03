@@ -36,7 +36,7 @@ const NavigationBar = () => {
         };
 
         loadUnread();
-        intervalId = setInterval(loadUnread, 30000);
+        intervalId = setInterval(loadUnread, 60000);
         window.addEventListener('chat-read', handleChatRead);
 
         return () => {
@@ -56,7 +56,7 @@ const NavigationBar = () => {
                     );
                     setUnreadTotal(total);
                 })
-                .catch(() => {});
+                .catch(() => { });
         }
     }, [location.pathname, isAuthenticated, isDonor, isOng]);
 

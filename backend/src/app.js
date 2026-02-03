@@ -26,7 +26,7 @@ app.set('trust proxy', 1);
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 100, // Máximo 100 peticiones por ventana
+    max: 500, // Máximo 500 peticiones por ventana
     message: 'Demasiadas peticiones desde esta IP, por favor intente más tarde',
 });
 app.use('/api/', limiter);
