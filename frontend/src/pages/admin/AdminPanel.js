@@ -38,9 +38,12 @@ const AdminPanel = () => {
     const handleViewDetails = async (ongId) => {
         try {
             const response = await adminAPI.getOngById(ongId);
+            console.log('ONG cargada:', response.data.ong);
+            console.log('Documentos:', response.data.ong.documents);
             setSelectedOng(response.data.ong);
         } catch (err) {
             setError('Error al cargar detalles de la ONG');
+            console.error('Error:', err);
         }
     };
 
@@ -78,6 +81,26 @@ const AdminPanel = () => {
             setError('Error al rechazar ONG');
         } finally {
             setActionLoading(false);
+        }
+    };
+
+    const handleDownloadDocument = async (ongId, documentPath) => {
+        try {
+            const filename = documentPath.split('/').pop();
+            const response = await adminAPI.downloadDocument(ongId, filename);
+
+            // Crear URL temporal para descargar
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            setError('Error al descargar documento');
+            console.error(err);
         }
     };
 
@@ -174,25 +197,64 @@ const AdminPanel = () => {
                                     <p>
                                         <strong>Registrado por:</strong> {ong.user.username} ({ong.user.email})
                                     </p>
+                                    <p>
+                                        <strong>Documentos adjuntos:</strong> {ong.documents?.length || 0}
+                                    </p>
                                 </div>
                                 <div className="ong-actions">
                                     <button
                                         onClick={() => handleViewDetails(ong.id)}
-                                        className="btn btn-secondary"
+                                        style={{
+                                            backgroundColor: '#6c757d',
+                                            color: '#ffffff',
+                                            border: 'none',
+                                            padding: '10px 20px',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
                                     >
-                                        Ver Detalles
+                                        👁️ Ver Detalles
                                     </button>
                                     <button
                                         onClick={() => handleApprove(ong.id)}
-                                        className="btn btn-primary"
+                                        style={{
+                                            backgroundColor: '#667eea',
+                                            color: '#ffffff',
+                                            border: 'none',
+                                            padding: '10px 20px',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            transition: 'all 0.2s ease'
+                                        }}
                                         disabled={actionLoading}
+                                        onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = '#5568d3')}
+                                        onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = '#667eea')}
                                     >
                                         ✓ Aprobar
                                     </button>
                                     <button
                                         onClick={() => setShowRejectModal(ong.id)}
-                                        className="btn btn-danger"
+                                        style={{
+                                            backgroundColor: '#dc3545',
+                                            color: '#ffffff',
+                                            border: 'none',
+                                            padding: '10px 20px',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            transition: 'all 0.2s ease'
+                                        }}
                                         disabled={actionLoading}
+                                        onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = '#c82333')}
+                                        onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = '#dc3545')}
                                     >
                                         ✕ Rechazar
                                     </button>
@@ -222,12 +284,60 @@ const AdminPanel = () => {
                             )}
                             {selectedOng.documentUrl && (
                                 <p>
-                                    <strong>Documento:</strong>{' '}
+                                    <strong>Documento (URL):</strong>{' '}
                                     <a href={selectedOng.documentUrl} target="_blank" rel="noopener noreferrer">
                                         Ver documento
                                     </a>
                                 </p>
                             )}
+                            <div style={{ marginTop: '1rem' }}>
+                                <p style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#333' }}>Documentos adjuntos:</p>
+                                {selectedOng.documents && selectedOng.documents.length > 0 ? (
+                                    <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '10px',
+                                        padding: '10px',
+                                        backgroundColor: '#f8f9fa',
+                                        borderRadius: '8px'
+                                    }}>
+                                        {selectedOng.documents.map((doc, idx) => {
+                                            const filename = doc.split('/').pop();
+                                            return (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => handleDownloadDocument(selectedOng.id, doc)}
+                                                    style={{
+                                                        fontSize: '14px',
+                                                        padding: '10px 15px',
+                                                        textAlign: 'left',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '10px',
+                                                        width: '100%',
+                                                        backgroundColor: '#007bff',
+                                                        color: '#ffffff',
+                                                        border: 'none',
+                                                        borderRadius: '6px',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
+                                                    onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
+                                                >
+                                                    <span style={{ fontSize: '18px' }}>📄</span>
+                                                    <span style={{ flex: 1, color: '#ffffff', fontWeight: '500' }}>{filename}</span>
+                                                    <span style={{ fontSize: '12px', color: '#ffffff' }}>⬇️ Descargar</span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <p style={{ color: '#666', fontStyle: 'italic', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+                                        No hay documentos adjuntos
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
                         <div className="detail-section">
@@ -240,8 +350,20 @@ const AdminPanel = () => {
                         <div className="modal-actions">
                             <button
                                 onClick={() => handleApprove(selectedOng.id)}
-                                className="btn btn-primary"
+                                style={{
+                                    backgroundColor: '#667eea',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    padding: '12px 24px',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
+                                    transition: 'all 0.2s ease'
+                                }}
                                 disabled={actionLoading}
+                                onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = '#5568d3')}
+                                onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = '#667eea')}
                             >
                                 ✓ Aprobar
                             </button>
@@ -250,12 +372,45 @@ const AdminPanel = () => {
                                     setShowRejectModal(selectedOng.id);
                                     setSelectedOng(null);
                                 }}
-                                className="btn btn-danger"
+                                style={{
+                                    backgroundColor: '#dc3545',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    padding: '12px 24px',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
+                                    transition: 'all 0.2s ease'
+                                }}
                                 disabled={actionLoading}
+                                onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = '#c82333')}
+                                onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = '#dc3545')}
                             >
                                 ✕ Rechazar
                             </button>
-                            <button onClick={() => setSelectedOng(null)} className="btn btn-outline">
+                            <button
+                                onClick={() => setSelectedOng(null)}
+                                style={{
+                                    backgroundColor: '#ffffff',
+                                    color: '#333',
+                                    border: '2px solid #ddd',
+                                    padding: '12px 24px',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.backgroundColor = '#f8f9fa';
+                                    e.target.style.borderColor = '#999';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.backgroundColor = '#ffffff';
+                                    e.target.style.borderColor = '#ddd';
+                                }}
+                            >
                                 Cerrar
                             </button>
                         </div>
@@ -275,14 +430,43 @@ const AdminPanel = () => {
                             onChange={(e) => setRejectionReason(e.target.value)}
                             rows="4"
                             placeholder="Ej: Documentación incompleta, CIF no válido, etc."
-                            style={{ width: '100%', padding: '10px', marginBottom: '20px' }}
+                            style={{
+                                width: '100%',
+                                padding: '10px',
+                                marginBottom: '20px',
+                                color: '#333',
+                                fontSize: '14px',
+                                border: '1px solid #ddd',
+                                borderRadius: '6px'
+                            }}
                         />
 
                         <div className="modal-actions">
                             <button
                                 onClick={() => handleReject(showRejectModal)}
-                                className="btn btn-danger"
+                                style={{
+                                    backgroundColor: '#dc3545',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    padding: '12px 24px',
+                                    borderRadius: '6px',
+                                    cursor: actionLoading || !rejectionReason.trim() ? 'not-allowed' : 'pointer',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
+                                    transition: 'all 0.2s ease',
+                                    opacity: actionLoading || !rejectionReason.trim() ? 0.6 : 1
+                                }}
                                 disabled={actionLoading || !rejectionReason.trim()}
+                                onMouseEnter={(e) => {
+                                    if (!actionLoading && rejectionReason.trim()) {
+                                        e.target.style.backgroundColor = '#c82333';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!actionLoading && rejectionReason.trim()) {
+                                        e.target.style.backgroundColor = '#dc3545';
+                                    }
+                                }}
                             >
                                 Confirmar Rechazo
                             </button>
@@ -291,7 +475,25 @@ const AdminPanel = () => {
                                     setShowRejectModal(null);
                                     setRejectionReason('');
                                 }}
-                                className="btn btn-outline"
+                                style={{
+                                    backgroundColor: '#ffffff',
+                                    color: '#333',
+                                    border: '2px solid #ddd',
+                                    padding: '12px 24px',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.backgroundColor = '#f8f9fa';
+                                    e.target.style.borderColor = '#999';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.backgroundColor = '#ffffff';
+                                    e.target.style.borderColor = '#ddd';
+                                }}
                             >
                                 Cancelar
                             </button>
