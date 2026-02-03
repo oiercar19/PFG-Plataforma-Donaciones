@@ -65,18 +65,22 @@ const NavigationBar = () => {
                                             <i className="bi bi-building me-1"></i>
                                             Mi ONG
                                         </Nav.Link>
-                                        <Nav.Link as={Link} to="/donations" className="text-white me-2">
-                                            <i className="bi bi-gift me-1"></i>
-                                            Mis Donaciones
-                                        </Nav.Link>
-                                        <Nav.Link as={Link} to="/create-donation" className="text-white me-2">
-                                            <i className="bi bi-plus-circle me-1"></i>
-                                            Crear
-                                        </Nav.Link>
-                                        <Nav.Link as={Link} to="/available-donations" className="text-white me-2">
-                                            <i className="bi bi-search me-1"></i>
-                                            Buscar
-                                        </Nav.Link>
+                                        {user?.ong?.status === 'APPROVED' && (
+                                            <>
+                                                <Nav.Link as={Link} to="/donations" className="text-white me-2">
+                                                    <i className="bi bi-gift me-1"></i>
+                                                    Mis Donaciones
+                                                </Nav.Link>
+                                                <Nav.Link as={Link} to="/create-donation" className="text-white me-2">
+                                                    <i className="bi bi-plus-circle me-1"></i>
+                                                    Crear
+                                                </Nav.Link>
+                                                <Nav.Link as={Link} to="/available-donations" className="text-white me-2">
+                                                    <i className="bi bi-search me-1"></i>
+                                                    Buscar
+                                                </Nav.Link>
+                                            </>
+                                        )}
                                     </>
                                 )}
 
