@@ -63,8 +63,8 @@ export const adminAPI = {
     getOngById: (id) => api.get(`/admin/ongs/${id}`),
     approveOng: (id) => api.put(`/admin/ongs/${id}/approve`),
     rejectOng: (id, reason) => api.put(`/admin/ongs/${id}/reject`, { reason }),
-    downloadDocument: (ongId, filename) => {
-        return api.get(`/admin/ongs/${ongId}/documents/${filename}`, {
+    downloadDocument: (documentId) => {
+        return api.get(`/admin/documents/${documentId}`, {
             responseType: 'blob',
         });
     },

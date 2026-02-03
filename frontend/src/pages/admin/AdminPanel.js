@@ -84,16 +84,15 @@ const AdminPanel = () => {
         }
     };
 
-    const handleDownloadDocument = async (ongId, documentPath) => {
+    const handleDownloadDocument = async (documentId, originalName) => {
         try {
-            const filename = documentPath.split('/').pop();
-            const response = await adminAPI.downloadDocument(ongId, filename);
+            const response = await adminAPI.downloadDocument(documentId);
 
             // Crear URL temporal para descargar
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', filename);
+            link.setAttribute('download', originalName);
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -302,11 +301,10 @@ const AdminPanel = () => {
                                         borderRadius: '8px'
                                     }}>
                                         {selectedOng.documents.map((doc, idx) => {
-                                            const filename = doc.split('/').pop();
                                             return (
                                                 <button
-                                                    key={idx}
-                                                    onClick={() => handleDownloadDocument(selectedOng.id, doc)}
+                                                    key={doc.id || idx}
+                                                    onClick={() => handleDownloadDocument(doc.id, doc.originalName)}
                                                     style={{
                                                         fontSize: '14px',
                                                         padding: '10px 15px',
@@ -326,8 +324,8 @@ const AdminPanel = () => {
                                                     onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
                                                 >
                                                     <span style={{ fontSize: '18px' }}>📄</span>
-                                                    <span style={{ flex: 1, color: '#ffffff', fontWeight: '500' }}>{filename}</span>
-                                                    <span style={{ fontSize: '12px', color: '#ffffff' }}>⬇️ Descargar</span>
+                                                    <span style={{ flex: 1, color: '#ffffff', fontWeight: '500' }}>{doc.originalName}</span>
+                                                    <span style={{ fontSize: '12px', color: '#ffffff' }}>⬇️ Descargar ({(doc.size / 1024).toFixed(1)} KB)</span>
                                                 </button>
                                             );
                                         })}
