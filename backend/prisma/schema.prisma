@@ -25,9 +25,9 @@ model User {
 }
 
 model Ong {
-  id              String       @id @default(uuid())
+  id              String        @id @default(uuid())
   name            String
-  cif             String       @unique
+  cif             String        @unique
   type            OngType
   description     String?
   location        String
@@ -36,19 +36,33 @@ model Ong {
   contactEmail    String
   contactPhone    String
   documentUrl     String?
-  documents       String[]     @default([])
-  status          OngStatus    @default(PENDING)
+  status          OngStatus     @default(PENDING)
   rejectionReason String?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
   approvedAt      DateTime?
-  userId          String       @unique
+  userId          String        @unique
   assignments     Assignment[]
-  donations       Donation[]   @relation("OngDonations")
+  donations       Donation[]    @relation("OngDonations")
   messages        Message[]
-  user            User         @relation("OngUser", fields: [userId], references: [id], onDelete: Cascade)
+  documents       OngDocument[]
+  user            User          @relation("OngUser", fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("ongs")
+}
+
+model OngDocument {
+  id           String   @id @default(uuid())
+  filename     String
+  originalName String
+  mimetype     String
+  size         Int
+  data         Bytes
+  createdAt    DateTime @default(now())
+  ongId        String
+  ong          Ong      @relation(fields: [ongId], references: [id], onDelete: Cascade)
+
+  @@map("ong_documents")
 }
 
 model Donation {
