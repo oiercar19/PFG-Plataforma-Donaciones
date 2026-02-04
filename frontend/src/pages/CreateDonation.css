@@ -1,6 +1,6 @@
 .create-donation-container {
     flex: 1;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, rgb(15, 118, 110) 0%, rgb(96, 165, 250) 100%);
     padding: 2rem 2rem 0 2rem;
     display: flex;
     flex-direction: column;
