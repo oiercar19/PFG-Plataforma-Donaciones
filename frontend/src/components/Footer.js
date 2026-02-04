@@ -9,7 +9,10 @@ const Footer = () => {
         <footer className="app-footer">
             <Container className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
                 <div className="footer-brand">Plataforma de Donaciones</div>
-                <div className="footer-meta"> {year} Todos los derechos reservados.</div>
+                <div>
+                    <div className="footer-meta">{year} Todos los derechos reservados.</div>
+                    <div className="footer-warning">Primera versión en pruebas — pueden haber errores.</div>
+                </div>
             </Container>
         </footer>
     );
