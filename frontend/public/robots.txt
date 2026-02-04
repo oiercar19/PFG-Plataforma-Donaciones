@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pfg-plataforma-donaciones.vercel.app/sitemap.xml
