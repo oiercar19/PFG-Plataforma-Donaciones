@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const prisma = require('./config/database');
 
 // Importar rutas
 const authRoutes = require('./routes/authRoutes');
@@ -49,6 +50,22 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Ruta de health check con BD
+app.get('/health/db', async (req, res) => {
+    try {
+        await prisma.$queryRaw`SELECT 1`;
+        res.json({ status: 'OK', db: 'OK', timestamp: new Date().toISOString() });
+    } catch (err) {
+        console.error('DB health check error:', err);
+        res.status(500).json({
+            status: 'ERROR',
+            db: 'ERROR',
+            message: 'Database connection failed',
+            timestamp: new Date().toISOString(),
+        });
+    }
+});
+
 // Ruta raíz
 app.get('/', (req, res) => {
     res.json({
@@ -71,3 +88,5 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
+
+
