@@ -21,6 +21,7 @@ import AvailableDonationDetails from './pages/AvailableDonationDetails';
 import MyOng from './pages/MyOng';
 import Chats from './pages/Chats';
 import ChatDetails from './pages/ChatDetails';
+import DonationsMap from './pages/DonationsMap';
 
 function App() {
     return (
@@ -171,11 +172,8 @@ function App() {
                             <Route
                                 path="/map"
                                 element={
-                                    <ProtectedRoute>
-                                        <div className="container" style={{ marginTop: '50px' }}>
-                                            <h1>Mapa Interactivo</h1>
-                                            <p>Mapa en construcción...</p>
-                                        </div>
+                                    <ProtectedRoute requireOng={true}>
+                                        <DonationsMap />
                                     </ProtectedRoute>
                                 }
                             />

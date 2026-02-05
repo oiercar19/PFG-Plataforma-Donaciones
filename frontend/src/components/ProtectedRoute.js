@@ -2,8 +2,8 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-export const ProtectedRoute = ({ children, requireAdmin = false }) => {
-    const { isAuthenticated, isAdmin, loading } = useAuth();
+export const ProtectedRoute = ({ children, requireAdmin = false, requireOng = false }) => {
+    const { isAuthenticated, isAdmin, isOng, loading } = useAuth();
 
     if (loading) {
         return (
@@ -19,6 +19,10 @@ export const ProtectedRoute = ({ children, requireAdmin = false }) => {
     }
 
     if (requireAdmin && !isAdmin()) {
+        return <Navigate to="/" replace />;
+    }
+
+    if (requireOng && !isOng()) {
         return <Navigate to="/" replace />;
     }
 
