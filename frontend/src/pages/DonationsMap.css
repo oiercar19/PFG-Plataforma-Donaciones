@@ -1,0 +1,63 @@
+.donations-map-page {
+    background: #f8fafc;
+}
+
+.donations-map-page .map-wrapper {
+    height: 70vh;
+    min-height: 420px;
+    width: 100%;
+}
+
+.donations-map-page .map-wrapper .leaflet-container {
+    height: 100%;
+    width: 100%;
+    border-radius: 0.75rem;
+}
+
+.donations-map-page .map-popup {
+    min-width: 180px;
+}
+
+.donation-marker {
+    width: 22px;
+    height: 22px;
+    position: relative;
+    display: grid;
+    place-items: center;
+    border-radius: 4px;
+    background: #d8a15f;
+    border: 1.5px solid #7a4a21;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+}
+
+.donation-marker-box {
+    width: 12px;
+    height: 10px;
+    background: #f3e2c7;
+    border: 1.5px solid #7a4a21;
+    border-radius: 2px;
+    position: relative;
+}
+
+.donation-marker-box::before,
+.donation-marker-box::after {
+    content: '';
+    position: absolute;
+    background: #7a4a21;
+}
+
+.donation-marker-box::before {
+    width: 1.5px;
+    height: 100%;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+}
+
+.donation-marker-box::after {
+    width: 100%;
+    height: 1.5px;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
