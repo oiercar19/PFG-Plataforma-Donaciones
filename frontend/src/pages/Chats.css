@@ -55,6 +55,21 @@
     flex-wrap: wrap;
 }
 
+.chat-last-message {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.chat-last-sender {
+    color: #0f766e;
+    font-weight: 700;
+}
+
 @media (max-width: 576px) {
     .chat-card-body {
         flex-direction: column;

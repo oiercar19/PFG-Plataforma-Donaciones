@@ -61,6 +61,7 @@ function Chats() {
         const lastPreview = lastMessage ? (lastMessage.content.length > 80 ? `${lastMessage.content.substring(0, 80)}...` : lastMessage.content) : null;
         const donationBadge = getDonationStatusBadge(conversation.donation?.status);
         const previewImage = conversation.donation?.images?.[0];
+        const lastSenderName = lastMessage?.sender?.id === user?.id ? 'Tú' : (lastMessage?.sender?.username || 'Usuario');
 
         let counterpart = 'Usuario';
         let ongInfo = null;
@@ -120,9 +121,15 @@ function Chats() {
                     )}
 
                     <div className="chat-meta mt-3">
-                        <div className="text-muted small">
+                        <div className="chat-last-message">
                             <i className="bi bi-chat-dots me-1"></i>
-                            {lastPreview || 'Sin mensajes aún'}
+                            {lastPreview ? (
+                                <>
+                                    <span className="chat-last-sender">{lastSenderName}:</span> {lastPreview}
+                                </>
+                            ) : (
+                                'Sin mensajes aún'
+                            )}
                         </div>
                         <div className="text-muted small">
                             <i className="bi bi-clock me-1"></i>
