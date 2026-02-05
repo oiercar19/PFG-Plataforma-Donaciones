@@ -2,6 +2,8 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
+    width: 100%;
+    overflow: hidden;
 }
 
 .donation-details-card h2 {
@@ -134,6 +136,20 @@
     font-weight: 600;
 }
 
+.donation-actions .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.donation-actions .btn {
+    white-space: normal;
+}
+
+.donation-details-card .row {
+    --bs-gutter-x: 1.5rem;
+}
+
 @media (max-width: 992px) {
     .main-image-container {
         height: 300px;
@@ -223,6 +239,10 @@
         align-items: flex-start;
         gap: 0.75rem;
     }
+
+    .donation-details-card .row {
+        --bs-gutter-x: 1rem;
+    }
 }
 
 @media (max-width: 576px) {
@@ -237,5 +257,9 @@
 
     .donor-full {
         padding: 1rem;
+    }
+
+    .donation-details-card .card-body {
+        padding: 1rem !important;
     }
 }
