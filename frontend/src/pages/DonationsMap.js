@@ -20,6 +20,7 @@ const DEFAULT_ZOOM = 6;
 
 const DonationsMap = () => {
     const { isDonor } = useAuth();
+    const includeOwn = isDonor();
     const [donations, setDonations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -29,7 +30,7 @@ const DonationsMap = () => {
         const loadDonations = async () => {
             try {
                 const response = await donationAPI.getAvailableDonations({
-                    includeOwn: isDonor() ? 'true' : 'false',
+                    includeOwn: includeOwn ? 'true' : 'false',
                 });
                 const data = response.data?.donations || [];
                 if (isMounted) {
@@ -50,7 +51,7 @@ const DonationsMap = () => {
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [includeOwn]);
 
     const donationsWithCoords = useMemo(
         () =>
