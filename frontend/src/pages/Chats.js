@@ -60,6 +60,7 @@ function Chats() {
         const lastMessage = conversation.messages?.[0];
         const lastPreview = lastMessage ? (lastMessage.content.length > 80 ? `${lastMessage.content.substring(0, 80)}...` : lastMessage.content) : null;
         const donationBadge = getDonationStatusBadge(conversation.donation?.status);
+        const previewImage = conversation.donation?.images?.[0];
 
         let counterpart = 'Usuario';
         let ongInfo = null;
@@ -72,7 +73,17 @@ function Chats() {
 
         return (
             <Card key={conversation.id} className="chat-card shadow-sm">
-                <Card.Body>
+                <Card.Body className="chat-card-body">
+                    <div className="chat-preview">
+                        {previewImage ? (
+                            <img src={previewImage} alt={conversation.donation?.title || 'Donación'} />
+                        ) : (
+                            <div className="chat-preview-fallback">
+                                <i className="bi bi-image"></i>
+                            </div>
+                        )}
+                    </div>
+                    <div className="chat-content">
                     <div className="d-flex justify-content-between align-items-start gap-2">
                         <div>
                             <h5 className="mb-1">{conversation.donation?.title || 'Donación'}</h5>
@@ -128,6 +139,7 @@ function Chats() {
                             <i className="bi bi-chat-left-text me-1"></i>
                             Ver chat
                         </Button>
+                    </div>
                     </div>
                 </Card.Body>
             </Card>

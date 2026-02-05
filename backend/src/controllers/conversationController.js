@@ -38,6 +38,7 @@ async function listConversations(req, res) {
                         title: true,
                         category: true,
                         status: true,
+                        images: true,
                         donor: { select: { id: true, username: true } },
                         assignedOngId: true,
                         assignedOng: { select: { id: true, name: true, contactEmail: true, contactPhone: true } },
