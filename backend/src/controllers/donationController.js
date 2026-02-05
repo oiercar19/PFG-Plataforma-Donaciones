@@ -1,4 +1,5 @@
 const prisma = require('../config/database');
+const { geocodeAddress } = require('../services/geocoding');
 
 /**
  * Crear una donación
@@ -14,6 +15,25 @@ async function createDonation(req, res) {
             return res.status(400).json({ error: 'Faltan campos obligatorios' });
         }
 
+        let parsedLatitude = latitude ? parseFloat(latitude) : null;
+        let parsedLongitude = longitude ? parseFloat(longitude) : null;
+
+        if ((parsedLatitude === null || Number.isNaN(parsedLatitude)) || (parsedLongitude === null || Number.isNaN(parsedLongitude))) {
+            parsedLatitude = null;
+            parsedLongitude = null;
+        }
+
+        if (parsedLatitude === null || parsedLongitude === null) {
+            try {
+                const geo = await geocodeAddress({ address, city, province, postalCode });
+                if (geo) {
+                    parsedLatitude = geo.latitude;
+                    parsedLongitude = geo.longitude;
+                }
+            } catch (geoError) {
+                console.warn('No se pudo geocodificar la dirección:', geoError.message);
+            }
+        }
         // Crear la donación
         const donation = await prisma.donation.create({
             data: {
@@ -25,8 +45,8 @@ async function createDonation(req, res) {
                 address: address || null,
                 postalCode: postalCode || null,
                 province: province || null,
-                latitude: latitude ? parseFloat(latitude) : null,
-                longitude: longitude ? parseFloat(longitude) : null,
+                latitude: parsedLatitude,
+                longitude: parsedLongitude,
                 images: images || [],
                 donorId: userId,
                 status: 'DISPONIBLE',
@@ -61,16 +81,19 @@ async function createDonation(req, res) {
 async function getAvailableDonations(req, res) {
     try {
         const userId = req.user.id;
-        const { category, location, search } = req.query;
+        const { category, location, search, includeOwn } = req.query;
 
         // Construir filtros
         const where = {
             status: 'DISPONIBLE',
-            // Excluir las donaciones propias
-            donorId: {
-                not: userId,
-            },
         };
+
+        if (includeOwn !== 'true' && includeOwn !== '1') {
+            // Excluir las donaciones propias
+            where.donorId = {
+                not: userId,
+            };
+        }
 
         if (category) {
             where.category = category;
@@ -573,3 +596,5 @@ module.exports = {
     markAsDelivered,
     getMyAssignedDonations,
 };
+
+
