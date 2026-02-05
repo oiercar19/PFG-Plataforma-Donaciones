@@ -295,7 +295,7 @@ function CreateDonation() {
                     <div className="form-section">
                         <h2>Imágenes (opcional)</h2>
                         <p className="section-description">
-                            Sube hasta 5 imágenes desde tu PC (máximo 5MB cada una)
+                            Sube hasta 5 imágenes (máximo 5MB cada una)
                         </p>
 
                         {/* Mostrar imágenes seleccionadas */}
@@ -321,10 +321,10 @@ function CreateDonation() {
 
                         {/* Input para añadir imágenes */}
                         {images.length < 5 && (
-                            <div className="form-group">
+                            <div>
                                 <label htmlFor="images" className="file-input-label">
                                     <i className="bi bi-cloud-upload"></i>
-                                    Seleccionar imágenes desde el PC
+                                    Seleccionar imágenes desde el dispositivo
                                 </label>
                                 <input
                                     type="file"

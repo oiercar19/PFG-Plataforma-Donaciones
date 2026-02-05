@@ -130,7 +130,7 @@ function EditDonation() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Validaciones
         if (!formData.title.trim()) {
             setError('El título es obligatorio');
@@ -235,7 +235,7 @@ function EditDonation() {
 
                 <div className="form-section">
                     <h2>Información Básica</h2>
-                    
+
                     <div className="form-group">
                         <label htmlFor="title">
                             Título <span className="required">*</span>
@@ -308,7 +308,7 @@ function EditDonation() {
 
                 <div className="form-section">
                     <h2>Ubicación</h2>
-                    
+
                     <div className="form-row">
                         <div className="form-group">
                             <label htmlFor="city">
@@ -369,9 +369,9 @@ function EditDonation() {
                 <div className="form-section">
                     <h2>Imágenes</h2>
                     <p className="section-description">
-                        Sube imágenes desde tu PC (máximo 5 imágenes en total, máximo 5MB cada una)
+                        Sube imágenes desde tu dispositivo (máximo 5 imágenes en total, máximo 5MB cada una)
                     </p>
-                    
+
                     {/* Imágenes existentes */}
                     {existingImages.length > 0 && (
                         <div className="existing-images-section">
@@ -421,7 +421,7 @@ function EditDonation() {
                         <div className="form-group">
                             <label htmlFor="images" className="file-input-label">
                                 <i className="bi bi-cloud-upload"></i>
-                                Seleccionar imágenes desde el PC
+                                Seleccionar imágenes desde el dispositivo
                             </label>
                             <input
                                 type="file"

@@ -326,23 +326,6 @@ const Register = () => {
 
                                                 <Col xs={12} className="mb-3">
                                                     <Form.Group>
-                                                        <Form.Label>Documento acreditativo (URL)</Form.Label>
-                                                        <Form.Control
-                                                            type="url"
-                                                            name="documentUrl"
-                                                            value={formData.documentUrl}
-                                                            onChange={handleChange}
-                                                            placeholder="https://ejemplo.com/documento.pdf"
-                                                            size="lg"
-                                                        />
-                                                        <Form.Text className="text-muted">
-                                                            Enlace a documento que acredite tu entidad (opcional)
-                                                        </Form.Text>
-                                                    </Form.Group>
-                                                </Col>
-
-                                                <Col xs={12} className="mb-3">
-                                                    <Form.Group>
                                                         <Form.Label>Documentos acreditativos *</Form.Label>
                                                         <Form.Control
                                                             type="file"
