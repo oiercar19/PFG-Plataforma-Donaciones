@@ -72,9 +72,9 @@ const Home = () => {
                                         <div className="alert alert-warning d-flex align-items-center">
                                             <i className="bi bi-clock-history me-2 fs-4"></i>
                                             <div>
-                                                <strong>Tu ONG está pendiente de validación por un administrador.</strong>
+                                                <strong>Tu cuenta está siendo revisada.</strong>
                                                 <br />
-                                                Te notificaremos cuando sea aprobada. Mientras tanto, no puedes buscar ni solicitar donaciones.
+                                                Tu ONG está pendiente de validación por un administrador de la aplicación, por lo que tendrás un uso reducido de la plataforma hasta que sea aprobada.
                                             </div>
                                         </div>
                                     )}
