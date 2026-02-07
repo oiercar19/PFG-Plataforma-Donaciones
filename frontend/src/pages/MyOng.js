@@ -1,9 +1,21 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI, donationAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import { Container, Row, Col, Card, Button, Alert, Spinner, Badge, Modal, Form } from 'react-bootstrap';
 import './MyOng.css';
+
+const pinMarkerIcon = L.divIcon({
+    className: '',
+    html: '<div style="width:18px;height:18px;border-radius:50%;background:#dc2626;border:2px solid #7f1d1d;box-shadow:0 4px 10px rgba(15,23,42,0.25);"></div>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 18],
+    popupAnchor: [0, -12],
+});
+
+const DEFAULT_CENTER = [40.4168, -3.7038];
 
 const MyOng = () => {
     const [ongData, setOngData] = useState(null);
@@ -12,10 +24,17 @@ const MyOng = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [showEditModal, setShowEditModal] = useState(false);
+    const [manualCoords, setManualCoords] = useState(null);
+    const [showMapPicker, setShowMapPicker] = useState(false);
+    const mapRef = useRef(null);
+    const pendingCenterRef = useRef(null);
+    const lastLocationRef = useRef({ city: null, address: null, postalCode: null, initialized: false });
     const [editFormData, setEditFormData] = useState({
         name: '',
         description: '',
-        location: '',
+        city: '',
+        address: '',
+        postalCode: '',
         contactEmail: '',
         contactPhone: '',
     });
@@ -46,10 +65,18 @@ const MyOng = () => {
             setEditFormData({
                 name: ongResponse.data.ong.name,
                 description: ongResponse.data.ong.description || '',
-                location: ongResponse.data.ong.location,
+                city: ongResponse.data.ong.city || ongResponse.data.ong.location || '',
+                address: ongResponse.data.ong.address || '',
+                postalCode: ongResponse.data.ong.postalCode || '',
                 contactEmail: ongResponse.data.ong.contactEmail,
                 contactPhone: ongResponse.data.ong.contactPhone,
             });
+
+            if (typeof ongResponse.data.ong.latitude === 'number' && typeof ongResponse.data.ong.longitude === 'number') {
+                setManualCoords([ongResponse.data.ong.latitude, ongResponse.data.ong.longitude]);
+            } else {
+                setManualCoords(null);
+            }
         } catch (err) {
             console.error('Error completo:', err);
             console.error('Respuesta del error:', err.response);
@@ -75,11 +102,112 @@ const MyOng = () => {
         loadData();
     }, [isOng, loadData]);
 
+    useEffect(() => {
+        const current = {
+            city: editFormData.city,
+            address: editFormData.address,
+            postalCode: editFormData.postalCode,
+        };
+        const last = lastLocationRef.current;
+
+        if (last.initialized) {
+            if (current.city !== last.city || current.address !== last.address || current.postalCode !== last.postalCode) {
+                setManualCoords(null);
+            }
+        }
+
+        lastLocationRef.current = { ...current, initialized: true };
+    }, [editFormData.city, editFormData.address, editFormData.postalCode]);
+
+    useEffect(() => {
+        if (showMapPicker && mapRef.current) {
+            setTimeout(() => {
+                mapRef.current.invalidateSize();
+            }, 0);
+        }
+    }, [showMapPicker]);
+
+    useEffect(() => {
+        if (showMapPicker && manualCoords) {
+            if (mapRef.current) {
+                mapRef.current.flyTo(manualCoords, Math.max(mapRef.current.getZoom(), 15));
+            } else {
+                pendingCenterRef.current = manualCoords;
+            }
+        }
+    }, [manualCoords, showMapPicker]);
+
     const handleEditChange = (e) => {
         setEditFormData({
             ...editFormData,
             [e.target.name]: e.target.value,
         });
+    };
+
+    const LocationPicker = ({ position, onChange }) => {
+        const map = useMap();
+        useMapEvents({
+            click: (event) => {
+                const coords = [event.latlng.lat, event.latlng.lng];
+                onChange(coords);
+                map.flyTo(coords, Math.max(map.getZoom(), 15));
+            },
+        });
+
+        if (!position) return null;
+        return <Marker position={position} icon={pinMarkerIcon} />;
+    };
+
+    const buildGeoQuery = () => {
+        const parts = [editFormData.address, editFormData.postalCode, editFormData.city].filter(Boolean);
+        return parts.join(', ');
+    };
+
+    const geocodeWithNominatim = async (query) => {
+        if (!query) return null;
+        try {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (Array.isArray(data) && data.length > 0) {
+                return {
+                    latitude: parseFloat(data[0].lat),
+                    longitude: parseFloat(data[0].lon),
+                };
+            }
+            return null;
+        } catch (geoError) {
+            return null;
+        }
+    };
+
+    const geocodeWithOpenMeteo = async (query) => {
+        if (!query) return null;
+        try {
+            const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=es&format=json`;
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (data && Array.isArray(data.results) && data.results.length > 0) {
+                return {
+                    latitude: parseFloat(data.results[0].latitude),
+                    longitude: parseFloat(data.results[0].longitude),
+                };
+            }
+            return null;
+        } catch (geoError) {
+            return null;
+        }
+    };
+
+    const geocodeOng = async () => {
+        const query = buildGeoQuery();
+        if (!query) return null;
+        const nominatim = await geocodeWithNominatim(query);
+        if (nominatim) return nominatim;
+        const fallbackQuery = editFormData.city || query;
+        return geocodeWithOpenMeteo(fallbackQuery);
     };
 
     const handleEditSubmit = async (e) => {
@@ -89,7 +217,34 @@ const MyOng = () => {
             setError('');
             setSuccess('');
 
-            await authAPI.updateMyOngData(editFormData);
+            const geo = await geocodeOng();
+            const fallbackCoords = manualCoords
+                ? { latitude: manualCoords[0], longitude: manualCoords[1] }
+                : null;
+            const payload = { ...editFormData };
+
+            if (geo) {
+                if (Number.isFinite(geo.latitude)) {
+                    payload.latitude = geo.latitude;
+                }
+                if (Number.isFinite(geo.longitude)) {
+                    payload.longitude = geo.longitude;
+                }
+            } else if (fallbackCoords) {
+                if (Number.isFinite(fallbackCoords.latitude)) {
+                    payload.latitude = fallbackCoords.latitude;
+                }
+                if (Number.isFinite(fallbackCoords.longitude)) {
+                    payload.longitude = fallbackCoords.longitude;
+                }
+            } else {
+                setShowMapPicker(true);
+                setError('No pudimos localizar la dirección. Marca la ubicación en el mapa.');
+                setEditLoading(false);
+                return;
+            }
+
+            await authAPI.updateMyOngData(payload);
             setSuccess('Información actualizada exitosamente');
             setShowEditModal(false);
             await loadData();
@@ -225,7 +380,10 @@ const MyOng = () => {
                                 </div>
                                 <Button
                                     variant="outline-primary"
-                                    onClick={() => setShowEditModal(true)}
+                                    onClick={() => {
+                                        setShowEditModal(true);
+                                        setShowMapPicker(false);
+                                    }}
                                     disabled={ongData.status !== 'APPROVED'}
                                 >
                                     <i className="bi bi-pencil me-2"></i>
@@ -269,7 +427,12 @@ const MyOng = () => {
                                 <Col md={6} className="mb-3">
                                     <div className="detail-item">
                                         <i className="bi bi-geo-alt me-2 text-primary"></i>
-                                        <strong>Ubicación:</strong> <span>{ongData.location}</span>
+                                        <strong>Ubicación:</strong>{' '}
+                                        <span>
+                                            {[ongData.address, ongData.postalCode, ongData.city || ongData.location]
+                                                .filter(Boolean)
+                                                .join(', ')}
+                                        </span>
                                     </div>
                                 </Col>
                                 <Col md={6} className="mb-3">
@@ -468,7 +631,14 @@ const MyOng = () => {
             )}
 
             {/* Modal de Edición */}
-            <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg">
+            <Modal
+                show={showEditModal}
+                onHide={() => {
+                    setShowEditModal(false);
+                    setShowMapPicker(false);
+                }}
+                size="lg"
+            >
                 <Modal.Header closeButton>
                     <Modal.Title>
                         <i className="bi bi-pencil me-2"></i>
@@ -500,17 +670,119 @@ const MyOng = () => {
                             />
                         </Form.Group>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Ubicación *</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="location"
-                                value={editFormData.location}
-                                onChange={handleEditChange}
-                                required
-                                placeholder="Ciudad, Provincia"
-                            />
-                        </Form.Group>
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Población / Ciudad *</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="city"
+                                        value={editFormData.city}
+                                        onChange={handleEditChange}
+                                        required
+                                        placeholder="Ciudad"
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Calle / Dirección</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="address"
+                                        value={editFormData.address}
+                                        onChange={handleEditChange}
+                                        placeholder="Calle, número, piso..."
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Código Postal</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="postalCode"
+                                        value={editFormData.postalCode}
+                                        onChange={handleEditChange}
+                                        placeholder="08001"
+                                        maxLength="5"
+                                        pattern="[0-9]{5}"
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        <Button
+                            type="button"
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={async () => {
+                                setShowMapPicker(true);
+                                const geo = await geocodeOng();
+                                if (geo && Number.isFinite(geo.latitude) && Number.isFinite(geo.longitude)) {
+                                    const coords = [geo.latitude, geo.longitude];
+                                    setManualCoords(coords);
+                                    if (mapRef.current) {
+                                        mapRef.current.flyTo(coords, Math.max(mapRef.current.getZoom(), 15));
+                                    } else {
+                                        pendingCenterRef.current = coords;
+                                    }
+                                } else if (manualCoords) {
+                                    if (mapRef.current) {
+                                        mapRef.current.flyTo(manualCoords, Math.max(mapRef.current.getZoom(), 15));
+                                    } else {
+                                        pendingCenterRef.current = manualCoords;
+                                    }
+                                }
+                            }}
+                            className="mb-3"
+                        >
+                            Ubicar en mapa
+                        </Button>
+
+                        {showMapPicker && (
+                            <div className="mb-3">
+                                <Form.Label>Ubicación en el mapa *</Form.Label>
+                                <div style={{ height: '240px', borderRadius: '12px', overflow: 'hidden' }}>
+                                    <MapContainer
+                                        center={manualCoords || DEFAULT_CENTER}
+                                        zoom={manualCoords ? 15 : 6}
+                                        scrollWheelZoom={false}
+                                        style={{ height: '100%', width: '100%' }}
+                                        whenCreated={(mapInstance) => {
+                                            mapRef.current = mapInstance;
+                                            setTimeout(() => {
+                                                mapInstance.invalidateSize();
+                                                if (pendingCenterRef.current) {
+                                                    mapInstance.flyTo(pendingCenterRef.current, Math.max(mapInstance.getZoom(), 15));
+                                                    pendingCenterRef.current = null;
+                                                }
+                                            }, 0);
+                                        }}
+                                    >
+                                        <TileLayer
+                                            attribution='&copy; OpenStreetMap contributors'
+                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        />
+                                        <LocationPicker
+                                            position={manualCoords}
+                                            onChange={(coords) => {
+                                                setManualCoords(coords);
+                                                setError('');
+                                            }}
+                                        />
+                                    </MapContainer>
+                                </div>
+                                <Form.Text className="text-muted">
+                                    Haz clic en el mapa para colocar el pin si no se localiza automáticamente.
+                                </Form.Text>
+                                {manualCoords && (
+                                    <div className="text-muted small mt-1">
+                                        Lat: {manualCoords[0].toFixed(6)} &middot; Lng: {manualCoords[1].toFixed(6)}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         <Row>
                             <Col md={6}>
@@ -573,3 +845,4 @@ const MyOng = () => {
 };
 
 export default MyOng;
+

@@ -1,7 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import { Container, Row, Col, Card, Form, Button, Alert, ButtonGroup } from 'react-bootstrap';
+
+const pinMarkerIcon = L.divIcon({
+    className: '',
+    html: '<div style="width:18px;height:18px;border-radius:50%;background:#dc2626;border:2px solid #7f1d1d;box-shadow:0 4px 10px rgba(15,23,42,0.25);"></div>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 18],
+    popupAnchor: [0, -12],
+});
+
+const DEFAULT_CENTER = [40.4168, -3.7038];
 
 const Register = () => {
     const [isOng, setIsOng] = useState(false);
@@ -16,17 +28,46 @@ const Register = () => {
         cif: '',
         type: 'ONG',
         description: '',
-        ongLocation: '',
+        ongCity: '',
+        ongAddress: '',
+        ongPostalCode: '',
         contactEmail: '',
         contactPhone: '',
         documentUrl: '',
     });
+    const [manualCoords, setManualCoords] = useState(null);
+    const [showMapPicker, setShowMapPicker] = useState(false);
+    const mapRef = useRef(null);
+    const pendingCenterRef = useRef(null);
     const [documents, setDocuments] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const { registerDonor, registerOng } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!isOng) return;
+        setManualCoords(null);
+    }, [formData.ongAddress, formData.ongPostalCode, formData.ongCity, isOng]);
+
+    useEffect(() => {
+        if (showMapPicker && mapRef.current) {
+            setTimeout(() => {
+                mapRef.current.invalidateSize();
+            }, 0);
+        }
+    }, [showMapPicker]);
+
+    useEffect(() => {
+        if (showMapPicker && manualCoords) {
+            if (mapRef.current) {
+                mapRef.current.flyTo(manualCoords, Math.max(mapRef.current.getZoom(), 15));
+            } else {
+                pendingCenterRef.current = manualCoords;
+            }
+        }
+    }, [manualCoords, showMapPicker]);
 
     const handleChange = (e) => {
         setFormData({
@@ -45,6 +86,72 @@ const Register = () => {
         setDocuments(files);
     };
 
+    const LocationPicker = ({ position, onChange }) => {
+        const map = useMap();
+        useMapEvents({
+            click: (event) => {
+                const coords = [event.latlng.lat, event.latlng.lng];
+                onChange(coords);
+                map.flyTo(coords, Math.max(map.getZoom(), 15));
+            },
+        });
+
+        if (!position) return null;
+        return <Marker position={position} icon={pinMarkerIcon} />;
+    };
+
+    const buildGeoQuery = () => {
+        const parts = [formData.ongAddress, formData.ongPostalCode, formData.ongCity].filter(Boolean);
+        return parts.join(', ');
+    };
+
+    const geocodeWithNominatim = async (query) => {
+        if (!query) return null;
+        try {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (Array.isArray(data) && data.length > 0) {
+                return {
+                    latitude: parseFloat(data[0].lat),
+                    longitude: parseFloat(data[0].lon),
+                };
+            }
+            return null;
+        } catch (geoError) {
+            return null;
+        }
+    };
+
+    const geocodeWithOpenMeteo = async (query) => {
+        if (!query) return null;
+        try {
+            const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=es&format=json`;
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (data && Array.isArray(data.results) && data.results.length > 0) {
+                return {
+                    latitude: parseFloat(data.results[0].latitude),
+                    longitude: parseFloat(data.results[0].longitude),
+                };
+            }
+            return null;
+        } catch (geoError) {
+            return null;
+        }
+    };
+
+    const geocodeOng = async () => {
+        const query = buildGeoQuery();
+        if (!query) return null;
+        const nominatim = await geocodeWithNominatim(query);
+        if (nominatim) return nominatim;
+        const fallbackQuery = formData.ongCity || query;
+        return geocodeWithOpenMeteo(fallbackQuery);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -54,6 +161,19 @@ const Register = () => {
             let result;
 
             if (isOng) {
+                const geo = await geocodeOng();
+                const manual = manualCoords
+                    ? { latitude: manualCoords[0], longitude: manualCoords[1] }
+                    : null;
+                const coords = geo || manual;
+
+                if (!coords) {
+                    setShowMapPicker(true);
+                    setError('No pudimos localizar la dirección. Marca la ubicación en el mapa.');
+                    setLoading(false);
+                    return;
+                }
+
                 // Registro de ONG con archivos
                 const ongFormData = new FormData();
 
@@ -61,7 +181,22 @@ const Register = () => {
                 ongFormData.append('username', formData.username);
                 ongFormData.append('email', formData.email);
                 ongFormData.append('password', formData.password);
-                ongFormData.append('location', formData.ongLocation);
+                ongFormData.append('location', formData.ongCity);
+                ongFormData.append('city', formData.ongCity);
+                if (formData.ongAddress) {
+                    ongFormData.append('address', formData.ongAddress);
+                }
+                if (formData.ongPostalCode) {
+                    ongFormData.append('postalCode', formData.ongPostalCode);
+                }
+                if (coords) {
+                    if (Number.isFinite(coords.latitude)) {
+                        ongFormData.append('latitude', coords.latitude);
+                    }
+                    if (Number.isFinite(coords.longitude)) {
+                        ongFormData.append('longitude', coords.longitude);
+                    }
+                }
                 ongFormData.append('name', formData.name);
                 ongFormData.append('cif', formData.cif);
                 ongFormData.append('type', formData.type);
@@ -124,7 +259,11 @@ const Register = () => {
                                 <ButtonGroup className="w-100 mb-4" size="lg">
                                     <Button
                                         variant={!isOng ? 'primary' : 'outline-primary'}
-                                        onClick={() => setIsOng(false)}
+                                        onClick={() => {
+                                            setIsOng(false);
+                                            setShowMapPicker(false);
+                                            setManualCoords(null);
+                                        }}
                                         className="py-3"
                                     >
                                         <i className="bi bi-person me-2"></i>
@@ -132,7 +271,11 @@ const Register = () => {
                                     </Button>
                                     <Button
                                         variant={isOng ? 'primary' : 'outline-primary'}
-                                        onClick={() => setIsOng(true)}
+                                        onClick={() => {
+                                            setIsOng(true);
+                                            setShowMapPicker(false);
+                                            setManualCoords(null);
+                                        }}
                                         className="py-3"
                                     >
                                         <i className="bi bi-building me-2"></i>
@@ -267,11 +410,11 @@ const Register = () => {
 
                                                 <Col md={6} className="mb-3">
                                                     <Form.Group>
-                                                        <Form.Label>Ubicación de la entidad *</Form.Label>
+                                                        <Form.Label>Población / Ciudad de la entidad *</Form.Label>
                                                         <Form.Control
                                                             type="text"
-                                                            name="ongLocation"
-                                                            value={formData.ongLocation}
+                                                            name="ongCity"
+                                                            value={formData.ongCity}
                                                             onChange={handleChange}
                                                             required
                                                             placeholder="Barcelona"
@@ -279,6 +422,110 @@ const Register = () => {
                                                         />
                                                     </Form.Group>
                                                 </Col>
+
+                                                <Col md={6} className="mb-3">
+                                                    <Form.Group>
+                                                        <Form.Label>Calle / Dirección</Form.Label>
+                                                        <Form.Control
+                                                            type="text"
+                                                            name="ongAddress"
+                                                            value={formData.ongAddress}
+                                                            onChange={handleChange}
+                                                            placeholder="Calle, número, piso..."
+                                                            size="lg"
+                                                        />
+                                                    </Form.Group>
+                                                </Col>
+
+                                                <Col md={6} className="mb-3">
+                                                    <Form.Group>
+                                                        <Form.Label>Código Postal</Form.Label>
+                                                        <Form.Control
+                                                            type="text"
+                                                            name="ongPostalCode"
+                                                            value={formData.ongPostalCode}
+                                                            onChange={handleChange}
+                                                            placeholder="08001"
+                                                            size="lg"
+                                                            maxLength="5"
+                                                            pattern="[0-9]{5}"
+                                                        />
+                                                    </Form.Group>
+                                                </Col>
+
+                                                <Col xs={12} className="mb-3">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline-secondary"
+                                                        size="sm"
+                                                        onClick={async () => {
+                                                            setShowMapPicker(true);
+                                                            const geo = await geocodeOng();
+                                                            if (geo && Number.isFinite(geo.latitude) && Number.isFinite(geo.longitude)) {
+                                                                const coords = [geo.latitude, geo.longitude];
+                                                                setManualCoords(coords);
+                                                                if (mapRef.current) {
+                                                                    mapRef.current.flyTo(coords, Math.max(mapRef.current.getZoom(), 15));
+                                                                } else {
+                                                                    pendingCenterRef.current = coords;
+                                                                }
+                                                            } else if (manualCoords) {
+                                                                if (mapRef.current) {
+                                                                    mapRef.current.flyTo(manualCoords, Math.max(mapRef.current.getZoom(), 15));
+                                                                } else {
+                                                                    pendingCenterRef.current = manualCoords;
+                                                                }
+                                                            }
+                                                        }}
+                                                    >
+                                                        Ubicar en mapa
+                                                    </Button>
+
+                                                    {showMapPicker && (
+                                                        <div className="mt-3">
+                                                            <Form.Label>Ubicación en el mapa *</Form.Label>
+                                                            <div style={{ height: '240px', borderRadius: '12px', overflow: 'hidden' }}>
+                                                                <MapContainer
+                                                                    center={manualCoords || DEFAULT_CENTER}
+                                                                    zoom={manualCoords ? 15 : 6}
+                                                                    scrollWheelZoom={false}
+                                                                    style={{ height: '100%', width: '100%' }}
+                                                                    whenCreated={(mapInstance) => {
+                                                                        mapRef.current = mapInstance;
+                                                                        setTimeout(() => {
+                                                                            mapInstance.invalidateSize();
+                                                                            if (pendingCenterRef.current) {
+                                                                                mapInstance.flyTo(pendingCenterRef.current, Math.max(mapInstance.getZoom(), 15));
+                                                                                pendingCenterRef.current = null;
+                                                                            }
+                                                                        }, 0);
+                                                                    }}
+                                                                >
+                                                                    <TileLayer
+                                                                        attribution='&copy; OpenStreetMap contributors'
+                                                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                                    />
+                                                                    <LocationPicker
+                                                                        position={manualCoords}
+                                                                        onChange={(coords) => {
+                                                                            setManualCoords(coords);
+                                                                            setError('');
+                                                                        }}
+                                                                    />
+                                                                </MapContainer>
+                                                            </div>
+                                                            <Form.Text className="text-muted">
+                                                                Haz clic en el mapa para colocar el pin si no se localiza automáticamente.
+                                                            </Form.Text>
+                                                            {manualCoords && (
+                                                                <div className="text-muted small mt-1">
+                                                                    Lat: {manualCoords[0].toFixed(6)} &middot; Lng: {manualCoords[1].toFixed(6)}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </Col>
+
 
                                                 <Col xs={12} className="mb-3">
                                                     <Form.Group>
@@ -386,3 +633,6 @@ const Register = () => {
 };
 
 export default Register;
+
+
+
