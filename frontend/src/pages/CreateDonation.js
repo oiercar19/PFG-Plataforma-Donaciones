@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { donationAPI } from '../services/api';
+import { compressMultipleImages } from '../utils/imageCompression';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import './CreateDonation.css';
@@ -149,7 +150,7 @@ function CreateDonation() {
         return <Marker position={position} icon={pinMarkerIcon} />;
     };
 
-    const handleImageChange = (e) => {
+    const handleImageChange = async (e) => {
         const files = Array.from(e.target.files);
         const totalImages = images.length + files.length;
 
@@ -170,25 +171,27 @@ function CreateDonation() {
             }
         }
 
-        // Convertir archivos a base64
-        const promises = files.map(file => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    resolve({
-                        file,
-                        preview: reader.result,
-                        base64: reader.result
-                    });
-                };
-                reader.readAsDataURL(file);
-            });
-        });
-
-        Promise.all(promises).then(results => {
-            setImages(prev => [...prev, ...results]);
+        try {
             setError('');
-        });
+            setLoading(true);
+
+            // Comprimir y convertir imágenes
+            const compressedResults = await compressMultipleImages(files);
+
+            setImages(prev => [...prev, ...compressedResults]);
+
+            // Mostrar información de compresión
+            const totalOriginal = compressedResults.reduce((acc, r) => acc + r.originalSize, 0);
+            const totalCompressed = compressedResults.reduce((acc, r) => acc + r.compressedSize, 0);
+            const savedMB = ((totalOriginal - totalCompressed) / (1024 * 1024)).toFixed(2);
+
+            console.log(`Imágenes comprimidas: ${savedMB}MB ahorrados`);
+        } catch (err) {
+            setError('Error al procesar las imágenes. Intenta con otra imagen.');
+            console.error('Error al comprimir:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const removeImage = (index) => {
