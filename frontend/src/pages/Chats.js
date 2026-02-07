@@ -71,6 +71,9 @@ function Chats() {
             counterpart = conversation.ong?.name || conversation.donation?.assignedOng?.name || 'ONG';
             ongInfo = conversation.ong || conversation.donation?.assignedOng;
         }
+        const ongAddress = ongInfo
+            ? [ongInfo.address, ongInfo.postalCode, ongInfo.city || ongInfo.location].filter(Boolean).join(', ')
+            : '';
 
         return (
             <Card key={conversation.id} className="chat-card shadow-sm">
@@ -103,8 +106,14 @@ function Chats() {
                         </div>
                     </div>
 
-                    {ongInfo && (ongInfo.contactEmail || ongInfo.contactPhone) && (
+                    {ongInfo && (ongInfo.contactEmail || ongInfo.contactPhone || ongAddress) && (
                         <div className="chat-ong-contact mt-2">
+                            {ongAddress && (
+                                <div className="text-muted small">
+                                    <i className="bi bi-geo-alt me-1"></i>
+                                    {ongAddress}
+                                </div>
+                            )}
                             {ongInfo.contactEmail && (
                                 <div className="text-muted small">
                                     <i className="bi bi-envelope me-1"></i>

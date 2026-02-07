@@ -111,6 +111,9 @@ function ChatDetails() {
     const donation = conversation.donation;
     const ongInfo = conversation.ong || donation?.assignedOng || null;
     const isClosed = conversation.status === 'CLOSED';
+    const ongAddress = ongInfo
+        ? [ongInfo.address, ongInfo.postalCode, ongInfo.city || ongInfo.location].filter(Boolean).join(', ')
+        : '';
 
     return (
         <Container className="py-4">
@@ -160,6 +163,12 @@ function ChatDetails() {
                                     <div className="text-muted small">
                                         <i className="bi bi-envelope me-1"></i>
                                         {ongInfo.contactEmail}
+                                    </div>
+                                )}
+                                {ongAddress && (
+                                    <div className="text-muted small">
+                                        <i className="bi bi-geo-alt me-1"></i>
+                                        {ongAddress}
                                     </div>
                                 )}
                                 {ongInfo.contactPhone && (
