@@ -160,8 +160,8 @@ function CreateDonation() {
 
         // Validar cada archivo
         for (const file of files) {
-            if (file.size > 10 * 1024 * 1024) {
-                setError('Cada imagen debe pesar menos de 10MB');
+            if (file.size > 15 * 1024 * 1024) {
+                setError('Cada imagen debe pesar menos de 15MB');
                 return;
             }
             if (!file.type.startsWith('image/')) {
@@ -470,7 +470,7 @@ function CreateDonation() {
                     <div className="form-section">
                         <h2>Imágenes (opcional)</h2>
                         <p className="section-description">
-                            Sube hasta 5 imágenes (máximo 10MB cada una)
+                            Sube hasta 5 imágenes (máximo 15MB cada una)
                         </p>
 
                         {/* Mostrar imágenes seleccionadas */}
@@ -510,7 +510,7 @@ function CreateDonation() {
                                     className="file-input-hidden"
                                 />
                                 <small className="form-help">
-                                    Puedes seleccionar múltiples imágenes. Máximo 10MB por imagen.
+                                    Puedes seleccionar múltiples imágenes. Máximo 15MB por imagen.
                                 </small>
                             </div>
                         )}
