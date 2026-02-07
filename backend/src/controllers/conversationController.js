@@ -41,10 +41,10 @@ async function listConversations(req, res) {
                         images: true,
                         donor: { select: { id: true, username: true } },
                         assignedOngId: true,
-                        assignedOng: { select: { id: true, name: true, contactEmail: true, contactPhone: true } },
+                        assignedOng: { select: { id: true, name: true, contactEmail: true, contactPhone: true, city: true, address: true, postalCode: true, location: true } },
                     },
                 },
-                ong: { select: { id: true, name: true, contactEmail: true, contactPhone: true } },
+                ong: { select: { id: true, name: true, contactEmail: true, contactPhone: true, city: true, address: true, postalCode: true, location: true } },
                 messages: {
                     orderBy: { createdAt: 'desc' },
                     take: 1,
@@ -97,10 +97,10 @@ async function getConversationById(req, res) {
                         donorId: true,
                         donor: { select: { id: true, username: true } },
                         assignedOngId: true,
-                        assignedOng: { select: { id: true, name: true, contactEmail: true, contactPhone: true } },
+                        assignedOng: { select: { id: true, name: true, contactEmail: true, contactPhone: true, city: true, address: true, postalCode: true, location: true } },
                     },
                 },
-                ong: { select: { id: true, name: true, contactEmail: true, contactPhone: true } },
+                ong: { select: { id: true, name: true, contactEmail: true, contactPhone: true, city: true, address: true, postalCode: true, location: true } },
                 messages: {
                     orderBy: { createdAt: 'asc' },
                     include: {
@@ -175,10 +175,10 @@ async function getConversationByDonation(req, res) {
                         donorId: true,
                         donor: { select: { id: true, username: true } },
                         assignedOngId: true,
-                        assignedOng: { select: { id: true, name: true, contactEmail: true, contactPhone: true } },
+                        assignedOng: { select: { id: true, name: true, contactEmail: true, contactPhone: true, city: true, address: true, postalCode: true, location: true } },
                     },
                 },
-                ong: { select: { id: true, name: true, contactEmail: true, contactPhone: true } },
+                ong: { select: { id: true, name: true, contactEmail: true, contactPhone: true, city: true, address: true, postalCode: true, location: true } },
                 messages: {
                     orderBy: { createdAt: 'asc' },
                     include: {
