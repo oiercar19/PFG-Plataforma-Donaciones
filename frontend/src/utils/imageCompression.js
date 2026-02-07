@@ -26,9 +26,9 @@ export const compressAndEncodeImage = async (file, compressionLevel = 'extreme')
                 initialQuality: 0.7,
             },
             extreme: {
-                maxSizeMB: 0.3, // 300KB
+                maxSizeMB: 0.2, // 300KB
                 maxWidthOrHeight: 1024,
-                initialQuality: 0.6,
+                initialQuality: 0.5,
             }
         };
 
