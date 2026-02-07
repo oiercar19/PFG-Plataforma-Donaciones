@@ -1,8 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { donationAPI } from '../services/api';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import './CreateDonation.css';
+
+const pinMarkerIcon = L.divIcon({
+    className: '',
+    html: '<div style="width:18px;height:18px;border-radius:50%;background:#dc2626;border:2px solid #7f1d1d;box-shadow:0 4px 10px rgba(15,23,42,0.25);"></div>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 18],
+    popupAnchor: [0, -12],
+});
+
+const DEFAULT_CENTER = [40.4168, -3.7038];
 
 function CreateDonation() {
     const { user } = useAuth();
@@ -19,6 +31,10 @@ function CreateDonation() {
     });
 
     const [images, setImages] = useState([]); // Array de imágenes con preview y base64
+    const [manualCoords, setManualCoords] = useState(null);
+    const [showMapPicker, setShowMapPicker] = useState(false);
+    const mapRef = useRef(null);
+    const pendingCenterRef = useRef(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -43,6 +59,94 @@ function CreateDonation() {
         });
         setError('');
         setSuccess('');
+    };
+
+    useEffect(() => {
+        setManualCoords(null);
+    }, [formData.address, formData.postalCode, formData.city]);
+
+    useEffect(() => {
+        if (showMapPicker && mapRef.current) {
+            setTimeout(() => {
+                mapRef.current.invalidateSize();
+            }, 0);
+        }
+    }, [showMapPicker]);
+
+    useEffect(() => {
+        if (showMapPicker && manualCoords) {
+            if (mapRef.current) {
+                mapRef.current.flyTo(manualCoords, Math.max(mapRef.current.getZoom(), 15));
+            } else {
+                pendingCenterRef.current = manualCoords;
+            }
+        }
+    }, [manualCoords, showMapPicker]);
+
+    const buildGeoQuery = () => {
+        const parts = [formData.address, formData.postalCode, formData.city].filter(Boolean);
+        return parts.join(', ');
+    };
+
+    const geocodeWithNominatim = async (query) => {
+        if (!query) return null;
+        try {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (Array.isArray(data) && data.length > 0) {
+                return {
+                    latitude: parseFloat(data[0].lat),
+                    longitude: parseFloat(data[0].lon),
+                };
+            }
+            return null;
+        } catch (geoError) {
+            return null;
+        }
+    };
+
+    const geocodeWithOpenMeteo = async (query) => {
+        if (!query) return null;
+        try {
+            const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=es&format=json`;
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (data && Array.isArray(data.results) && data.results.length > 0) {
+                return {
+                    latitude: parseFloat(data.results[0].latitude),
+                    longitude: parseFloat(data.results[0].longitude),
+                };
+            }
+            return null;
+        } catch (geoError) {
+            return null;
+        }
+    };
+
+    const geocodeDonation = async () => {
+        const query = buildGeoQuery();
+        if (!query) return null;
+        const nominatim = await geocodeWithNominatim(query);
+        if (nominatim) return nominatim;
+        const fallbackQuery = formData.city || query;
+        return geocodeWithOpenMeteo(fallbackQuery);
+    };
+
+    const LocationPicker = ({ position, onChange }) => {
+        const map = useMap();
+        useMapEvents({
+            click: (event) => {
+                const coords = [event.latlng.lat, event.latlng.lng];
+                onChange(coords);
+                map.flyTo(coords, Math.max(map.getZoom(), 15));
+            },
+        });
+
+        if (!position) return null;
+        return <Marker position={position} icon={pinMarkerIcon} />;
     };
 
     const handleImageChange = (e) => {
@@ -108,6 +212,10 @@ function CreateDonation() {
             // Preparar datos con imágenes en base64
             const donationData = { ...formData };
             donationData.images = images.map(img => img.base64);
+            if (manualCoords) {
+                donationData.latitude = manualCoords[0];
+                donationData.longitude = manualCoords[1];
+            }
 
             await donationAPI.createDonation(donationData);
 
@@ -289,6 +397,73 @@ function CreateDonation() {
                         <div className="info-box">
                             <i className="bi bi-info-circle"></i>
                             <span>Esta información ayudará a localizar mejor la donación y mostrarla en el mapa</span>
+                        </div>
+
+                        <div className="form-group" style={{ marginTop: '16px' }}>
+                            <button
+                                type="button"
+                                className="btn-cancel"
+                                onClick={async () => {
+                                    setShowMapPicker(true);
+                                    const geo = await geocodeDonation();
+                                    if (geo && Number.isFinite(geo.latitude) && Number.isFinite(geo.longitude)) {
+                                        const coords = [geo.latitude, geo.longitude];
+                                        setManualCoords(coords);
+                                        if (mapRef.current) {
+                                            mapRef.current.flyTo(coords, Math.max(mapRef.current.getZoom(), 15));
+                                        } else {
+                                            pendingCenterRef.current = coords;
+                                        }
+                                    } else if (manualCoords) {
+                                        if (mapRef.current) {
+                                            mapRef.current.flyTo(manualCoords, Math.max(mapRef.current.getZoom(), 15));
+                                        } else {
+                                            pendingCenterRef.current = manualCoords;
+                                        }
+                                    }
+                                }}
+                            >
+                                Ubicar en mapa
+                            </button>
+
+                            {showMapPicker && (
+                                <div className="mt-3">
+                                    <div style={{ height: '240px', borderRadius: '12px', overflow: 'hidden' }}>
+                                        <MapContainer
+                                            center={manualCoords || DEFAULT_CENTER}
+                                            zoom={manualCoords ? 15 : 6}
+                                            scrollWheelZoom={false}
+                                            style={{ height: '100%', width: '100%' }}
+                                            whenCreated={(mapInstance) => {
+                                                mapRef.current = mapInstance;
+                                                setTimeout(() => {
+                                                    mapInstance.invalidateSize();
+                                                    if (pendingCenterRef.current) {
+                                                        mapInstance.flyTo(pendingCenterRef.current, Math.max(mapInstance.getZoom(), 15));
+                                                        pendingCenterRef.current = null;
+                                                    }
+                                                }, 0);
+                                            }}
+                                        >
+                                            <TileLayer
+                                                attribution='&copy; OpenStreetMap contributors'
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                            />
+                                            <LocationPicker
+                                                position={manualCoords}
+                                                onChange={(coords) => {
+                                                    setManualCoords(coords);
+                                                }}
+                                            />
+                                        </MapContainer>
+                                    </div>
+                                    {manualCoords && (
+                                        <small className="form-help">
+                                            Lat: {manualCoords[0].toFixed(6)} &middot; Lng: {manualCoords[1].toFixed(6)}
+                                        </small>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 
