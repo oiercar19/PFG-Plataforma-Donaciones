@@ -31,6 +31,10 @@ model Ong {
   type            OngType
   description     String?
   location        String
+  city            String?
+  address         String?
+  postalCode      String?
+  province        String?
   latitude        Float?
   longitude       Float?
   contactEmail    String
