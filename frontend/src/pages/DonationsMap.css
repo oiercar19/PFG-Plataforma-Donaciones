@@ -61,3 +61,21 @@
     top: 50%;
     transform: translateY(-50%);
 }
+
+.ong-marker {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #0f766e;
+    border: 2px solid #0f172a;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
+    display: grid;
+    place-items: center;
+}
+
+.ong-marker-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d1fae5;
+}
