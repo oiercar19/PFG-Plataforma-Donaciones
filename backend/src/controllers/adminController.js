@@ -16,6 +16,11 @@ async function getPendingOngs(req, res) {
                         location: true,
                     },
                 },
+                documents: {
+                    select: {
+                        id: true,
+                    },
+                },
             },
             orderBy: { createdAt: 'desc' },
         });

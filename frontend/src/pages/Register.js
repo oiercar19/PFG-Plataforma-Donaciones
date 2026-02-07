@@ -583,7 +583,7 @@ const Register = () => {
                                                             required
                                                         />
                                                         <Form.Text className="text-muted">
-                                                            Sube documentos que acrediten tu entidad (CIF, estatutos, certificados). Máximo 5 archivos de 5MB cada uno.
+                                                            Sube documentos que acrediten tu entidad (CIF, estatutos, certificados). Máximo 5 archivos de 10MB cada uno.
                                                             Formatos: PDF, JPG, PNG, DOC, DOCX
                                                         </Form.Text>
                                                         {documents.length > 0 && (

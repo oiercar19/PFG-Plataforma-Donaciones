@@ -198,8 +198,8 @@ function EditDonation() {
 
         // Validar cada archivo
         for (const file of files) {
-            if (file.size > 5 * 1024 * 1024) {
-                setError('Cada imagen debe pesar menos de 5MB');
+            if (file.size > 10 * 1024 * 1024) {
+                setError('Cada imagen debe pesar menos de 10MB');
                 return;
             }
             if (!file.type.startsWith('image/')) {
@@ -549,7 +549,7 @@ function EditDonation() {
                 <div className="form-section">
                     <h2>Imágenes</h2>
                     <p className="section-description">
-                        Sube imágenes desde tu dispositivo (máximo 5 imágenes en total, máximo 5MB cada una)
+                        Sube imágenes desde tu dispositivo (máximo 5 imágenes en total, máximo 10MB cada una)
                     </p>
 
                     {/* Imágenes existentes */}
@@ -612,7 +612,7 @@ function EditDonation() {
                                 className="file-input-hidden"
                             />
                             <small className="form-help">
-                                Puedes seleccionar múltiples imágenes. Máximo 5MB por imagen.
+                                Puedes seleccionar múltiples imágenes. Máximo 10MB por imagen.
                             </small>
                         </div>
                     )}
