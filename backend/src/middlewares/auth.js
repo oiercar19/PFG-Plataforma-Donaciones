@@ -1,9 +1,10 @@
 const { verifyToken } = require('../utils/jwt');
+const prisma = require('../config/database');
 
 /**
  * Middleware para verificar JWT
  */
-function authenticate(req, res, next) {
+async function authenticate(req, res, next) {
     try {
         const authHeader = req.headers.authorization;
 
@@ -18,9 +19,26 @@ function authenticate(req, res, next) {
             return res.status(401).json({ error: 'Token inválido o expirado' });
         }
 
-        req.user = decoded;
+        // Verificar que el usuario existe en la base de datos
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.id },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                role: true,
+                location: true,
+            },
+        });
+
+        if (!user) {
+            return res.status(401).json({ error: 'Usuario no encontrado. Por favor, inicia sesión nuevamente' });
+        }
+
+        req.user = user;
         next();
     } catch (error) {
+        console.error('Error de autenticación:', error);
         return res.status(401).json({ error: 'Error de autenticación' });
     }
 }

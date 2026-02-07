@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
@@ -13,6 +13,15 @@ const Login = () => {
 
     const { login } = useAuth();
     const navigate = useNavigate();
+
+    // Verificar si hay un mensaje de error de autenticación guardado
+    useEffect(() => {
+        const authError = localStorage.getItem('authError');
+        if (authError) {
+            setError(authError);
+            localStorage.removeItem('authError');
+        }
+    }, []);
 
     const handleChange = (e) => {
         setFormData({

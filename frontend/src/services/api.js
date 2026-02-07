@@ -28,8 +28,15 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
+            // Guardar mensaje de error si es específico sobre usuario no encontrado
+            const errorMessage = error.response?.data?.error || 'Tu sesión ha expirado';
+
             localStorage.removeItem('token');
             localStorage.removeItem('user');
+
+            // Almacenar mensaje para mostrarlo en la página de login
+            localStorage.setItem('authError', errorMessage);
+
             window.location.href = '/login';
         }
         return Promise.reject(error);
