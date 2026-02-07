@@ -1,6 +1,7 @@
 const prisma = require('../config/database');
 const { hashPassword, comparePassword } = require('../utils/password');
 const { generateToken } = require('../utils/jwt');
+const { geocodeAddress } = require('../services/geocoding');
 
 /**
  * Registro de usuario donante
@@ -78,6 +79,10 @@ async function registerOng(req, res) {
             type,
             description,
             location,
+            city,
+            address,
+            postalCode,
+            province,
             latitude,
             longitude,
             contactEmail,
@@ -85,8 +90,11 @@ async function registerOng(req, res) {
             documentUrl,
         } = req.body;
 
+        const ongCity = city || location;
+        const locationLabel = location || city;
+
         // Validaciones básicas
-        if (!username || !email || !password || !name || !cif || !type || !location || !contactEmail || !contactPhone) {
+        if (!username || !email || !password || !name || !cif || !type || !ongCity || !contactEmail || !contactPhone) {
             return res.status(400).json({ error: 'Faltan campos obligatorios' });
         }
 
@@ -113,6 +121,26 @@ async function registerOng(req, res) {
         // Hash de contraseña
         const hashedPassword = await hashPassword(password);
 
+        let parsedLatitude = latitude ? parseFloat(latitude) : null;
+        let parsedLongitude = longitude ? parseFloat(longitude) : null;
+
+        if ((parsedLatitude === null || Number.isNaN(parsedLatitude)) || (parsedLongitude === null || Number.isNaN(parsedLongitude))) {
+            parsedLatitude = null;
+            parsedLongitude = null;
+        }
+
+        if (parsedLatitude === null || parsedLongitude === null) {
+            try {
+                const geo = await geocodeAddress({ address, city: ongCity, province, postalCode });
+                if (geo) {
+                    parsedLatitude = geo.latitude;
+                    parsedLongitude = geo.longitude;
+                }
+            } catch (geoError) {
+                console.warn('No se pudo geocodificar la dirección de la ONG:', geoError.message);
+            }
+        }
+
         // Crear usuario y ONG en una transacción
         const result = await prisma.$transaction(async (tx) => {
             // Crear usuario
@@ -133,9 +161,13 @@ async function registerOng(req, res) {
                     cif,
                     type,
                     description,
-                    location,
-                    latitude,
-                    longitude,
+                    location: locationLabel || ongCity,
+                    city: ongCity,
+                    address: address || null,
+                    postalCode: postalCode || null,
+                    province: province || null,
+                    latitude: parsedLatitude,
+                    longitude: parsedLongitude,
                     contactEmail,
                     contactPhone,
                     documentUrl,
@@ -162,6 +194,33 @@ async function registerOng(req, res) {
 
             return { user, ong };
         });
+
+        // Reintentar geocodificar si quedÃ³ sin coordenadas tras el registro
+        if (
+            (result.ong.latitude === null || result.ong.latitude === undefined || Number.isNaN(result.ong.latitude)) ||
+            (result.ong.longitude === null || result.ong.longitude === undefined || Number.isNaN(result.ong.longitude))
+        ) {
+            try {
+                const geo = await geocodeAddress({
+                    address: result.ong.address,
+                    city: result.ong.city || result.ong.location,
+                    province: result.ong.province,
+                    postalCode: result.ong.postalCode,
+                });
+
+                if (geo) {
+                    await prisma.ong.update({
+                        where: { id: result.ong.id },
+                        data: {
+                            latitude: geo.latitude,
+                            longitude: geo.longitude,
+                        },
+                    });
+                }
+            } catch (geoError) {
+                // Mantener datos actuales si no se puede geocodificar
+            }
+        }
 
         // Generar token
         const token = generateToken(result.user);
@@ -395,8 +454,35 @@ async function getMyOngData(req, res) {
             return res.status(404).json({ error: 'No se encontró información de la ONG' });
         }
 
-        console.log('✅ ONG encontrada:', user.ong.name);
-        res.json({ ong: user.ong });
+        let ongData = user.ong;
+
+        if (
+            (ongData.latitude === null || ongData.latitude === undefined || Number.isNaN(ongData.latitude)) ||
+            (ongData.longitude === null || ongData.longitude === undefined || Number.isNaN(ongData.longitude))
+        ) {
+            try {
+                const geo = await geocodeAddress({
+                    address: ongData.address,
+                    city: ongData.city || ongData.location,
+                    province: ongData.province,
+                    postalCode: ongData.postalCode,
+                });
+                if (geo) {
+                    ongData = await prisma.ong.update({
+                        where: { id: ongData.id },
+                        data: {
+                            latitude: geo.latitude,
+                            longitude: geo.longitude,
+                        },
+                    });
+                }
+            } catch (geoError) {
+                // Mantener datos actuales si no se puede geocodificar
+            }
+        }
+
+        console.log('✅ ONG encontrada:', ongData.name);
+        res.json({ ong: ongData });
     } catch (error) {
         console.error('💥 Error al obtener datos de ONG:', error);
         console.error('💥 Stack trace:', error.stack);
@@ -414,6 +500,10 @@ async function updateMyOngData(req, res) {
             name,
             description,
             location,
+            city,
+            address,
+            postalCode,
+            province,
             latitude,
             longitude,
             contactEmail,
@@ -439,16 +529,48 @@ async function updateMyOngData(req, res) {
         if (name) updateData.name = name;
         if (description !== undefined) updateData.description = description;
         if (location) updateData.location = location;
+        if (city) {
+            updateData.city = city;
+            if (!location) {
+                updateData.location = city;
+            }
+        }
+        if (address !== undefined) updateData.address = address || null;
+        if (postalCode !== undefined) updateData.postalCode = postalCode || null;
+        if (province !== undefined) updateData.province = province || null;
         if (latitude !== undefined) updateData.latitude = latitude ? parseFloat(latitude) : null;
         if (longitude !== undefined) updateData.longitude = longitude ? parseFloat(longitude) : null;
         if (contactEmail) updateData.contactEmail = contactEmail;
         if (contactPhone) updateData.contactPhone = contactPhone;
 
         // Actualizar ONG
-        const updatedOng = await prisma.ong.update({
+        let updatedOng = await prisma.ong.update({
             where: { id: user.ong.id },
             data: updateData,
         });
+
+        if ((updatedOng.latitude === null || updatedOng.latitude === undefined || Number.isNaN(updatedOng.latitude)) ||
+            (updatedOng.longitude === null || updatedOng.longitude === undefined || Number.isNaN(updatedOng.longitude))) {
+            try {
+                const geo = await geocodeAddress({
+                    address: updatedOng.address,
+                    city: updatedOng.city || updatedOng.location,
+                    province: updatedOng.province,
+                    postalCode: updatedOng.postalCode,
+                });
+                if (geo) {
+                    updatedOng = await prisma.ong.update({
+                        where: { id: updatedOng.id },
+                        data: {
+                            latitude: geo.latitude,
+                            longitude: geo.longitude,
+                        },
+                    });
+                }
+            } catch (geoError) {
+                // Mantener datos actuales si no se puede geocodificar
+            }
+        }
 
         res.json({
             message: 'Información de ONG actualizada exitosamente',
@@ -460,6 +582,35 @@ async function updateMyOngData(req, res) {
     }
 }
 
+/**
+ * Obtener ONGs registradas (uso pÃºblico)
+ */
+async function getPublicOngs(req, res) {
+    try {
+        const ongs = await prisma.ong.findMany({
+            where: { status: { in: ['APPROVED', 'PENDING'] } },
+            select: {
+                id: true,
+                name: true,
+                status: true,
+                city: true,
+                address: true,
+                postalCode: true,
+                province: true,
+                location: true,
+                latitude: true,
+                longitude: true,
+            },
+            orderBy: { name: 'asc' },
+        });
+
+        res.json({ ongs });
+    } catch (error) {
+        console.error('Error al obtener ONGs registradas:', error);
+        res.status(500).json({ error: 'Error al obtener ONGs' });
+    }
+}
+
 module.exports = {
     registerDonor,
     registerOng,
@@ -468,4 +619,8 @@ module.exports = {
     updateProfile,
     getMyOngData,
     updateMyOngData,
+    getPublicOngs,
 };
+
+
+

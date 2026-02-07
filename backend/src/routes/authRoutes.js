@@ -8,6 +8,7 @@ const upload = require('../config/multer');
 router.post('/register/donor', authController.registerDonor);
 router.post('/register/ong', upload.array('documents', 5), authController.registerOng);
 router.post('/login', authController.login);
+router.get('/ongs', authController.getPublicOngs);
 
 // Rutas protegidas
 router.get('/profile', authenticate, authController.getProfile);
