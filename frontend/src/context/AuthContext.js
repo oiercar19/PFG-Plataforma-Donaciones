@@ -71,13 +71,14 @@ export const AuthProvider = ({ children }) => {
     const registerOng = async (data) => {
         try {
             const response = await authAPI.registerOng(data);
-            const { user: userData, token } = response.data;
+            const { user: userData, token, ong } = response.data;
+            const userInfo = ong ? { ...userData, ong } : userData;
 
             // Guardar en localStorage
             localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(userData));
+            localStorage.setItem('user', JSON.stringify(userInfo));
 
-            setUser(userData);
+            setUser(userInfo);
             return { success: true, message: response.data.message };
         } catch (error) {
             const message = error.response?.data?.error || 'Error al registrar ONG';
