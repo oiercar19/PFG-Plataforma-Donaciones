@@ -22,6 +22,10 @@ import MyOng from './pages/MyOng';
 import Chats from './pages/Chats';
 import ChatDetails from './pages/ChatDetails';
 import DonationsMap from './pages/DonationsMap';
+import Needs from './pages/Needs';
+import NeedDetails from './pages/NeedDetails';
+import MyNeeds from './pages/MyNeeds';
+import CreateNeed from './pages/CreateNeed';
 
 function App() {
     return (
@@ -138,6 +142,42 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AvailableDonationDetails />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/needs"
+                                element={
+                                    <ProtectedRoute>
+                                        <Needs />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/needs/:id"
+                                element={
+                                    <ProtectedRoute>
+                                        <NeedDetails />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/my-needs"
+                                element={
+                                    <ProtectedRoute requireOng={true}>
+                                        <MyNeeds />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/create-need"
+                                element={
+                                    <ProtectedRoute requireOng={true}>
+                                        <CreateNeed />
                                     </ProtectedRoute>
                                 }
                             />

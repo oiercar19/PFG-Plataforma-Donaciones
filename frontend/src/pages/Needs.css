@@ -1,0 +1,19 @@
+.need-card {
+    border-radius: 14px;
+}
+
+.need-card .card-title {
+    font-weight: 700;
+}
+
+.need-info {
+    display: grid;
+    gap: 6px;
+}
+
+.need-info .info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}

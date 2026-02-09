@@ -1,0 +1,8 @@
+.needs-list {
+    display: grid;
+    gap: 16px;
+}
+
+.needs-list .need-card {
+    border-radius: 14px;
+}
