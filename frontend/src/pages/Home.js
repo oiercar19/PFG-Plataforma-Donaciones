@@ -19,7 +19,7 @@ const Home = () => {
                     <Row className="align-items-center">
                         <Col lg={8} className="mx-auto text-center">
                             <h1 className="display-3 fw-bold mb-4">
-                                <i className="bi bi-heart-fill me-3" style={{ color: '#ff6b9d' }}></i>
+                                <img src="/solidaridad.png" alt="Solidaridad" className="me-3" style={{ height: '1.2em' }} />
                                 Conectando Solidaridad
                             </h1>
                             <p className="lead mb-4" style={{ fontSize: '1.3rem', opacity: 1 }}>
