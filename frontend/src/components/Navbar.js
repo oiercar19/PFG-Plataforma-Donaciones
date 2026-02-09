@@ -68,8 +68,8 @@ const NavigationBar = () => {
     return (
         <Navbar bg="dark" variant="dark" expand="lg" className="shadow-sm" style={{ marginBottom: 0 }}>
             <Container>
-                <Navbar.Brand as={Link} to="/" className="fw-bold fs-4">
-                    <i className="bi bi-heart-fill text-danger me-2"></i>
+                <Navbar.Brand as={Link} to="/" className="fw-bold fs-4 d-flex align-items-center">
+                    <img src="/solidaridad.png" alt="Solidaridad" className="me-2" style={{ height: '1.2em' }} />
                     Plataforma de Donaciones
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -105,6 +105,10 @@ const NavigationBar = () => {
                                             <i className="bi bi-gift me-1"></i>
                                             Mis Donaciones
                                         </Nav.Link>
+                                        <Nav.Link as={Link} to="/needs" className="text-white me-2">
+                                            <i className="bi bi-megaphone me-1"></i>
+                                            Necesidades
+                                        </Nav.Link>
                                         <Nav.Link as={Link} to="/create-donation" className="text-white me-2">
                                             <i className="bi bi-plus-circle me-1"></i>
                                             Nueva Donación
@@ -120,18 +124,39 @@ const NavigationBar = () => {
                                         </Nav.Link>
                                         {user?.ong?.status === 'APPROVED' && (
                                             <>
-                                                <Nav.Link as={Link} to="/donations" className="text-white me-2">
-                                                    <i className="bi bi-gift me-1"></i>
-                                                    Mis Donaciones
-                                                </Nav.Link>
-                                                <Nav.Link as={Link} to="/create-donation" className="text-white me-2">
-                                                    <i className="bi bi-plus-circle me-1"></i>
-                                                    Crear
-                                                </Nav.Link>
-                                                <Nav.Link as={Link} to="/available-donations" className="text-white me-2">
-                                                    <i className="bi bi-search me-1"></i>
-                                                    Buscar
-                                                </Nav.Link>
+                                                <NavDropdown
+                                                    title={
+                                                        <span className="text-white">
+                                                            <i className="bi bi-grid-3x3-gap me-1"></i>
+                                                            Gestion
+                                                        </span>
+                                                    }
+                                                    id="ong-management-dropdown"
+                                                    className="text-white me-2"
+                                                >
+                                                    <NavDropdown.Item as={Link} to="/donations">
+                                                        <i className="bi bi-gift me-2"></i>
+                                                        Mis Donaciones
+                                                    </NavDropdown.Item>
+                                                    <NavDropdown.Item as={Link} to="/create-donation">
+                                                        <i className="bi bi-plus-circle me-2"></i>
+                                                        Crear Donacion
+                                                    </NavDropdown.Item>
+                                                    <NavDropdown.Divider />
+                                                    <NavDropdown.Item as={Link} to="/my-needs">
+                                                        <i className="bi bi-clipboard-heart me-2"></i>
+                                                        Mis Necesidades
+                                                    </NavDropdown.Item>
+                                                    <NavDropdown.Item as={Link} to="/create-need">
+                                                        <i className="bi bi-flag me-2"></i>
+                                                        Publicar Necesidad
+                                                    </NavDropdown.Item>
+                                                    <NavDropdown.Divider />
+                                                    <NavDropdown.Item as={Link} to="/available-donations">
+                                                        <i className="bi bi-search me-2"></i>
+                                                        Buscar Donaciones
+                                                    </NavDropdown.Item>
+                                                </NavDropdown>
                                             </>
                                         )}
                                     </>
