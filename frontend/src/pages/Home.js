@@ -155,7 +155,7 @@ const Home = () => {
                             { icon: 'bi-building-check', title: 'ONGs Validadas', desc: 'Solo organizaciones verificadas pueden acceder a las donaciones.', color: '#11998e' },
                             { icon: 'bi-geo-alt-fill', title: 'Visualización Geográfica', desc: 'Mapa interactivo para encontrar recursos y organizaciones cercanas.', color: '#0ea5e9' },
                             { icon: 'bi-chat-dots-fill', title: 'Chat en Tiempo Real', desc: 'Comunicación directa entre donantes y organizaciones.', color: '#f59e0b' },
-                            { icon: 'bi-bullseye', title: 'Asignación Inteligente', desc: 'Sistema que prioriza urgencia, vulnerabilidad y proximidad.', color: '#ee0979' },
+                            { icon: 'bi-bullseye', title: 'Asignación Inteligente', desc: 'Sistema que prioriza urgencia y proximidad.', color: '#ee0979' },
                             { icon: 'bi-shield-check', title: 'Seguro y Transparente', desc: 'Todas las acciones son trazables y verificables.', color: '#6b7280' }
                         ].map((feature, idx) => (
                             <Col md={6} lg={4} key={idx}>
