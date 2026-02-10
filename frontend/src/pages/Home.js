@@ -2,49 +2,98 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Container, Row, Col, Card, Button, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import './Home.css';
+
+const steps = [
+    {
+        title: 'Publica o solicita recursos',
+        desc: 'Describe lo que ofreces o necesitas y define la disponibilidad.'
+    },
+    {
+        title: 'Validamos y conectamos',
+        desc: 'Las ONGs verificadas acceden a oportunidades reales y cercanas.'
+    },
+    {
+        title: 'Coordina con confianza',
+        desc: 'Chat en tiempo real y seguimiento transparente del proceso.'
+    }
+];
+
+const trustItems = [
+    { icon: 'bi-shield-check', title: 'ONGs verificadas', desc: 'Revisión y validación manual de organizaciones.' },
+    { icon: 'bi-search', title: 'Trazabilidad', desc: 'Historial de donaciones y solicitudes en un solo lugar.' },
+    { icon: 'bi-lock', title: 'Privacidad', desc: 'Tus datos protegidos y comunicaciones seguras.' }
+];
+
+const features = [
+    { icon: 'bi-box-seam', title: 'Publica donaciones', desc: 'Alimentos, ropa, medicinas y más en minutos.', color: '#16a34a' },
+    { icon: 'bi-building-check', title: 'ONGs validadas', desc: 'Solo organizaciones verificadas acceden a recursos.', color: '#0f766e' },
+    { icon: 'bi-geo-alt-fill', title: 'Mapa interactivo', desc: 'Encuentra iniciativas y donaciones cercanas.', color: '#0284c7' },
+    { icon: 'bi-chat-dots-fill', title: 'Chat en tiempo real', desc: 'Coordina entregas sin fricción.', color: '#f59e0b' },
+    { icon: 'bi-bullseye', title: 'Asignación inteligente', desc: 'Priorizamos urgencia, vulnerabilidad y proximidad.', color: '#db2777' },
+    { icon: 'bi-clipboard-data', title: 'Seguimiento claro', desc: 'Todo queda registrado para una gestión transparente.', color: '#6b7280' }
+];
 
 const Home = () => {
     const { user, isAuthenticated } = useAuth();
 
     return (
-        <div>
+        <div className="home-page">
             {/* Hero Section */}
-            <div className="text-white py-5" style={{
-                background: 'linear-gradient(135deg, #0f766e 0%, #60a5fa 100%)',
-                minHeight: '450px',
-                display: 'flex',
-                alignItems: 'center'
-            }}>
-                <Container>
-                    <Row className="align-items-center">
-                        <Col lg={8} className="mx-auto text-center">
-                            <h1 className="display-3 fw-bold mb-4">
-                                <img src="/solidaridad.png" alt="Solidaridad" className="me-3" style={{ height: '1.2em' }} />
-                                Conectando Solidaridad
+            <section className="home-hero">
+                <Container className="home-hero-inner">
+                    <Row className="align-items-center g-5">
+                        <Col lg={7}>
+                            <div className="home-hero-kicker">Solidaridad local, impacto real</div>
+                            <h1 className="home-hero-title">
+                                <img src="/solidaridad.png" alt="Solidaridad" className="home-hero-logo" />
+                                Conectamos donantes con organizaciones sociales
                             </h1>
-                            <p className="lead mb-4" style={{ fontSize: '1.3rem', opacity: 1 }}>
-                                Plataforma que conecta donantes con organizaciones sociales para redistribuir recursos donde más se necesitan
+                            <p className="home-hero-subtitle">
+                                Plataforma que une personas y ONGs para redistribuir recursos de forma segura,
+                                transparente y cercana.
                             </p>
 
                             {!isAuthenticated && (
-                                <div className="d-flex gap-3 justify-content-center flex-wrap">
-                                    <Button as={Link} to="/register" variant="light" size="lg" className="px-5 py-3 shadow-lg fw-semibold">
-                                        Comenzar Ahora
+                                <div className="home-hero-actions">
+                                    <Button as={Link} to="/register" variant="light" size="lg" className="home-hero-btn-primary shadow-lg">
+                                        Comenzar ahora
                                     </Button>
-                                    <Button as={Link} to="/login" variant="outline-light" size="lg" className="px-5 py-3 fw-semibold" style={{ borderWidth: '2px' }}>
-                                        Iniciar Sesión
+                                    <Button as={Link} to="/login" variant="outline-light" size="lg" className="home-hero-btn-secondary">
+                                        Iniciar sesión
                                     </Button>
                                 </div>
                             )}
+
+                            <div className="home-hero-highlights">
+                                <div><i className="bi bi-shield-check"></i>ONGs verificadas</div>
+                                <div><i className="bi bi-lightning-charge"></i>Conexión rápida</div>
+                                <div><i className="bi bi-geo-alt"></i>Impacto local</div>
+                            </div>
+                        </Col>
+                        <Col lg={5}>
+                            <div className="home-hero-card">
+                                <span className="home-pill">Gestión confiable</span>
+                                <h3 className="home-hero-card-title">Tu donación, bien acompañada</h3>
+                                <p className="home-hero-card-text">
+                                    Centralizamos la comunicación, la verificación y el seguimiento para que cada aporte
+                                    llegue a quien más lo necesita.
+                                </p>
+                                <ul className="home-hero-card-list">
+                                    <li><i className="bi bi-check-circle-fill"></i>Publicaciones claras y ordenadas</li>
+                                    <li><i className="bi bi-check-circle-fill"></i>Alertas y coordinación en tiempo real</li>
+                                    <li><i className="bi bi-check-circle-fill"></i>Historial completo de movimientos</li>
+                                </ul>
+                            </div>
                         </Col>
                     </Row>
                 </Container>
-            </div>
+            </section>
 
             {/* Welcome Section for Authenticated Users */}
             {isAuthenticated && (
-                <Container className="py-5">
-                    <Card className="shadow-lg border-0">
+                <Container className="home-section">
+                    <Card className="shadow-lg border-0 home-welcome-card">
                         <Card.Body className="p-5">
                             <h2 className="mb-4">
                                 Bienvenido, {user.username}! <i className="bi bi-emoji-smile text-warning"></i>
@@ -61,7 +110,7 @@ const Home = () => {
                                     </ul>
                                     <Button as={Link} to="/create-donation" variant="primary" size="lg">
                                         <i className="bi bi-plus-circle me-2"></i>
-                                        Crear Nueva Donación
+                                        Crear nueva donación
                                     </Button>
                                 </div>
                             )}
@@ -109,11 +158,11 @@ const Home = () => {
                                             <div className="d-flex gap-3 flex-wrap">
                                                 <Button as={Link} to="/create-donation" variant="primary" size="lg">
                                                     <i className="bi bi-plus-circle me-2"></i>
-                                                    Crear Nueva Donación
+                                                    Crear nueva donación
                                                 </Button>
                                                 <Button as={Link} to="/available-donations" variant="success" size="lg">
                                                     <i className="bi bi-search me-2"></i>
-                                                    Buscar Donaciones
+                                                    Buscar donaciones
                                                 </Button>
                                             </div>
                                         </>
@@ -145,26 +194,68 @@ const Home = () => {
                 </Container>
             )}
 
-            {/* Features Section */}
-            <div className="bg-light py-5">
+            {/* Trust Section */}
+            <section className="home-section home-trust">
                 <Container>
-                    <h2 className="text-center mb-5 fw-bold">¿Cómo Funciona?</h2>
                     <Row className="g-4">
-                        {[
-                            { icon: 'bi-box-seam', title: 'Publica Donaciones', desc: 'Los donantes publican recursos disponibles: alimentos, ropa, medicinas, etc.', color: '#667eea' },
-                            { icon: 'bi-building-check', title: 'ONGs Validadas', desc: 'Solo organizaciones verificadas pueden acceder a las donaciones.', color: '#11998e' },
-                            { icon: 'bi-geo-alt-fill', title: 'Visualización Geográfica', desc: 'Mapa interactivo para encontrar recursos y organizaciones cercanas.', color: '#0ea5e9' },
-                            { icon: 'bi-chat-dots-fill', title: 'Chat en Tiempo Real', desc: 'Comunicación directa entre donantes y organizaciones.', color: '#f59e0b' },
-                            { icon: 'bi-bullseye', title: 'Asignación Inteligente', desc: 'Sistema que prioriza urgencia y proximidad.', color: '#ee0979' },
-                            { icon: 'bi-shield-check', title: 'Seguro y Transparente', desc: 'Todas las acciones son trazables y verificables.', color: '#6b7280' }
-                        ].map((feature, idx) => (
+                        {trustItems.map((item, idx) => (
+                            <Col md={4} key={idx}>
+                                <div className="home-trust-card">
+                                    <div className="home-trust-icon">
+                                        <i className={`bi ${item.icon}`}></i>
+                                    </div>
+                                    <div>
+                                        <h5>{item.title}</h5>
+                                        <p className="text-muted mb-0">{item.desc}</p>
+                                    </div>
+                                </div>
+                            </Col>
+                        ))}
+                    </Row>
+                </Container>
+            </section>
+
+            {/* Steps Section */}
+            <section className="home-section">
+                <Container>
+                    <div className="home-section-header">
+                        <h2 className="home-section-title">¿Cómo funciona?</h2>
+                        <p className="home-section-subtitle">
+                            Un flujo simple que respalda cada donación y solicitud con claridad y seguimiento.
+                        </p>
+                    </div>
+                    <Row className="g-4">
+                        {steps.map((step, idx) => (
+                            <Col md={4} key={idx}>
+                                <div className="home-step-card">
+                                    <div className="home-step-number">0{idx + 1}</div>
+                                    <h5>{step.title}</h5>
+                                    <p className="text-muted mb-0">{step.desc}</p>
+                                </div>
+                            </Col>
+                        ))}
+                    </Row>
+                </Container>
+            </section>
+
+            {/* Features Section */}
+            <section className="home-section home-features">
+                <Container>
+                    <div className="home-section-header">
+                        <h2 className="home-section-title">Funcionalidades clave</h2>
+                        <p className="home-section-subtitle">
+                            Herramientas pensadas para coordinar recursos de forma profesional y cercana.
+                        </p>
+                    </div>
+                    <Row className="g-4">
+                        {features.map((feature, idx) => (
                             <Col md={6} lg={4} key={idx}>
-                                <Card className="h-100 border-0 shadow-sm hover-card">
-                                    <Card.Body className="text-center p-4">
-                                        <div className="mb-3" style={{ color: feature.color }}>
-                                            <i className={`bi ${feature.icon}`} style={{ fontSize: '3rem' }}></i>
+                                <Card className="h-100 border-0 home-feature-card">
+                                    <Card.Body className="p-4">
+                                        <div className="home-feature-icon" style={{ color: feature.color }}>
+                                            <i className={`bi ${feature.icon}`}></i>
                                         </div>
-                                        <h5 className="fw-bold mb-3">{feature.title}</h5>
+                                        <h5 className="fw-bold mb-2">{feature.title}</h5>
                                         <p className="text-muted mb-0">{feature.desc}</p>
                                     </Card.Body>
                                 </Card>
@@ -172,25 +263,20 @@ const Home = () => {
                         ))}
                     </Row>
                 </Container>
-            </div>
+            </section>
 
             {/* CTA Section */}
             {!isAuthenticated && (
-                <div className="py-5 text-center text-white" style={{
-                    background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-                    minHeight: '300px',
-                    display: 'flex',
-                    alignItems: 'center'
-                }}>
-                    <Container>
-                        <h2 className="fw-bold mb-3" style={{ fontSize: '2.5rem' }}>¿Listo para Hacer la Diferencia?</h2>
-                        <p className="lead mb-4" style={{ fontSize: '1.2rem', opacity: 0.95 }}>Únete a nuestra comunidad de donantes y organizaciones</p>
+                <section className="home-cta">
+                    <Container className="text-center">
+                        <h2>¿Listo para hacer la diferencia?</h2>
+                        <p>Únete a una comunidad comprometida con la solidaridad y la gestión responsable.</p>
                         <Button as={Link} to="/register" variant="light" size="lg" className="shadow-lg px-5 py-3 fw-semibold">
                             <i className="bi bi-person-plus me-2"></i>
-                            Regístrate Gratis
+                            Regístrate gratis
                         </Button>
                     </Container>
-                </div>
+                </section>
             )}
         </div>
     );
