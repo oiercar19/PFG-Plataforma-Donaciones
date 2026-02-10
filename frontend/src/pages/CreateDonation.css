@@ -1,7 +1,7 @@
 ﻿.create-donation-container {
     flex: 1;
-    background: var(--brand-gradient);
-    padding: 2rem 2rem 0 2rem;
+    background: transparent;
+    padding: 2rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
