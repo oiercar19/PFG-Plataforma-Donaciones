@@ -1,8 +1,23 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Container, Row, Col, Card, Button, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Badge, Carousel } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import './Home.css';
+
+const heroSlides = [
+    {
+        src: `${process.env.PUBLIC_URL}/hero/slide-1.jpg`,
+        alt: 'Voluntariado entregando ayuda'
+    },
+    {
+        src: `${process.env.PUBLIC_URL}/hero/slide-2.jpg`,
+        alt: 'Donación de alimentos en comunidad'
+    },
+    {
+        src: `${process.env.PUBLIC_URL}/hero/slide-3.jpg`,
+        alt: 'Equipo de ONG coordinando recursos'
+    }
+];
 
 const steps = [
     {
@@ -41,6 +56,21 @@ const Home = () => {
         <div className="home-page">
             {/* Hero Section */}
             <section className="home-hero">
+                <div className="home-hero-carousel">
+                    <Carousel controls={false} indicators={false} fade interval={5200} pause={false}>
+                        {heroSlides.map((slide, idx) => (
+                            <Carousel.Item key={idx}>
+                                <div
+                                    className="home-hero-slide"
+                                    role="img"
+                                    aria-label={slide.alt}
+                                    style={{ backgroundImage: `url(${slide.src})` }}
+                                />
+                            </Carousel.Item>
+                        ))}
+                    </Carousel>
+                    <div className="home-hero-overlay"></div>
+                </div>
                 <Container className="home-hero-inner">
                     <Row className="align-items-center g-5">
                         <Col lg={7}>
