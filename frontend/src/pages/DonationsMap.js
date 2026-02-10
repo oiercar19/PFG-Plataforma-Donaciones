@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Container, Row, Col, Card, Badge, Button, Alert, Spinner } from 'react-bootstrap';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Link } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
+import { Link, useNavigate } from 'react-router-dom';
 import L from 'leaflet';
-import { donationAPI, authAPI } from '../services/api';
+import { donationAPI, authAPI, needAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import './DonationsMap.css';
 
@@ -23,14 +23,25 @@ const ongMarkerIcon = L.divIcon({
     popupAnchor: [0, -12],
 });
 
+const ongMarkerActiveIcon = L.divIcon({
+    className: '',
+    html: '<div class="ong-marker ong-marker-active"><div class="ong-marker-dot"></div></div>',
+    iconSize: [22, 22],
+    iconAnchor: [11, 22],
+    popupAnchor: [0, -12],
+});
+
 const DEFAULT_CENTER = [40.4168, -3.7038];
 const DEFAULT_ZOOM = 6;
 
 const DonationsMap = () => {
     const { isDonor, user } = useAuth();
-    const includeOwn = isDonor();
+    const navigate = useNavigate();
+    const isDonorUser = isDonor();
+    const showDonations = !isDonorUser;
     const [donations, setDonations] = useState([]);
     const [ongs, setOngs] = useState([]);
+    const [activeNeedsByOng, setActiveNeedsByOng] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -44,15 +55,23 @@ const DonationsMap = () => {
         let isMounted = true;
         const loadMapData = async () => {
             try {
-                const [donationsResponse, ongsResponse] = await Promise.all([
-                    donationAPI.getAvailableDonations({
-                        includeOwn: includeOwn ? 'true' : 'false',
-                    }),
+                const [donationsResponse, ongsResponse, needsResponse] = await Promise.all([
+                    showDonations
+                        ? donationAPI.getAvailableDonations({
+                            includeOwn: isDonorUser ? 'true' : 'false',
+                        })
+                        : Promise.resolve({ data: { donations: [] } }),
                     authAPI.getPublicOngs(),
+                    needAPI.getNeeds({ status: 'OPEN' }),
                 ]);
 
                 const donationsData = (donationsResponse.data?.donations || []).map(normalizeCoords);
                 let ongsData = (ongsResponse.data?.ongs || []).map(normalizeCoords);
+                const needsData = needsResponse.data?.needs || [];
+
+                if (isDonorUser) {
+                    ongsData = ongsData.filter((ong) => ong.status === 'APPROVED');
+                }
 
                 if (user?.role === 'ONG') {
                     try {
@@ -78,9 +97,18 @@ const DonationsMap = () => {
                     }
                 }
 
+                const needsByOng = needsData.reduce((acc, need) => {
+                    const ongId = need.ong?.id || need.ongId;
+                    if (ongId) {
+                        acc[ongId] = (acc[ongId] || 0) + 1;
+                    }
+                    return acc;
+                }, {});
+
                 if (isMounted) {
                     setDonations(donationsData);
                     setOngs(ongsData);
+                    setActiveNeedsByOng(needsByOng);
                 }
             } catch (err) {
                 if (isMounted) {
@@ -97,16 +125,18 @@ const DonationsMap = () => {
         return () => {
             isMounted = false;
         };
-    }, [includeOwn, user?.role]);
+    }, [isDonorUser, showDonations, user?.role]);
 
     const donationsWithCoords = useMemo(
         () =>
-            donations.filter(
-                (donation) =>
-                    typeof donation.latitude === 'number' &&
-                    typeof donation.longitude === 'number'
-            ),
-        [donations]
+            showDonations
+                ? donations.filter(
+                    (donation) =>
+                        typeof donation.latitude === 'number' &&
+                        typeof donation.longitude === 'number'
+                )
+                : [],
+        [donations, showDonations]
     );
 
     const ongsWithCoords = useMemo(
@@ -131,19 +161,25 @@ const DonationsMap = () => {
         return DEFAULT_CENTER;
     }, [donationsWithCoords, ongsWithCoords]);
 
+    const markersCount = donationsWithCoords.length + ongsWithCoords.length;
+
     return (
         <div className="donations-map-page">
             <Container className="py-4">
                 <Row className="mb-4 align-items-center">
                     <Col lg={8}>
-                        <h1 className="fw-bold mb-2">Mapa de Donaciones Disponibles</h1>
+                        <h1 className="fw-bold mb-2">
+                            {showDonations ? 'Mapa de Donaciones Disponibles' : 'Mapa de ONGs Registradas'}
+                        </h1>
                         <p className="text-muted mb-0">
-                            Encuentra donaciones cercanas y accede a los detalles desde el mapa.
+                            {showDonations
+                                ? 'Encuentra donaciones cercanas y accede a los detalles desde el mapa.'
+                                : 'Explora las ONGs registradas y sus necesidades activas. Haz clic en una ONG para ver su ficha.'}
                         </p>
                     </Col>
                     <Col lg={4} className="text-lg-end mt-3 mt-lg-0">
                         <Badge bg="info" className="fs-6 px-3 py-2">
-                            {donationsWithCoords.length + ongsWithCoords.length} con ubicaci&oacute;n
+                            {markersCount} con ubicaci&oacute;n
                         </Badge>
                     </Col>
                 </Row>
@@ -163,7 +199,9 @@ const DonationsMap = () => {
 
                 {!loading && !error && donations.length === 0 && ongs.length === 0 && (
                     <Alert variant="info" className="mt-3">
-                        No hay donaciones ni ONGs disponibles en este momento.
+                        {showDonations
+                            ? 'No hay donaciones ni ONGs disponibles en este momento.'
+                            : 'No hay ONGs registradas en este momento.'}
                     </Alert>
                 )}
 
@@ -209,22 +247,32 @@ const DonationsMap = () => {
                                     const ongAddress = [ong.address, ong.postalCode, ong.city || ong.location]
                                         .filter(Boolean)
                                         .join(', ');
+                                    const needsCount = activeNeedsByOng[ong.id] || 0;
+                                    const markerIcon = needsCount > 0 ? ongMarkerActiveIcon : ongMarkerIcon;
                                     return (
                                         <Marker
                                             key={`ong-${ong.id}`}
                                             position={[ong.latitude, ong.longitude]}
-                                            icon={ongMarkerIcon}
+                                            icon={markerIcon}
+                                            eventHandlers={{
+                                                click: () => navigate(`/ongs/${ong.id}`),
+                                            }}
                                         >
-                                            <Popup>
+                                            <Tooltip direction="top" offset={[0, -10]} opacity={1}>
                                                 <div className="map-popup">
-                                                    <h6 className="fw-bold mb-1">{ong.name || 'ONG'}</h6>
+                                                    <div className="fw-bold">{ong.name || 'ONG'}</div>
                                                     {ongAddress && (
-                                                        <div className="text-muted small mb-2">
+                                                        <div className="text-muted small">
                                                             {ongAddress}
                                                         </div>
                                                     )}
+                                                    {needsCount > 0 && (
+                                                        <div className="text-warning small">
+                                                            {needsCount} necesidad{needsCount > 1 ? 'es' : ''} activa{needsCount > 1 ? 's' : ''}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </Popup>
+                                            </Tooltip>
                                         </Marker>
                                     );
                                 })}
@@ -232,6 +280,18 @@ const DonationsMap = () => {
                         </div>
                     </Card.Body>
                 </Card>
+                {!loading && !error && ongsWithCoords.length > 0 && (
+                    <div className="d-flex flex-wrap gap-3 mt-3 text-muted small">
+                        <span className="d-flex align-items-center gap-2">
+                            <span className="legend-dot"></span>
+                            ONG registrada
+                        </span>
+                        <span className="d-flex align-items-center gap-2">
+                            <span className="legend-dot legend-dot-active"></span>
+                            ONG con necesidades activas
+                        </span>
+                    </div>
+                )}
             </Container>
         </div>
     );
