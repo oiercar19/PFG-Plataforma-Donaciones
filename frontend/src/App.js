@@ -26,6 +26,7 @@ import Needs from './pages/Needs';
 import NeedDetails from './pages/NeedDetails';
 import MyNeeds from './pages/MyNeeds';
 import CreateNeed from './pages/CreateNeed';
+import OngDetails from './pages/OngDetails';
 
 function App() {
     return (
@@ -212,8 +213,17 @@ function App() {
                             <Route
                                 path="/map"
                                 element={
-                                    <ProtectedRoute requireOng={true}>
+                                    <ProtectedRoute>
                                         <DonationsMap />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/ongs/:id"
+                                element={
+                                    <ProtectedRoute>
+                                        <OngDetails />
                                     </ProtectedRoute>
                                 }
                             />
