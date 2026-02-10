@@ -11,7 +11,7 @@ const Footer = () => {
                 <div className="footer-brand">Plataforma de Donaciones</div>
                 <div>
                     <div className="footer-meta">{year} Todos los derechos reservados.</div>
-                    <div className="footer-warning">Primera versión en pruebas — pueden haber errores.</div>
+                    <div className="footer-warning">Primera versión en pruebas — errores posibles.</div>
                 </div>
             </Container>
         </footer>

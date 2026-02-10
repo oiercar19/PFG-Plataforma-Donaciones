@@ -9,6 +9,7 @@ const prisma = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const donationRoutes = require('./routes/donationRoutes');
+const needRoutes = require('./routes/needRoutes');
 const conversationRoutes = require('./routes/conversationRoutes');
 
 const app = express();
@@ -43,6 +44,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/donations', donationRoutes);
+app.use('/api/needs', needRoutes);
 app.use('/api/conversations', conversationRoutes);
 
 // Ruta de health check

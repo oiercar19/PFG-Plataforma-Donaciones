@@ -122,8 +122,23 @@ export const conversationAPI = {
     // Obtener conversación activa por donación
     getConversationByDonation: (donationId) => api.get(`/conversations/donation/${donationId}`),
 
+    // Obtener conversación activa por necesidad (donante)
+    getConversationByNeed: (needId) => api.get(`/conversations/need/${needId}`),
+
+    // Abrir conversación por necesidad (donante)
+    openNeedConversation: (needId) => api.post(`/conversations/need/${needId}`),
+
     // Enviar mensaje
     sendMessage: (conversationId, content) => api.post(`/conversations/${conversationId}/messages`, { content }),
+};
+
+// Need endpoints
+export const needAPI = {
+    createNeed: (data) => api.post('/needs', data),
+    getNeeds: (params) => api.get('/needs', { params }),
+    getNeedById: (id) => api.get(`/needs/${id}`),
+    getMyNeeds: (params) => api.get('/needs/my', { params }),
+    closeNeed: (id) => api.post(`/needs/${id}/close`),
 };
 
 export default api;

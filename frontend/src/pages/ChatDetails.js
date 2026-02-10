@@ -24,8 +24,8 @@ function ChatDetails() {
             setConversation(response.data.conversation);
             window.dispatchEvent(new Event('chat-read'));
         } catch (err) {
-            console.error('Error al cargar conversación:', err);
-            setError(err.response?.data?.error || 'Error al cargar el chat');
+            console.error('Error loading conversation:', err);
+            setError(err.response?.data?.error || 'Error loading chat');
         } finally {
             setLoading(false);
         }
@@ -56,8 +56,8 @@ function ChatDetails() {
             }));
             setMessage('');
         } catch (err) {
-            console.error('Error al enviar mensaje:', err);
-            setError(err.response?.data?.error || 'Error al enviar el mensaje');
+            console.error('Error sending message:', err);
+            setError(err.response?.data?.error || 'Error sending message');
         } finally {
             setSending(false);
         }
@@ -108,8 +108,10 @@ function ChatDetails() {
     }
 
     const statusBadge = getStatusBadge(conversation.status);
-    const donation = conversation.donation;
-    const ongInfo = conversation.ong || donation?.assignedOng || null;
+    const isNeed = Boolean(conversation.need);
+    const context = isNeed ? conversation.need : conversation.donation;
+    const typeBadge = isNeed ? { bg: 'info', text: 'Necesidad' } : { bg: 'primary', text: 'Donacion' };
+    const ongInfo = conversation.ong || conversation.need?.ong || conversation.donation?.assignedOng || null;
     const isClosed = conversation.status === 'CLOSED';
     const ongAddress = ongInfo
         ? [ongInfo.address, ongInfo.postalCode, ongInfo.city || ongInfo.location].filter(Boolean).join(', ')
@@ -122,7 +124,10 @@ function ChatDetails() {
                     <i className="bi bi-arrow-left me-2"></i>
                     Volver a chats
                 </Button>
-                <Badge bg={statusBadge.bg}>{statusBadge.text}</Badge>
+                <div className="d-flex gap-2">
+                    <Badge bg={typeBadge.bg}>{typeBadge.text}</Badge>
+                    <Badge bg={statusBadge.bg}>{statusBadge.text}</Badge>
+                </div>
             </div>
 
             {error && (
@@ -136,16 +141,25 @@ function ChatDetails() {
                 <Card.Body>
                     <div className="d-flex justify-content-between flex-wrap gap-2">
                         <div>
-                            <h5 className="mb-1">{donation?.title || 'Donación'}</h5>
+                            <h5 className="mb-1">{context?.title || (isNeed ? 'Necesidad' : 'Donacion')}</h5>
                             <div className="text-muted small">
                                 <i className="bi bi-tag me-1"></i>
-                                {donation?.category || 'Sin categoría'}
+                                {context?.category || 'Sin categoria'}
                             </div>
+                            {isNeed && context?.urgent && (
+                                <Badge bg="danger" className="mt-2">Urgente</Badge>
+                            )}
                         </div>
-                        <Button variant="outline-primary" size="sm" onClick={() => navigate(`/donations/${donation?.id}`)}>
-                            <i className="bi bi-box-seam me-1"></i>
-                            Ver donación
-                        </Button>
+                        {context?.id && (
+                            <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => navigate(isNeed ? `/needs/${context.id}` : `/donations/${context.id}`)}
+                            >
+                                <i className="bi bi-box-seam me-1"></i>
+                                Ver {isNeed ? 'necesidad' : 'donacion'}
+                            </Button>
+                        )}
                     </div>
                 </Card.Body>
             </Card>
@@ -186,7 +200,7 @@ function ChatDetails() {
             {isClosed && (
                 <Alert variant="secondary">
                     <i className="bi bi-lock me-2"></i>
-                    Este chat está cerrado y ya no admite nuevos mensajes.
+                    Este chat esta cerrado y ya no admite nuevos mensajes.
                 </Alert>
             )}
 
@@ -195,7 +209,7 @@ function ChatDetails() {
                     {conversation.messages?.length === 0 ? (
                         <div className="text-center text-muted py-4">
                             <i className="bi bi-chat-dots fs-2"></i>
-                            <p className="mt-2">Aún no hay mensajes</p>
+                            <p className="mt-2">Aun no hay mensajes</p>
                         </div>
                     ) : (
                         conversation.messages.map((msg) => {
@@ -204,7 +218,7 @@ function ChatDetails() {
                                 <div key={msg.id} className={`chat-message ${isMine ? 'mine' : ''}`}>
                                     <div className="message-bubble">
                                         <div className="message-header">
-                                            <strong>{isMine ? 'Tú' : msg.sender?.username || 'Usuario'}</strong>
+                                            <strong>{isMine ? 'Tu' : msg.sender?.username || 'Usuario'}</strong>
                                             <span className="message-time">{formatDateTime(msg.createdAt)}</span>
                                         </div>
                                         <div className="message-content">{msg.content}</div>

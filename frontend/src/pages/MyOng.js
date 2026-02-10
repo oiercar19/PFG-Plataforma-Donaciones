@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authAPI, donationAPI } from '../services/api';
+import { authAPI, donationAPI, needAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -20,6 +20,7 @@ const DEFAULT_CENTER = [40.4168, -3.7038];
 const MyOng = () => {
     const [ongData, setOngData] = useState(null);
     const [assignedDonations, setAssignedDonations] = useState([]);
+    const [myNeeds, setMyNeeds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -60,6 +61,17 @@ const MyOng = () => {
 
             setOngData(ongResponse.data.ong);
             setAssignedDonations(donationsResponse.data.donations);
+            if (ongResponse.data.ong.status === 'APPROVED') {
+                try {
+                    const needsResponse = await needAPI.getMyNeeds();
+                    setMyNeeds(needsResponse.data.needs || []);
+                } catch (needsError) {
+                    console.error('Error al cargar necesidades:', needsError);
+                    setMyNeeds([]);
+                }
+            } else {
+                setMyNeeds([]);
+            }
 
             // Inicializar datos del formulario de edición
             setEditFormData({
@@ -280,6 +292,15 @@ const MyOng = () => {
         return <Badge bg={config.variant}>{config.text}</Badge>;
     };
 
+    const getNeedStatusBadge = (status) => {
+        const statusConfig = {
+            OPEN: { variant: 'success', text: 'Abierta' },
+            CLOSED: { variant: 'secondary', text: 'Cerrada' },
+        };
+        const config = statusConfig[status] || { variant: 'secondary', text: status };
+        return <Badge bg={config.variant}>{config.text}</Badge>;
+    };
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('es-ES', {
@@ -288,6 +309,9 @@ const MyOng = () => {
             day: 'numeric',
         });
     };
+
+    const needsOpenCount = myNeeds.filter((need) => need.status === 'OPEN').length;
+    const needsClosedCount = myNeeds.filter((need) => need.status === 'CLOSED').length;
 
     if (loading) {
         return (
@@ -368,18 +392,25 @@ const MyOng = () => {
 
             {ongData && (
                 <>
-                    {/* Información General de la ONG */}
+                                        {/* Informacion General de la ONG */}
                     <Card className="ong-info-card mb-4">
-                        <Card.Body>
-                            <div className="d-flex justify-content-between align-items-start mb-3">
-                                <div>
-                                    <h2 className="ong-name">{ongData.name}</h2>
-                                    <div className="ong-status mb-2">
-                                        Estado: {getStatusBadge(ongData.status)}
-                                    </div>
+                        <div className="ong-hero">
+                            <div className="ong-hero-main">
+                                <span className="ong-hero-kicker">
+                                    <i className="bi bi-shield-check me-2"></i>
+                                    Perfil de ONG
+                                </span>
+                                <h2 className="ong-name">{ongData.name}</h2>
+                                <div className="ong-status mb-2">
+                                    Estado: {getStatusBadge(ongData.status)}
                                 </div>
+                                {ongData.description && (
+                                    <p className="ong-hero-description">{ongData.description}</p>
+                                )}
+                            </div>
+                            <div className="ong-hero-actions">
                                 <Button
-                                    variant="outline-primary"
+                                    variant="light"
                                     onClick={() => {
                                         setShowEditModal(true);
                                         setShowMapPicker(false);
@@ -387,15 +418,16 @@ const MyOng = () => {
                                     disabled={ongData.status !== 'APPROVED'}
                                 >
                                     <i className="bi bi-pencil me-2"></i>
-                                    Editar Información
+                                    Editar informacion
                                 </Button>
                             </div>
-
+                        </div>
+                        <Card.Body>
                             {ongData.status === 'PENDING' && (
                                 <Alert variant="info">
                                     <i className="bi bi-info-circle me-2"></i>
-                                    Tu ONG está pendiente de aprobación por un administrador. Una vez aprobada,
-                                    podrás solicitar donaciones y gestionar tu organización.
+                                    Tu ONG esta pendiente de aprobacion por un administrador. Una vez aprobada,
+                                    podras solicitar donaciones y gestionar tu organizacion.
                                 </Alert>
                             )}
 
@@ -427,7 +459,7 @@ const MyOng = () => {
                                 <Col md={6} className="mb-3">
                                     <div className="detail-item">
                                         <i className="bi bi-geo-alt me-2 text-primary"></i>
-                                        <strong>Ubicación:</strong>{' '}
+                                        <strong>Ubicacion:</strong>{' '}
                                         <span>
                                             {[ongData.address, ongData.postalCode, ongData.city || ongData.location]
                                                 .filter(Boolean)
@@ -450,18 +482,9 @@ const MyOng = () => {
                                 <Col md={6} className="mb-3">
                                     <div className="detail-item">
                                         <i className="bi bi-telephone me-2 text-primary"></i>
-                                        <strong>Teléfono:</strong> <span>{ongData.contactPhone}</span>
+                                        <strong>Telefono:</strong> <span>{ongData.contactPhone}</span>
                                     </div>
                                 </Col>
-                                {ongData.description && (
-                                    <Col xs={12} className="mb-3">
-                                        <div className="detail-item">
-                                            <i className="bi bi-info-circle me-2 text-primary"></i>
-                                            <strong>Descripción:</strong>
-                                            <p className="mt-2 mb-0">{ongData.description}</p>
-                                        </div>
-                                    </Col>
-                                )}
                                 {ongData.approvedAt && (
                                     <Col md={6} className="mb-3">
                                         <div className="detail-item">
@@ -474,10 +497,10 @@ const MyOng = () => {
                         </Card.Body>
                     </Card>
 
-                    {/* Estadísticas */}
+                    {/* Estadisticas */}
                     {ongData.status === 'APPROVED' && (
                         <Row className="statistics-row mb-4">
-                            <Col md={4} className="mb-3">
+                            <Col md={3} className="mb-3">
                                 <Card className="stat-card text-center">
                                     <Card.Body>
                                         <div className="stat-icon">
@@ -488,7 +511,7 @@ const MyOng = () => {
                                     </Card.Body>
                                 </Card>
                             </Col>
-                            <Col md={4} className="mb-3">
+                            <Col md={3} className="mb-3">
                                 <Card className="stat-card text-center">
                                     <Card.Body>
                                         <div className="stat-icon">
@@ -501,7 +524,7 @@ const MyOng = () => {
                                     </Card.Body>
                                 </Card>
                             </Col>
-                            <Col md={4} className="mb-3">
+                            <Col md={3} className="mb-3">
                                 <Card className="stat-card text-center">
                                     <Card.Body>
                                         <div className="stat-icon">
@@ -514,85 +537,167 @@ const MyOng = () => {
                                     </Card.Body>
                                 </Card>
                             </Col>
+                            <Col md={3} className="mb-3">
+                                <Card className="stat-card text-center">
+                                    <Card.Body>
+                                        <div className="stat-icon stat-icon-needs">
+                                            <i className="bi bi-clipboard-heart-fill"></i>
+                                        </div>
+                                        <h3 className="stat-number">{needsOpenCount}</h3>
+                                        <p className="stat-label">Necesidades Abiertas</p>
+                                        <small className="text-muted d-block mt-2">{needsClosedCount} cerradas</small>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
                         </Row>
                     )}
 
-                    {/* Donaciones Asignadas Recientes */}
+                    {/* Donaciones y Necesidades */}
                     {ongData.status === 'APPROVED' && (
-                        <Card className="donations-card">
-                            <Card.Header>
-                                <h3>
-                                    <i className="bi bi-gift me-2"></i>
-                                    Donaciones Recientes
-                                </h3>
-                            </Card.Header>
-                            <Card.Body>
-                                {assignedDonations.length === 0 ? (
-                                    <div className="text-center py-4">
-                                        <i className="bi bi-inbox fs-1 text-muted"></i>
-                                        <p className="text-muted mt-3">No tienes donaciones asignadas aún</p>
-                                        <Button
-                                            variant="primary"
-                                            onClick={() => navigate('/available-donations')}
-                                        >
-                                            <i className="bi bi-search me-2"></i>
-                                            Buscar Donaciones
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="donations-list">
-                                        {assignedDonations.slice(0, 5).map((donation) => (
-                                            <div
-                                                key={donation.id}
-                                                className="donation-item"
-                                                onClick={() => navigate(`/donations/${donation.id}`)}
-                                            >
-                                                <div className="donation-info">
-                                                    <h5>{donation.title}</h5>
-                                                    <p className="text-muted mb-1">
-                                                        <i className="bi bi-tag me-1"></i>
-                                                        {donation.category} | {donation.quantity}
-                                                    </p>
-                                                    <p className="text-muted mb-0">
-                                                        <i className="bi bi-geo-alt me-1"></i>
-                                                        {donation.city}
-                                                    </p>
-                                                </div>
-                                                <div className="donation-status">
-                                                    {getDonationStatusBadge(donation.status)}
-                                                    <small className="text-muted d-block mt-2">
-                                                        {formatDate(donation.createdAt)}
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {assignedDonations.length > 5 && (
-                                            <div className="text-center mt-3">
+                        <Row className="mb-4">
+                            <Col lg={6} className="mb-4">
+                                <Card className="donations-card h-100">
+                                    <Card.Header>
+                                        <h3>
+                                            <i className="bi bi-gift me-2"></i>
+                                            Donaciones Recientes
+                                        </h3>
+                                    </Card.Header>
+                                    <Card.Body>
+                                        {assignedDonations.length === 0 ? (
+                                            <div className="text-center py-4">
+                                                <i className="bi bi-inbox fs-1 text-muted"></i>
+                                                <p className="text-muted mt-3">No tienes donaciones asignadas aun</p>
                                                 <Button
-                                                    variant="outline-primary"
-                                                    onClick={() => navigate('/donations')}
+                                                    variant="primary"
+                                                    onClick={() => navigate('/available-donations')}
                                                 >
-                                                    Ver todas las donaciones
+                                                    <i className="bi bi-search me-2"></i>
+                                                    Buscar Donaciones
                                                 </Button>
                                             </div>
+                                        ) : (
+                                            <div className="donations-list">
+                                                {assignedDonations.slice(0, 5).map((donation) => (
+                                                    <div
+                                                        key={donation.id}
+                                                        className="donation-item"
+                                                        onClick={() => navigate(`/donations/${donation.id}`)}
+                                                    >
+                                                        <div className="donation-info">
+                                                            <h5>{donation.title}</h5>
+                                                            <p className="text-muted mb-1">
+                                                                <i className="bi bi-tag me-1"></i>
+                                                                {donation.category} | {donation.quantity}
+                                                            </p>
+                                                            <p className="text-muted mb-0">
+                                                                <i className="bi bi-geo-alt me-1"></i>
+                                                                {donation.city}
+                                                            </p>
+                                                        </div>
+                                                        <div className="donation-status">
+                                                            {getDonationStatusBadge(donation.status)}
+                                                            <small className="text-muted d-block mt-2">
+                                                                {formatDate(donation.createdAt)}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {assignedDonations.length > 5 && (
+                                                    <div className="text-center mt-3">
+                                                        <Button
+                                                            variant="outline-primary"
+                                                            onClick={() => navigate('/donations')}
+                                                        >
+                                                            Ver todas las donaciones
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
-                                    </div>
-                                )}
-                            </Card.Body>
-                        </Card>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                            <Col lg={6} className="mb-4">
+                                <Card className="needs-card h-100">
+                                    <Card.Header>
+                                        <h3>
+                                            <i className="bi bi-clipboard-heart me-2"></i>
+                                            Necesidades Recientes
+                                        </h3>
+                                    </Card.Header>
+                                    <Card.Body>
+                                        {myNeeds.length === 0 ? (
+                                            <div className="text-center py-4">
+                                                <i className="bi bi-inbox fs-1 text-muted"></i>
+                                                <p className="text-muted mt-3">Aun no has publicado necesidades</p>
+                                                <Button
+                                                    variant="danger"
+                                                    onClick={() => navigate('/create-need')}
+                                                >
+                                                    <i className="bi bi-flag me-2"></i>
+                                                    Publicar necesidad
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <div className="needs-list">
+                                                {myNeeds.slice(0, 5).map((need) => (
+                                                    <div
+                                                        key={need.id}
+                                                        className="need-item"
+                                                        onClick={() => navigate(`/needs/${need.id}`)}
+                                                    >
+                                                        <div className="need-info">
+                                                            <h5>{need.title}</h5>
+                                                            <p className="text-muted mb-1">
+                                                                <i className="bi bi-tag me-1"></i>
+                                                                {need.category}{need.quantity ? ` | ${need.quantity}` : ''}
+                                                            </p>
+                                                            <p className="text-muted mb-0">
+                                                                <i className="bi bi-chat-dots me-1"></i>
+                                                                {need._count?.conversations || 0} chats
+                                                            </p>
+                                                        </div>
+                                                        <div className="need-status">
+                                                            {getNeedStatusBadge(need.status)}
+                                                            {need.urgent && (
+                                                                <Badge bg="danger" className="ms-2">Urgente</Badge>
+                                                            )}
+                                                            <small className="text-muted d-block mt-2">
+                                                                {formatDate(need.createdAt)}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {myNeeds.length > 5 && (
+                                                    <div className="text-center mt-3">
+                                                        <Button
+                                                            variant="outline-danger"
+                                                            onClick={() => navigate('/my-needs')}
+                                                        >
+                                                            Ver todas las necesidades
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        </Row>
                     )}
 
-                    {/* Acciones Rápidas */}
+                    {/* Acciones Rapidas */}
                     {ongData.status === 'APPROVED' && (
                         <Card className="quick-actions-card mt-4">
                             <Card.Header>
                                 <h3>
                                     <i className="bi bi-lightning-fill me-2"></i>
-                                    Acciones Rápidas
+                                    Acciones Rapidas
                                 </h3>
                             </Card.Header>
                             <Card.Body>
-                                <Row>
+                                <Row className="mb-2">
                                     <Col md={4} className="mb-3">
                                         <Button
                                             variant="primary"
@@ -620,7 +725,29 @@ const MyOng = () => {
                                             onClick={() => navigate('/create-donation')}
                                         >
                                             <i className="bi bi-plus-circle fs-4 d-block mb-2"></i>
-                                            Crear Donación
+                                            Crear Donacion
+                                        </Button>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col md={6} className="mb-3">
+                                        <Button
+                                            variant="danger"
+                                            className="w-100 action-btn"
+                                            onClick={() => navigate('/create-need')}
+                                        >
+                                            <i className="bi bi-flag fs-4 d-block mb-2"></i>
+                                            Publicar Necesidad
+                                        </Button>
+                                    </Col>
+                                    <Col md={6} className="mb-3">
+                                        <Button
+                                            variant="outline-danger"
+                                            className="w-100 action-btn"
+                                            onClick={() => navigate('/my-needs')}
+                                        >
+                                            <i className="bi bi-clipboard-heart fs-4 d-block mb-2"></i>
+                                            Mis Necesidades
                                         </Button>
                                     </Col>
                                 </Row>

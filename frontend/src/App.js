@@ -22,6 +22,11 @@ import MyOng from './pages/MyOng';
 import Chats from './pages/Chats';
 import ChatDetails from './pages/ChatDetails';
 import DonationsMap from './pages/DonationsMap';
+import Needs from './pages/Needs';
+import NeedDetails from './pages/NeedDetails';
+import MyNeeds from './pages/MyNeeds';
+import CreateNeed from './pages/CreateNeed';
+import OngDetails from './pages/OngDetails';
 
 function App() {
     return (
@@ -143,6 +148,42 @@ function App() {
                             />
 
                             <Route
+                                path="/needs"
+                                element={
+                                    <ProtectedRoute>
+                                        <Needs />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/needs/:id"
+                                element={
+                                    <ProtectedRoute>
+                                        <NeedDetails />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/my-needs"
+                                element={
+                                    <ProtectedRoute requireOng={true}>
+                                        <MyNeeds />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/create-need"
+                                element={
+                                    <ProtectedRoute requireOng={true}>
+                                        <CreateNeed />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
                                 path="/my-ong"
                                 element={
                                     <ProtectedRoute>
@@ -172,8 +213,17 @@ function App() {
                             <Route
                                 path="/map"
                                 element={
-                                    <ProtectedRoute requireOng={true}>
+                                    <ProtectedRoute>
                                         <DonationsMap />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route
+                                path="/ongs/:id"
+                                element={
+                                    <ProtectedRoute>
+                                        <OngDetails />
                                     </ProtectedRoute>
                                 }
                             />

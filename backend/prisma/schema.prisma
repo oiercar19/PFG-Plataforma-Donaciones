@@ -19,6 +19,7 @@ model User {
   updatedAt    DateTime   @updatedAt
   donations    Donation[]
   messages     Message[]
+  needConversations Conversation[] @relation("NeedDonor")
   ong          Ong?       @relation("OngUser")
 
   @@map("users")
@@ -49,6 +50,7 @@ model Ong {
   assignments     Assignment[]
   donations       Donation[]    @relation("OngDonations")
   messages        Message[]
+  needs           Need[]
   conversations   Conversation[]
   documents       OngDocument[]
   user            User          @relation("OngUser", fields: [userId], references: [id], onDelete: Cascade)
@@ -96,6 +98,24 @@ model Donation {
   @@map("donations")
 }
 
+model Need {
+  id          String     @id @default(uuid())
+  title       String
+  description String
+  category    String
+  quantity    String?
+  urgent      Boolean    @default(false)
+  status      NeedStatus @default(OPEN)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  closedAt    DateTime?
+  ongId       String
+  ong         Ong        @relation(fields: [ongId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+
+  @@map("needs")
+}
+
 model Conversation {
   id         String    @id @default(uuid())
   createdAt  DateTime  @default(now())
@@ -104,9 +124,13 @@ model Conversation {
   closedAt   DateTime?
   donorLastReadAt DateTime?
   ongLastReadAt   DateTime?
-  donationId String
+  donationId String?
+  needId     String?
+  donorId    String?
   ongId      String?
-  donation   Donation  @relation(fields: [donationId], references: [id], onDelete: Cascade)
+  donation   Donation? @relation(fields: [donationId], references: [id], onDelete: Cascade)
+  need       Need?     @relation(fields: [needId], references: [id], onDelete: Cascade)
+  donor      User?     @relation("NeedDonor", fields: [donorId], references: [id])
   ong        Ong?      @relation(fields: [ongId], references: [id])
   messages   Message[]
 
@@ -168,6 +192,11 @@ enum DonationStatus {
   DISPONIBLE
   ASIGNADO
   ENTREGADO
+}
+
+enum NeedStatus {
+  OPEN
+  CLOSED
 }
 
 enum ConversationStatus {

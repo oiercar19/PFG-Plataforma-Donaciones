@@ -24,8 +24,8 @@ function Chats() {
             }));
             window.dispatchEvent(new Event('chat-read'));
         } catch (err) {
-            console.error('Error al cargar conversaciones:', err);
-            setError(err.response?.data?.error || 'Error al cargar las conversaciones');
+            console.error('Error loading conversations:', err);
+            setError(err.response?.data?.error || 'Error loading conversations');
         } finally {
             setLoading(false);
         }
@@ -56,20 +56,32 @@ function Chats() {
         return map[status] || { bg: 'secondary', text: status };
     };
 
+    const getNeedStatusBadge = (status) => {
+        const map = {
+            OPEN: { bg: 'success', text: 'Abierta' },
+            CLOSED: { bg: 'secondary', text: 'Cerrada' },
+        };
+        return map[status] || { bg: 'secondary', text: status };
+    };
+
     const renderConversationCard = (conversation) => {
         const lastMessage = conversation.messages?.[0];
         const lastPreview = lastMessage ? (lastMessage.content.length > 80 ? `${lastMessage.content.substring(0, 80)}...` : lastMessage.content) : null;
-        const donationBadge = getDonationStatusBadge(conversation.donation?.status);
-        const previewImage = conversation.donation?.images?.[0];
-        const lastSenderName = lastMessage?.sender?.id === user?.id ? 'Tú' : (lastMessage?.sender?.username || 'Usuario');
+        const isNeed = Boolean(conversation.need);
+        const statusBadge = isNeed ? getNeedStatusBadge(conversation.need?.status) : getDonationStatusBadge(conversation.donation?.status);
+        const previewImage = isNeed ? null : conversation.donation?.images?.[0];
+        const contextTitle = isNeed ? conversation.need?.title : conversation.donation?.title;
+        const contextCategory = isNeed ? conversation.need?.category : conversation.donation?.category;
+        const typeBadge = isNeed ? { bg: 'info', text: 'Necesidad' } : { bg: 'primary', text: 'Donacion' };
+        const lastSenderName = lastMessage?.sender?.id === user?.id ? 'Tu' : (lastMessage?.sender?.username || 'Usuario');
 
         let counterpart = 'Usuario';
         let ongInfo = null;
         if (user?.role === 'ONG') {
-            counterpart = conversation.donation?.donor?.username || 'Donante';
+            counterpart = isNeed ? (conversation.donor?.username || 'Donante') : (conversation.donation?.donor?.username || 'Donante');
         } else {
-            counterpart = conversation.ong?.name || conversation.donation?.assignedOng?.name || 'ONG';
-            ongInfo = conversation.ong || conversation.donation?.assignedOng;
+            counterpart = conversation.ong?.name || conversation.need?.ong?.name || conversation.donation?.assignedOng?.name || 'ONG';
+            ongInfo = conversation.ong || conversation.need?.ong || conversation.donation?.assignedOng;
         }
         const ongAddress = ongInfo
             ? [ongInfo.address, ongInfo.postalCode, ongInfo.city || ongInfo.location].filter(Boolean).join(', ')
@@ -78,22 +90,30 @@ function Chats() {
         return (
             <Card key={conversation.id} className="chat-card shadow-sm">
                 <Card.Body className="chat-card-body">
-                    <div className="chat-preview">
-                        {previewImage ? (
-                            <img src={previewImage} alt={conversation.donation?.title || 'Donación'} />
-                        ) : (
-                            <div className="chat-preview-fallback">
-                                <i className="bi bi-image"></i>
-                            </div>
-                        )}
-                    </div>
+                    {!isNeed && (
+                        <div className="chat-preview">
+                            {previewImage ? (
+                                <img src={previewImage} alt={contextTitle || 'Chat'} />
+                            ) : (
+                                <div className="chat-preview-fallback">
+                                    <i className="bi bi-image"></i>
+                                </div>
+                            )}
+                        </div>
+                    )}
                     <div className="chat-content">
                     <div className="d-flex justify-content-between align-items-start gap-2">
                         <div>
-                            <h5 className="mb-1">{conversation.donation?.title || 'Donación'}</h5>
+                            <h5 className="mb-1">{contextTitle || (isNeed ? 'Necesidad' : 'Donacion')}</h5>
                             <div className="text-muted small">
                                 <i className="bi bi-people me-1"></i>
                                 {counterpart}
+                                {contextCategory && (
+                                    <span className="ms-2">
+                                        <i className="bi bi-tag me-1"></i>
+                                        {contextCategory}
+                                    </span>
+                                )}
                             </div>
                         </div>
                         <div className="d-flex align-items-center gap-2">
@@ -102,7 +122,11 @@ function Chats() {
                                     {conversation.unreadCount}
                                 </Badge>
                             )}
-                            <Badge bg={donationBadge.bg}>{donationBadge.text}</Badge>
+                            <Badge bg={typeBadge.bg}>{typeBadge.text}</Badge>
+                            <Badge bg={statusBadge.bg}>{statusBadge.text}</Badge>
+                            {isNeed && conversation.need?.urgent && (
+                                <Badge bg="danger">Urgente</Badge>
+                            )}
                         </div>
                     </div>
 
@@ -137,7 +161,7 @@ function Chats() {
                                     <span className="chat-last-sender">{lastSenderName}:</span> {lastPreview}
                                 </>
                             ) : (
-                                'Sin mensajes aún'
+                                'Sin mensajes aun'
                             )}
                         </div>
                         <div className="text-muted small">
@@ -197,7 +221,7 @@ function Chats() {
                             <Card.Body>
                                 <i className="bi bi-inbox fs-1 text-muted"></i>
                                 <h4 className="mt-3">No tienes chats abiertos</h4>
-                                <p className="text-muted">Cuando una donación sea asignada, aparecerá aquí</p>
+                                <p className="text-muted">Cuando exista una conversacion, aparecera aqui</p>
                             </Card.Body>
                         </Card>
                     ) : (
@@ -217,7 +241,7 @@ function Chats() {
                             <Card.Body>
                                 <i className="bi bi-archive fs-1 text-muted"></i>
                                 <h4 className="mt-3">No tienes chats cerrados</h4>
-                                <p className="text-muted">Aquí se guardará el historial cuando un chat se cierre</p>
+                                <p className="text-muted">Aqui se guardara el historial cuando un chat se cierre</p>
                             </Card.Body>
                         </Card>
                     ) : (
