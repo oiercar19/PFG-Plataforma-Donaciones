@@ -593,6 +593,8 @@ async function getPublicOngs(req, res) {
                 id: true,
                 name: true,
                 status: true,
+                type: true,
+                description: true,
                 city: true,
                 address: true,
                 postalCode: true,
@@ -600,6 +602,8 @@ async function getPublicOngs(req, res) {
                 location: true,
                 latitude: true,
                 longitude: true,
+                contactEmail: true,
+                contactPhone: true,
             },
             orderBy: { name: 'asc' },
         });

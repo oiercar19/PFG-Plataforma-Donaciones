@@ -54,7 +54,7 @@ async function createNeed(req, res) {
 
 async function listNeeds(req, res) {
     try {
-        const { search, category, urgent, status } = req.query;
+        const { search, category, urgent, status, ongId } = req.query;
         const where = {};
 
         if (status && ['OPEN', 'CLOSED'].includes(status.toUpperCase())) {
@@ -76,6 +76,10 @@ async function listNeeds(req, res) {
                 { title: { contains: search, mode: 'insensitive' } },
                 { description: { contains: search, mode: 'insensitive' } },
             ];
+        }
+
+        if (ongId) {
+            where.ongId = ongId;
         }
 
         const needs = await prisma.need.findMany({
