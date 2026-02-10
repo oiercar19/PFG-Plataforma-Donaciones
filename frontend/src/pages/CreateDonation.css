@@ -1,6 +1,6 @@
-.create-donation-container {
+﻿.create-donation-container {
     flex: 1;
-    background: linear-gradient(135deg, rgb(15, 118, 110) 0%, rgb(96, 165, 250) 100%);
+    background: var(--brand-gradient);
     padding: 2rem 2rem 0 2rem;
     display: flex;
     flex-direction: column;
@@ -28,19 +28,19 @@
 
 .create-donation-header i {
     font-size: 3.5rem;
-    color: #667eea;
+    color: var(--color-secondary);
 }
 
 .create-donation-header h1 {
     margin: 0;
-    color: #333;
+    color: var(--color-text);
     font-size: 2rem;
     font-weight: 700;
 }
 
 .create-donation-header p {
     margin: 0.5rem 0 0 0;
-    color: #666;
+    color: var(--color-muted);
     font-size: 1rem;
 }
 
@@ -82,7 +82,7 @@
 .form-section {
     margin-bottom: 2.5rem;
     padding-bottom: 2rem;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 2px solid var(--color-border);
 }
 
 .form-section:last-of-type {
@@ -90,7 +90,7 @@
 }
 
 .form-section h2 {
-    color: #667eea;
+    color: var(--color-secondary);
     font-size: 1.3rem;
     margin: 0 0 1.5rem 0;
     font-weight: 600;
@@ -106,7 +106,7 @@
 .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #333;
+    color: var(--color-text);
     font-weight: 600;
     font-size: 0.95rem;
 }
@@ -116,7 +116,7 @@
 .form-group select {
     width: 100%;
     padding: 0.875rem;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--color-border);
     border-radius: 10px;
     font-size: 1rem;
     transition: all 0.3s;
@@ -128,8 +128,8 @@
 .form-group textarea:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--color-secondary);
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
 }
 
 .form-group textarea {
@@ -149,7 +149,7 @@
 .form-help {
     display: block;
     margin-top: 0.5rem;
-    color: #999;
+    color: var(--color-muted);
     font-size: 0.85rem;
 }
 
@@ -163,7 +163,7 @@
 /* Info Box */
 .info-box {
     background-color: #e3f2fd;
-    border-left: 4px solid #2196f3;
+    border-left: 4px solid var(--color-info);
     padding: 1rem;
     border-radius: 8px;
     display: flex;
@@ -173,12 +173,12 @@
 }
 
 .info-box i {
-    color: #2196f3;
+    color: var(--color-info);
     font-size: 1.3rem;
 }
 
 .info-box span {
-    color: #1565c0;
+    color: var(--color-secondary);
     font-size: 0.9rem;
 }
 
@@ -188,7 +188,7 @@
     border-radius: 12px;
     overflow: hidden;
     max-width: 400px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--color-border);
 }
 
 .image-preview img {
@@ -203,7 +203,7 @@
     gap: 1rem;
     margin-top: 2rem;
     padding-top: 1.5rem;
-    border-top: 2px solid #f0f0f0;
+    border-top: 2px solid var(--color-border);
 }
 
 .form-actions button {
@@ -226,23 +226,23 @@
 }
 
 .btn-cancel {
-    background-color: #f5f5f5;
-    color: #666;
+    background-color: #f8fafc;
+    color: var(--color-muted);
 }
 
 .btn-cancel:hover:not(:disabled) {
-    background-color: #e0e0e0;
-    color: #333;
+    background-color: var(--color-border);
+    color: var(--color-text);
 }
 
 .btn-submit {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%);
     color: white;
 }
 
 .btn-submit:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 25px rgba(29, 78, 216, 0.35);
 }
 
 .form-actions button:disabled {
@@ -253,7 +253,7 @@
 
 /* Estilos para múltiples imágenes */
 .section-description {
-    color: #666;
+    color: var(--color-muted);
     font-size: 0.95rem;
     margin-bottom: 1rem;
 }
@@ -276,7 +276,7 @@
     /* Aspecto cuadrado */
     border-radius: 8px;
     overflow: hidden;
-    border: 2px solid rgba(102, 126, 234, 0.3);
+    border: 2px solid rgba(29, 78, 216, 0.25);
     background: #f8f9fa;
 }
 
@@ -318,10 +318,10 @@
     justify-content: center;
     gap: 0.75rem;
     padding: 1.5rem;
-    background: rgba(102, 126, 234, 0.05);
-    border: 2px dashed rgba(102, 126, 234, 0.3);
+    background: rgba(15, 118, 110, 0.08);
+    border: 2px dashed rgba(29, 78, 216, 0.25);
     border-radius: 8px;
-    color: #667eea;
+    color: var(--color-secondary);
     cursor: pointer;
     font-weight: 500;
     transition: all 0.3s ease;
@@ -329,8 +329,8 @@
 }
 
 .file-input-label:hover {
-    background: rgba(102, 126, 234, 0.1);
-    border-color: #667eea;
+    background: rgba(15, 118, 110, 0.12);
+    border-color: var(--color-secondary);
 }
 
 .file-input-label i {
@@ -345,17 +345,17 @@
 .file-input {
     padding: 12px;
     cursor: pointer;
-    border: 2px dashed rgba(74, 144, 226, 0.3);
+    border: 2px dashed rgba(29, 78, 216, 0.28);
     transition: all 0.3s ease;
 }
 
 .file-input:hover {
-    border-color: rgba(74, 144, 226, 0.6);
-    background-color: rgba(74, 144, 226, 0.05);
+    border-color: rgba(29, 78, 216, 0.45);
+    background-color: rgba(15, 118, 110, 0.06);
 }
 
 .file-input::-webkit-file-upload-button {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%);
     color: white;
     padding: 10px 20px;
     border: none;
@@ -368,7 +368,7 @@
 
 .file-input::-webkit-file-upload-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 5px 15px rgba(29, 78, 216, 0.35);
 }
 
 /* Vista previa de imagen antigua (mantener por compatibilidad) */
@@ -381,7 +381,7 @@
     margin-top: 15px;
     border-radius: 12px;
     overflow: hidden;
-    border: 2px solid rgba(74, 144, 226, 0.2);
+    border: 2px solid rgba(29, 78, 216, 0.2);
     max-width: 500px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }

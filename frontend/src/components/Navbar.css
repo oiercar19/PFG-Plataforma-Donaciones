@@ -10,6 +10,32 @@
     padding: 0.25em 0.45em;
 }
 
+.navbar .nav-link,
+.navbar .dropdown-toggle {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.88) !important;
+    transition: color 0.2s ease, background 0.2s ease;
+    border-radius: 999px;
+    padding: 0.45rem 0.85rem;
+}
+
+.navbar .nav-link:hover,
+.navbar .dropdown-toggle:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.navbar .btn.btn-primary {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: transparent !important;
+    font-weight: 700;
+}
+
+.navbar .btn.btn-primary:hover {
+    background: rgba(255, 255, 255, 0.9) !important;
+}
+
 /* Responsive navbar tweaks */
 .navbar .navbar-brand {
     display: flex;

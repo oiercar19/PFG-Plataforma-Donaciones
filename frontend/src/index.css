@@ -9,6 +9,9 @@
     --color-primary: #0f766e;
     --color-primary-600: #0d5f59;
     --color-primary-100: #ccfbf1;
+    --color-secondary: #1d4ed8;
+    --color-secondary-500: #3b82f6;
+    --color-accent: #22c55e;
     --color-danger: #dc2626;
     --color-warning: #f59e0b;
     --color-info: #0284c7;
@@ -17,7 +20,26 @@
     --radius-sm: 8px;
     --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
     --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 14px 34px rgba(15, 23, 42, 0.12);
+    --shadow-xl: 0 24px 60px rgba(15, 23, 42, 0.18);
     --focus-ring: 0 0 0 3px rgba(15, 118, 110, 0.2);
+    --brand-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    --brand-gradient-soft: linear-gradient(135deg, rgba(15, 118, 110, 0.12) 0%, rgba(59, 130, 246, 0.16) 100%);
+
+    /* Legacy aliases for existing page styles */
+    --primary-color: var(--color-primary);
+    --secondary-color: var(--color-secondary);
+    --primary-dark: var(--color-primary-600);
+    --text-color: var(--color-text);
+    --text-light: var(--color-muted);
+    --bg-light: #f8fafc;
+    --bg-white: #ffffff;
+    --border-color: var(--color-border);
+    --shadow: var(--shadow-sm);
+    --warning-color: var(--color-warning);
+    --danger-color: var(--color-danger);
+    --success-color: var(--color-accent);
+    --info-color: var(--color-info);
 }
 
 * {
@@ -60,13 +82,17 @@ p { color: var(--color-text); }
 }
 
 .page-header {
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--color-border);
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
 }
 
 /* Navbar overrides */
 .navbar.bg-dark {
-    background-color: #111827 !important;
+    background: linear-gradient(90deg, #0f172a 0%, #0f766e 120%) !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.25);
 }
 
 .navbar-brand {
@@ -190,6 +216,7 @@ p { color: var(--color-text); }
 .form-check-input {
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
+    background-color: #ffffff;
 }
 
 .form-control:focus,
@@ -212,6 +239,37 @@ a:hover {
 
 /* Utilities */
 .text-muted { color: var(--color-muted) !important; }
+
+/* Tables */
+.table {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+}
+
+.table thead th {
+    background: #f8fafc;
+    color: var(--color-text);
+    font-weight: 600;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* App shell helpers */
+.app-content {
+    padding: 0;
+}
+
+.section-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+}
 
 /* Responsive */
 @media (max-width: 768px) {

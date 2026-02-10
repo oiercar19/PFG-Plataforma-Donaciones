@@ -244,14 +244,14 @@ const Register = () => {
     };
 
     return (
-        <div style={{ background: 'linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%)', minHeight: '100vh', paddingTop: '3rem', paddingBottom: '3rem' }}>
+        <div style={{ background: 'var(--brand-gradient-soft)', minHeight: '100vh', paddingTop: '3rem', paddingBottom: '3rem' }}>
             <Container>
                 <Row className="justify-content-center">
                     <Col md={10} lg={8}>
                         <Card className="shadow-lg border-0">
                             <Card.Body className="p-4 p-md-5">
                                 <div className="text-center mb-4">
-                                    <i className="bi bi-person-plus-fill" style={{ fontSize: '3rem', color: '#667eea' }}></i>
+                                    <i className="bi bi-person-plus-fill" style={{ fontSize: '3rem', color: 'var(--color-secondary)' }}></i>
                                     <h2 className="mt-3 fw-bold">Registro</h2>
                                     <p className="text-muted">Crea tu cuenta para comenzar</p>
                                 </div>

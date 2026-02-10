@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
 import './AdminPanel.css';
 
@@ -119,14 +119,14 @@ const AdminPanel = () => {
             {error && (
                 <div className="alert alert-error">
                     {error}
-                    <button onClick={() => setError('')} style={{ float: 'right' }}>×</button>
+                    <button onClick={() => setError('')} style={{ float: 'right' }}>&times;</button>
                 </div>
             )}
 
             {success && (
                 <div className="alert alert-success">
                     {success}
-                    <button onClick={() => setSuccess('')} style={{ float: 'right' }}>×</button>
+                    <button onClick={() => setSuccess('')} style={{ float: 'right' }}>&times;</button>
                 </div>
             )}
 
@@ -134,7 +134,7 @@ const AdminPanel = () => {
             {stats && (
                 <div className="stats-grid">
                     <div className="stat-card">
-                        <div className="stat-icon">👥</div>
+                        <div className="stat-icon">ðŸ‘¥</div>
                         <div className="stat-info">
                             <h3>{stats.users.total}</h3>
                             <p>Usuarios Totales</p>
@@ -143,7 +143,7 @@ const AdminPanel = () => {
                     </div>
 
                     <div className="stat-card">
-                        <div className="stat-icon">🏢</div>
+                        <div className="stat-icon">ðŸ¢</div>
                         <div className="stat-info">
                             <h3>{stats.ongs.total}</h3>
                             <p>ONGs Registradas</p>
@@ -152,7 +152,7 @@ const AdminPanel = () => {
                     </div>
 
                     <div className="stat-card pending">
-                        <div className="stat-icon">⏳</div>
+                        <div className="stat-icon">â³</div>
                         <div className="stat-info">
                             <h3>{stats.ongs.pending}</h3>
                             <p>ONGs Pendientes</p>
@@ -161,7 +161,7 @@ const AdminPanel = () => {
                     </div>
 
                     <div className="stat-card">
-                        <div className="stat-icon">🎁</div>
+                        <div className="stat-icon">ðŸŽ</div>
                         <div className="stat-info">
                             <h3>{stats.donations.total}</h3>
                             <p>Donaciones</p>
@@ -175,7 +175,7 @@ const AdminPanel = () => {
                 <h2>ONGs Pendientes de Validación</h2>
 
                 {pendingOngs.length === 0 ? (
-                    <p className="text-center" style={{ padding: '20px', color: '#666' }}>
+                    <p className="text-center" style={{ padding: '20px', color: 'var(--color-muted)' }}>
                         No hay ONGs pendientes de validación
                     </p>
                 ) : (
@@ -204,7 +204,7 @@ const AdminPanel = () => {
                                     <button
                                         onClick={() => handleViewDetails(ong.id)}
                                         style={{
-                                            backgroundColor: '#6c757d',
+                                            backgroundColor: 'var(--color-muted)',
                                             color: '#ffffff',
                                             border: 'none',
                                             padding: '10px 20px',
@@ -214,15 +214,15 @@ const AdminPanel = () => {
                                             fontWeight: '500',
                                             transition: 'all 0.2s ease'
                                         }}
-                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-text)'}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--color-muted)'}
                                     >
-                                        👁️ Ver Detalles
+                                        ðŸ‘ï¸ Ver Detalles
                                     </button>
                                     <button
                                         onClick={() => handleApprove(ong.id)}
                                         style={{
-                                            backgroundColor: '#667eea',
+                                            backgroundColor: 'var(--color-primary)',
                                             color: '#ffffff',
                                             border: 'none',
                                             padding: '10px 20px',
@@ -233,15 +233,15 @@ const AdminPanel = () => {
                                             transition: 'all 0.2s ease'
                                         }}
                                         disabled={actionLoading}
-                                        onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = '#5568d3')}
-                                        onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = '#667eea')}
+                                        onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = 'var(--color-primary-600)')}
+                                        onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = 'var(--color-primary)')}
                                     >
-                                        ✓ Aprobar
+                                        âœ“ Aprobar
                                     </button>
                                     <button
                                         onClick={() => setShowRejectModal(ong.id)}
                                         style={{
-                                            backgroundColor: '#dc3545',
+                                            backgroundColor: 'var(--color-danger)',
                                             color: '#ffffff',
                                             border: 'none',
                                             padding: '10px 20px',
@@ -252,10 +252,10 @@ const AdminPanel = () => {
                                             transition: 'all 0.2s ease'
                                         }}
                                         disabled={actionLoading}
-                                        onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = '#c82333')}
-                                        onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = '#dc3545')}
+                                        onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = '#b91c1c')}
+                                        onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = 'var(--color-danger)')}
                                     >
-                                        ✕ Rechazar
+                                        âœ• Rechazar
                                     </button>
                                 </div>
                             </div>
@@ -290,14 +290,14 @@ const AdminPanel = () => {
                                 </p>
                             )}
                             <div style={{ marginTop: '1rem' }}>
-                                <p style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#333' }}>Documentos adjuntos:</p>
+                                <p style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Documentos adjuntos:</p>
                                 {selectedOng.documents && selectedOng.documents.length > 0 ? (
                                     <div style={{
                                         display: 'flex',
                                         flexDirection: 'column',
                                         gap: '10px',
                                         padding: '10px',
-                                        backgroundColor: '#f8f9fa',
+                                        backgroundColor: 'var(--bg-light)',
                                         borderRadius: '8px'
                                     }}>
                                         {selectedOng.documents.map((doc, idx) => {
@@ -313,25 +313,25 @@ const AdminPanel = () => {
                                                         alignItems: 'center',
                                                         gap: '10px',
                                                         width: '100%',
-                                                        backgroundColor: '#007bff',
+                                                        backgroundColor: 'var(--color-secondary)',
                                                         color: '#ffffff',
                                                         border: 'none',
                                                         borderRadius: '6px',
                                                         cursor: 'pointer',
                                                         transition: 'all 0.2s ease'
                                                     }}
-                                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
-                                                    onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
+                                                    onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-secondary-500)'}
+                                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--color-secondary)'}
                                                 >
-                                                    <span style={{ fontSize: '18px' }}>📄</span>
+                                                    <span style={{ fontSize: '18px' }}>ðŸ“„</span>
                                                     <span style={{ flex: 1, color: '#ffffff', fontWeight: '500' }}>{doc.originalName}</span>
-                                                    <span style={{ fontSize: '12px', color: '#ffffff' }}>⬇️ Descargar ({(doc.size / 1024).toFixed(1)} KB)</span>
+                                                    <span style={{ fontSize: '12px', color: '#ffffff' }}>â¬‡ï¸ Descargar ({(doc.size / 1024).toFixed(1)} KB)</span>
                                                 </button>
                                             );
                                         })}
                                     </div>
                                 ) : (
-                                    <p style={{ color: '#666', fontStyle: 'italic', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+                                    <p style={{ color: 'var(--color-muted)', fontStyle: 'italic', padding: '10px', backgroundColor: 'var(--bg-light)', borderRadius: '8px' }}>
                                         No hay documentos adjuntos
                                     </p>
                                 )}
@@ -349,7 +349,7 @@ const AdminPanel = () => {
                             <button
                                 onClick={() => handleApprove(selectedOng.id)}
                                 style={{
-                                    backgroundColor: '#667eea',
+                                    backgroundColor: 'var(--color-primary)',
                                     color: '#ffffff',
                                     border: 'none',
                                     padding: '12px 24px',
@@ -360,10 +360,10 @@ const AdminPanel = () => {
                                     transition: 'all 0.2s ease'
                                 }}
                                 disabled={actionLoading}
-                                onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = '#5568d3')}
-                                onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = '#667eea')}
+                                onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = 'var(--color-primary-600)')}
+                                onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = 'var(--color-primary)')}
                             >
-                                ✓ Aprobar
+                                âœ“ Aprobar
                             </button>
                             <button
                                 onClick={() => {
@@ -371,7 +371,7 @@ const AdminPanel = () => {
                                     setSelectedOng(null);
                                 }}
                                 style={{
-                                    backgroundColor: '#dc3545',
+                                    backgroundColor: 'var(--color-danger)',
                                     color: '#ffffff',
                                     border: 'none',
                                     padding: '12px 24px',
@@ -382,17 +382,17 @@ const AdminPanel = () => {
                                     transition: 'all 0.2s ease'
                                 }}
                                 disabled={actionLoading}
-                                onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = '#c82333')}
-                                onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = '#dc3545')}
+                                onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = '#b91c1c')}
+                                onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = 'var(--color-danger)')}
                             >
-                                ✕ Rechazar
+                                âœ• Rechazar
                             </button>
                             <button
                                 onClick={() => setSelectedOng(null)}
                                 style={{
                                     backgroundColor: '#ffffff',
-                                    color: '#333',
-                                    border: '2px solid #ddd',
+                                    color: 'var(--color-text)',
+                                    border: '2px solid var(--color-border)',
                                     padding: '12px 24px',
                                     borderRadius: '6px',
                                     cursor: 'pointer',
@@ -401,12 +401,12 @@ const AdminPanel = () => {
                                     transition: 'all 0.2s ease'
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.target.style.backgroundColor = '#f8f9fa';
-                                    e.target.style.borderColor = '#999';
+                                    e.target.style.backgroundColor = 'var(--bg-light)';
+                                    e.target.style.borderColor = 'var(--color-muted)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.target.style.backgroundColor = '#ffffff';
-                                    e.target.style.borderColor = '#ddd';
+                                    e.target.style.borderColor = 'var(--color-border)';
                                 }}
                             >
                                 Cerrar
@@ -432,9 +432,9 @@ const AdminPanel = () => {
                                 width: '100%',
                                 padding: '10px',
                                 marginBottom: '20px',
-                                color: '#333',
+                                color: 'var(--color-text)',
                                 fontSize: '14px',
-                                border: '1px solid #ddd',
+                                border: '1px solid var(--color-border)',
                                 borderRadius: '6px'
                             }}
                         />
@@ -443,7 +443,7 @@ const AdminPanel = () => {
                             <button
                                 onClick={() => handleReject(showRejectModal)}
                                 style={{
-                                    backgroundColor: '#dc3545',
+                                    backgroundColor: 'var(--color-danger)',
                                     color: '#ffffff',
                                     border: 'none',
                                     padding: '12px 24px',
@@ -457,12 +457,12 @@ const AdminPanel = () => {
                                 disabled={actionLoading || !rejectionReason.trim()}
                                 onMouseEnter={(e) => {
                                     if (!actionLoading && rejectionReason.trim()) {
-                                        e.target.style.backgroundColor = '#c82333';
+                                        e.target.style.backgroundColor = '#b91c1c';
                                     }
                                 }}
                                 onMouseLeave={(e) => {
                                     if (!actionLoading && rejectionReason.trim()) {
-                                        e.target.style.backgroundColor = '#dc3545';
+                                        e.target.style.backgroundColor = 'var(--color-danger)';
                                     }
                                 }}
                             >
@@ -475,8 +475,8 @@ const AdminPanel = () => {
                                 }}
                                 style={{
                                     backgroundColor: '#ffffff',
-                                    color: '#333',
-                                    border: '2px solid #ddd',
+                                    color: 'var(--color-text)',
+                                    border: '2px solid var(--color-border)',
                                     padding: '12px 24px',
                                     borderRadius: '6px',
                                     cursor: 'pointer',
@@ -485,12 +485,12 @@ const AdminPanel = () => {
                                     transition: 'all 0.2s ease'
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.target.style.backgroundColor = '#f8f9fa';
-                                    e.target.style.borderColor = '#999';
+                                    e.target.style.backgroundColor = 'var(--bg-light)';
+                                    e.target.style.borderColor = 'var(--color-muted)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.target.style.backgroundColor = '#ffffff';
-                                    e.target.style.borderColor = '#ddd';
+                                    e.target.style.borderColor = 'var(--color-border)';
                                 }}
                             >
                                 Cancelar
@@ -504,3 +504,4 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+

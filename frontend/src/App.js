@@ -38,7 +38,7 @@ function App() {
                     flexDirection: 'column'
                 }}>
                     <Navbar />
-                    <div style={{ flex: 1 }}>
+                    <div className="app-content" style={{ flex: 1 }}>
                         <Routes>
                             {/* Rutas públicas */}
                             <Route path="/" element={<Home />} />
