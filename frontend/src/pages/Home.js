@@ -34,11 +34,6 @@ const steps = [
     }
 ];
 
-const trustItems = [
-    { icon: 'bi-shield-check', title: 'ONGs verificadas', desc: 'Revisión y validación manual de organizaciones.' },
-    { icon: 'bi-search', title: 'Trazabilidad', desc: 'Historial de donaciones y solicitudes en un solo lugar.' },
-    { icon: 'bi-lock', title: 'Privacidad', desc: 'Tus datos protegidos y comunicaciones seguras.' }
-];
 
 const features = [
     { icon: 'bi-box-seam', title: 'Publica donaciones', desc: 'Alimentos, ropa, medicinas y más en minutos.', color: '#16a34a' },
@@ -223,27 +218,6 @@ const Home = () => {
                     </Card>
                 </Container>
             )}
-
-            {/* Trust Section */}
-            <section className="home-section home-trust">
-                <Container>
-                    <Row className="g-4">
-                        {trustItems.map((item, idx) => (
-                            <Col md={4} key={idx}>
-                                <div className="home-trust-card">
-                                    <div className="home-trust-icon">
-                                        <i className={`bi ${item.icon}`}></i>
-                                    </div>
-                                    <div>
-                                        <h5>{item.title}</h5>
-                                        <p className="text-muted mb-0">{item.desc}</p>
-                                    </div>
-                                </div>
-                            </Col>
-                        ))}
-                    </Row>
-                </Container>
-            </section>
 
             {/* Steps Section */}
             <section className="home-section">
