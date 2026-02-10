@@ -75,7 +75,8 @@
 .home-hero-subtitle {
     font-size: 1.15rem;
     max-width: 560px;
-    opacity: 0.95;
+    color: rgba(248, 250, 252, 0.95);
+    text-shadow: 0 2px 10px rgba(15, 23, 42, 0.6);
 }
 
 .home-hero-actions {
