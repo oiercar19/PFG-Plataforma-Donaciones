@@ -174,7 +174,7 @@ const NavigationBar = () => {
                                     </Nav.Link>
                                 )}
 
-                                {isOng() && (
+                                {(isOng() || isDonor()) && (
                                     <Nav.Link as={Link} to="/map" className="text-white me-2">
                                         <i className="bi bi-geo-alt me-1"></i>
                                         Mapa
