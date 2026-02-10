@@ -16,6 +16,10 @@ const heroSlides = [
     {
         src: `${process.env.PUBLIC_URL}/hero/slide-3.jpg`,
         alt: 'Equipo de ONG coordinando recursos'
+    },
+    {
+        src: `${process.env.PUBLIC_URL}/hero/slide-4.jpg`,
+        alt: 'Equipo de ONG coordinando recursos'
     }
 ];
 
