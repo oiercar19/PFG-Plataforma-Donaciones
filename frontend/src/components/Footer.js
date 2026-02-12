@@ -1,5 +1,6 @@
 import React from 'react';
 import { Container } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import './Footer.css';
 
 const Footer = () => {
@@ -12,6 +13,13 @@ const Footer = () => {
                 <div>
                     <div className="footer-meta">{year} Todos los derechos reservados.</div>
                     <div className="footer-warning">Primera versión en pruebas — errores posibles.</div>
+                    <div className="footer-links">
+                        <Link to="/aviso-legal">Aviso legal</Link>
+                        <span className="footer-links-sep">·</span>
+                        <Link to="/proteccion-datos">Protección de datos</Link>
+                        <span className="footer-links-sep">·</span>
+                        <Link to="/terminos-uso">Términos de uso</Link>
+                    </div>
                 </div>
             </Container>
         </footer>

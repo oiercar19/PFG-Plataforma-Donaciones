@@ -27,6 +27,9 @@ import NeedDetails from './pages/NeedDetails';
 import MyNeeds from './pages/MyNeeds';
 import CreateNeed from './pages/CreateNeed';
 import OngDetails from './pages/OngDetails';
+import LegalNotice from './pages/LegalNotice';
+import DataProtection from './pages/DataProtection';
+import TermsOfUse from './pages/TermsOfUse';
 
 function App() {
     return (
@@ -63,6 +66,12 @@ function App() {
 
                             {/* Página de confirmación para ONGs */}
                             <Route path="/ong-pending" element={<OngPending />} />
+
+                            {/* Legal */}
+                            <Route path="/aviso-legal" element={<LegalNotice />} />
+                            <Route path="/proteccion-datos" element={<DataProtection />} />
+                            <Route path="/terminos-uso" element={<TermsOfUse />} />
+
 
                             {/* Rutas protegidas - Solo Admin */}
                             <Route

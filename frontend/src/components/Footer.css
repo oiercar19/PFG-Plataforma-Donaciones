@@ -21,3 +21,26 @@
     font-size: 0.9rem;
     margin-top: 0.25rem;
 }
+
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+    font-size: 0.9rem;
+}
+
+.footer-links a {
+    color: rgba(226, 232, 240, 0.95);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.footer-links a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.footer-links-sep {
+    color: rgba(226, 232, 240, 0.6);
+}
