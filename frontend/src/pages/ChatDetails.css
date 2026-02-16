@@ -54,3 +54,36 @@
 .chat-input .form-control {
     flex: 1;
 }
+
+.shipping-estimate .alert {
+    font-size: 0.9rem;
+}
+
+.shipping-controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.shipping-field {
+    min-width: 170px;
+    flex: 1;
+}
+
+.shipping-field .form-label {
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+    color: #4b5563;
+}
+
+.shipping-options {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.shipping-tariff-table th,
+.shipping-tariff-table td {
+    font-size: 0.8rem;
+    white-space: nowrap;
+}

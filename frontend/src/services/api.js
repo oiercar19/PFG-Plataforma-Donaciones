@@ -130,6 +130,9 @@ export const conversationAPI = {
 
     // Enviar mensaje
     sendMessage: (conversationId, content) => api.post(`/conversations/${conversationId}/messages`, { content }),
+
+    // Calcular coste estimado de envio para chats de donacion
+    calculateShippingCost: (conversationId, params) => api.get(`/conversations/${conversationId}/shipping-cost`, { params }),
 };
 
 // Need endpoints
