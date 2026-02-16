@@ -9,17 +9,19 @@ const Needs = () => {
     const [needs, setNeeds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [filters, setFilters] = useState({
+    const emptyFilters = {
         search: '',
         category: '',
         urgent: '',
-    });
+    };
+    const [filters, setFilters] = useState(emptyFilters);
+    const [appliedFilters, setAppliedFilters] = useState(emptyFilters);
 
     const loadNeeds = useCallback(async () => {
         try {
             setLoading(true);
             setError('');
-            const response = await needAPI.getNeeds(filters);
+            const response = await needAPI.getNeeds(appliedFilters);
             setNeeds(response.data.needs || []);
         } catch (err) {
             console.error('Error loading needs:', err);
@@ -28,7 +30,7 @@ const Needs = () => {
         } finally {
             setLoading(false);
         }
-    }, [filters]);
+    }, [appliedFilters]);
 
     useEffect(() => {
         loadNeeds();
@@ -43,26 +45,56 @@ const Needs = () => {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        loadNeeds();
+        setAppliedFilters(filters);
     };
 
     const handleClearFilters = () => {
-        setFilters({ search: '', category: '', urgent: '' });
-        setTimeout(() => loadNeeds(), 100);
+        setFilters(emptyFilters);
+        setAppliedFilters(emptyFilters);
     };
 
     const getCategoryBadge = (category) => {
         const badges = {
             ALIMENTOS: 'success',
+            Alimentos: 'success',
             ROPA: 'info',
+            Ropa: 'info',
             MEDICINAS: 'danger',
+            Medicinas: 'danger',
             JUGUETES: 'warning',
+            Juguetes: 'warning',
             MUEBLES: 'secondary',
+            Muebles: 'secondary',
             ELECTRONICA: 'primary',
+            Electronica: 'primary',
+            'Electrónica': 'primary',
+            LIBROS: 'dark',
+            Libros: 'dark',
+            MATERIAL_ESCOLAR: 'secondary',
+            'Material Escolar': 'secondary',
+            PRODUCTOS_DE_HIGIENE: 'info',
+            'Productos de Higiene': 'info',
             OTRO: 'dark',
+            OTROS: 'dark',
+            Otro: 'dark',
+            Otros: 'dark',
         };
         return badges[category] || 'secondary';
     };
+
+    const categories = [
+        { value: '', label: 'Todas las categorias' },
+        { value: 'Alimentos', label: 'Alimentos' },
+        { value: 'Ropa', label: 'Ropa' },
+        { value: 'Medicinas', label: 'Medicinas' },
+        { value: 'Muebles', label: 'Muebles' },
+        { value: 'Electrónica', label: 'Electrónica' },
+        { value: 'Juguetes', label: 'Juguetes' },
+        { value: 'Libros', label: 'Libros' },
+        { value: 'Material Escolar', label: 'Material Escolar' },
+        { value: 'Productos de Higiene', label: 'Productos de Higiene' },
+        { value: 'Otros', label: 'Otros' },
+    ];
 
     if (loading) {
         return (
@@ -114,13 +146,17 @@ const Needs = () => {
                                         <i className="bi bi-tag me-1"></i>
                                         Categoria
                                     </Form.Label>
-                                    <Form.Control
-                                        type="text"
+                                    <Form.Select
                                         name="category"
-                                        placeholder="Ej: ALIMENTOS"
                                         value={filters.category}
                                         onChange={handleFilterChange}
-                                    />
+                                    >
+                                        {categories.map((cat) => (
+                                            <option key={cat.value} value={cat.value}>
+                                                {cat.label}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
                                 </Form.Group>
                             </Col>
                             <Col md={3}>
@@ -157,7 +193,7 @@ const Needs = () => {
                         <i className="bi bi-inbox display-1 text-muted"></i>
                         <h3 className="mt-3">No hay necesidades disponibles</h3>
                         <p className="text-muted">
-                            {filters.search || filters.category || filters.urgent
+                            {appliedFilters.search || appliedFilters.category || appliedFilters.urgent
                                 ? 'Prueba con otros filtros'
                                 : 'No se encontraron necesidades en este momento'}
                         </p>

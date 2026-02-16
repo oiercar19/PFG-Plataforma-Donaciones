@@ -8,6 +8,32 @@ function parseUrgent(value) {
     return false;
 }
 
+function normalizeCategoryValue(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
+}
+
+function getCategoryVariants(inputCategory) {
+    const normalized = normalizeCategoryValue(inputCategory);
+    const variantsMap = {
+        alimentos: ['Alimentos', 'ALIMENTOS'],
+        ropa: ['Ropa', 'ROPA'],
+        medicinas: ['Medicinas', 'MEDICINAS'],
+        muebles: ['Muebles', 'MUEBLES'],
+        electronica: ['Electronica', 'Electrónica', 'ELECTRONICA'],
+        juguetes: ['Juguetes', 'JUGUETES'],
+        libros: ['Libros', 'LIBROS'],
+        'material escolar': ['Material Escolar', 'MATERIAL_ESCOLAR', 'MATERIAL ESCOLAR'],
+        'productos de higiene': ['Productos de Higiene', 'PRODUCTOS_DE_HIGIENE', 'PRODUCTOS DE HIGIENE'],
+        otros: ['Otros', 'Otro', 'OTRO', 'OTROS'],
+    };
+
+    return variantsMap[normalized] || [inputCategory];
+}
+
 async function createNeed(req, res) {
     try {
         const { title, description, category, quantity, urgent } = req.body;
@@ -55,6 +81,8 @@ async function createNeed(req, res) {
 async function listNeeds(req, res) {
     try {
         const { search, category, urgent, status, ongId } = req.query;
+        const normalizedSearch = (search || '').trim();
+        const normalizedCategory = (category || '').trim();
         const where = {};
 
         if (status && ['OPEN', 'CLOSED'].includes(status.toUpperCase())) {
@@ -63,18 +91,22 @@ async function listNeeds(req, res) {
             where.status = 'OPEN';
         }
 
-        if (category) {
-            where.category = category;
+        if (normalizedCategory) {
+            const categoryVariants = getCategoryVariants(normalizedCategory);
+            where.category = {
+                in: categoryVariants,
+            };
         }
 
         if (urgent !== undefined && urgent !== '') {
             where.urgent = parseUrgent(urgent);
         }
 
-        if (search) {
+        if (normalizedSearch) {
             where.OR = [
-                { title: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } },
+                { title: { contains: normalizedSearch, mode: 'insensitive' } },
+                { description: { contains: normalizedSearch, mode: 'insensitive' } },
+                { category: { contains: normalizedSearch, mode: 'insensitive' } },
             ];
         }
 

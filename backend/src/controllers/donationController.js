@@ -1,6 +1,32 @@
 const prisma = require('../config/database');
 const { geocodeAddress } = require('../services/geocoding');
 
+function normalizeCategoryValue(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
+}
+
+function getCategoryVariants(inputCategory) {
+    const normalized = normalizeCategoryValue(inputCategory);
+    const variantsMap = {
+        alimentos: ['Alimentos', 'ALIMENTOS'],
+        ropa: ['Ropa', 'ROPA'],
+        medicinas: ['Medicinas', 'MEDICINAS'],
+        muebles: ['Muebles', 'MUEBLES'],
+        electronica: ['Electronica', 'Electrónica', 'ELECTRONICA'],
+        juguetes: ['Juguetes', 'JUGUETES'],
+        libros: ['Libros', 'LIBROS'],
+        'material escolar': ['Material Escolar', 'MATERIAL_ESCOLAR', 'MATERIAL ESCOLAR'],
+        'productos de higiene': ['Productos de Higiene', 'PRODUCTOS_DE_HIGIENE', 'PRODUCTOS DE HIGIENE'],
+        otros: ['Otros', 'Otro', 'OTRO', 'OTROS'],
+    };
+
+    return variantsMap[normalized] || [inputCategory];
+}
+
 /**
  * Crear una donación
  * Cualquier usuario autenticado puede crear donaciones (donantes y ONGs)
@@ -82,11 +108,15 @@ async function getAvailableDonations(req, res) {
     try {
         const userId = req.user.id;
         const { category, location, search, includeOwn } = req.query;
+        const normalizedCategory = (category || '').trim();
+        const normalizedLocation = (location || '').trim();
+        const normalizedSearch = (search || '').trim();
 
         // Construir filtros
         const where = {
             status: 'DISPONIBLE',
         };
+        const andFilters = [];
 
         if (includeOwn !== 'true' && includeOwn !== '1') {
             // Excluir las donaciones propias
@@ -95,22 +125,42 @@ async function getAvailableDonations(req, res) {
             };
         }
 
-        if (category) {
-            where.category = category;
+        if (normalizedCategory) {
+            const categoryVariants = getCategoryVariants(normalizedCategory);
+            andFilters.push({
+                OR: categoryVariants.map((categoryValue) => ({
+                    category: {
+                        equals: categoryValue,
+                        mode: 'insensitive',
+                    },
+                })),
+            });
         }
 
-        if (location) {
-            where.location = {
-                contains: location,
-                mode: 'insensitive',
-            };
+        if (normalizedLocation) {
+            andFilters.push({
+                OR: [
+                    { city: { contains: normalizedLocation, mode: 'insensitive' } },
+                    { address: { contains: normalizedLocation, mode: 'insensitive' } },
+                    { province: { contains: normalizedLocation, mode: 'insensitive' } },
+                    { postalCode: { contains: normalizedLocation, mode: 'insensitive' } },
+                    { donor: { location: { contains: normalizedLocation, mode: 'insensitive' } } },
+                ],
+            });
         }
 
-        if (search) {
-            where.OR = [
-                { title: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } },
-            ];
+        if (normalizedSearch) {
+            andFilters.push({
+                OR: [
+                    { title: { contains: normalizedSearch, mode: 'insensitive' } },
+                    { description: { contains: normalizedSearch, mode: 'insensitive' } },
+                    { city: { contains: normalizedSearch, mode: 'insensitive' } },
+                ],
+            });
+        }
+
+        if (andFilters.length > 0) {
+            where.AND = andFilters;
         }
 
         const donations = await prisma.donation.findMany({

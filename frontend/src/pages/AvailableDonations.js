@@ -11,11 +11,13 @@ const AvailableDonations = () => {
     const [donations, setDonations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [filters, setFilters] = useState({
+    const emptyFilters = {
         search: '',
         category: '',
-        location: ''
-    });
+        location: '',
+    };
+    const [filters, setFilters] = useState(emptyFilters);
+    const [appliedFilters, setAppliedFilters] = useState(emptyFilters);
 
     // Verificar si el usuario ONG está aprobado
     useEffect(() => {
@@ -28,7 +30,7 @@ const AvailableDonations = () => {
         try {
             setLoading(true);
             setError('');
-            const response = await donationAPI.getAvailableDonations(filters);
+            const response = await donationAPI.getAvailableDonations(appliedFilters);
             setDonations(response.data.donations);
         } catch (err) {
             console.error('Error al cargar donaciones:', err);
@@ -37,7 +39,7 @@ const AvailableDonations = () => {
         } finally {
             setLoading(false);
         }
-    }, [filters]);
+    }, [appliedFilters]);
 
     useEffect(() => {
         loadDonations();
@@ -52,40 +54,55 @@ const AvailableDonations = () => {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        loadDonations();
+        setAppliedFilters(filters);
     };
 
     const handleClearFilters = () => {
-        setFilters({
-            search: '',
-            category: '',
-            location: ''
-        });
-        setTimeout(() => loadDonations(), 100);
+        setFilters(emptyFilters);
+        setAppliedFilters(emptyFilters);
     };
 
     const getCategoryBadge = (category) => {
         const badges = {
             ALIMENTOS: 'success',
+            Alimentos: 'success',
             ROPA: 'info',
+            Ropa: 'info',
             MEDICINAS: 'danger',
+            Medicinas: 'danger',
             JUGUETES: 'warning',
+            Juguetes: 'warning',
             MUEBLES: 'secondary',
+            Muebles: 'secondary',
             ELECTRONICA: 'primary',
-            OTRO: 'dark'
+            Electronica: 'primary',
+            'Electrónica': 'primary',
+            LIBROS: 'dark',
+            Libros: 'dark',
+            MATERIAL_ESCOLAR: 'secondary',
+            'Material Escolar': 'secondary',
+            PRODUCTOS_DE_HIGIENE: 'info',
+            'Productos de Higiene': 'info',
+            OTRO: 'dark',
+            OTROS: 'dark',
+            Otro: 'dark',
+            Otros: 'dark',
         };
         return badges[category] || 'secondary';
     };
 
     const categories = [
-        { value: '', label: 'Todas las categorías' },
-        { value: 'ALIMENTOS', label: 'Alimentos' },
-        { value: 'ROPA', label: 'Ropa' },
-        { value: 'MEDICINAS', label: 'Medicinas' },
-        { value: 'JUGUETES', label: 'Juguetes' },
-        { value: 'MUEBLES', label: 'Muebles' },
-        { value: 'ELECTRONICA', label: 'Electrónica' },
-        { value: 'OTRO', label: 'Otro' }
+        { value: '', label: 'Selecciona una categoría' },
+        { value: 'Alimentos', label: 'Alimentos' },
+        { value: 'Ropa', label: 'Ropa' },
+        { value: 'Medicinas', label: 'Medicinas' },
+        { value: 'Muebles', label: 'Muebles' },
+        { value: 'Electrónica', label: 'Electrónica' },
+        { value: 'Juguetes', label: 'Juguetes' },
+        { value: 'Libros', label: 'Libros' },
+        { value: 'Material Escolar', label: 'Material Escolar' },
+        { value: 'Productos de Higiene', label: 'Productos de Higiene' },
+        { value: 'Otros', label: 'Otros' },
     ];
 
     if (loading) {
@@ -193,7 +210,7 @@ const AvailableDonations = () => {
                         <i className="bi bi-inbox display-1 text-muted"></i>
                         <h3 className="mt-3">No hay donaciones disponibles</h3>
                         <p className="text-muted">
-                            {filters.search || filters.category || filters.location
+                            {appliedFilters.search || appliedFilters.category || appliedFilters.location
                                 ? 'Intenta cambiar los filtros de búsqueda'
                                 : 'No se encontraron donaciones en este momento'}
                         </p>
