@@ -14,6 +14,8 @@ router.post('/need/:needId', authenticate, conversationController.openNeedConver
 
 router.get('/:conversationId', authenticate, conversationController.getConversationById);
 
+router.get('/:conversationId/shipping-cost', authenticate, conversationController.calculateShippingCost);
+
 router.post('/:conversationId/messages', authenticate, conversationController.postMessage);
 
 module.exports = router;
