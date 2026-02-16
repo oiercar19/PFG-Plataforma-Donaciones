@@ -22,6 +22,16 @@
     margin-top: 0.25rem;
 }
 
+.footer-warning a {
+    color: inherit;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.footer-warning a:hover {
+    color: #fde68a;
+}
+
 .footer-links {
     display: flex;
     align-items: center;
