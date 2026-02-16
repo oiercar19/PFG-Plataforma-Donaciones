@@ -198,6 +198,7 @@ function DonationDetails() {
                             {donation.donorId === user?.id && (
                                 <Button
                                     variant="success"
+                                    className="btn-delivered-action"
                                     onClick={handleMarkAsDelivered}
                                 >
                                     <i className="bi bi-check-circle me-2"></i>

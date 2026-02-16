@@ -292,7 +292,7 @@ function MyDonations() {
                                                 <Button
                                                     variant="success"
                                                     size="sm"
-                                                    className="flex-fill"
+                                                    className="flex-fill btn-delivered-action"
                                                     onClick={() => handleMarkAsDelivered(donation.id)}
                                                 >
                                                     <i className="bi bi-check-circle me-1"></i>
