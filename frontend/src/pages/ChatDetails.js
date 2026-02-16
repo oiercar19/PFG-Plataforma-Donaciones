@@ -115,14 +115,9 @@ function ChatDetails() {
         }
     };
 
-    const handleToggleShippingPanel = async () => {
-        if (shippingPanelVisible) {
-            setShippingPanelVisible(false);
-            return;
-        }
-
-        await handleCalculateShippingCost();
+    const handleCalculateShipping = async () => {
         setShippingPanelVisible(true);
+        await handleCalculateShippingCost();
     };
 
     const formatDateTime = (dateString) => {
@@ -286,24 +281,37 @@ function ChatDetails() {
 
                         {isDonation && (
                             <div className="shipping-estimate mt-3">
-                                <Button
-                                    variant="outline-success"
-                                    size="sm"
-                                    onClick={handleToggleShippingPanel}
-                                    disabled={shippingLoading}
-                                >
-                                    {shippingLoading ? (
-                                        <>
-                                            <Spinner animation="border" size="sm" className="me-2" />
-                                            Calculando...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <i className="bi bi-truck me-2"></i>
-                                            {shippingPanelVisible ? 'Ocultar coste de envio' : 'Calcular coste de envio'}
-                                        </>
+                                <div className="d-flex gap-2 flex-wrap">
+                                    <Button
+                                        variant="outline-success"
+                                        size="sm"
+                                        onClick={handleCalculateShipping}
+                                        disabled={shippingLoading}
+                                    >
+                                        {shippingLoading ? (
+                                            <>
+                                                <Spinner animation="border" size="sm" className="me-2" />
+                                                Calculando...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i className="bi bi-truck me-2"></i>
+                                                Calcular coste de envio
+                                            </>
+                                        )}
+                                    </Button>
+                                    {shippingPanelVisible && (
+                                        <Button
+                                            variant="outline-secondary"
+                                            size="sm"
+                                            onClick={() => setShippingPanelVisible(false)}
+                                            disabled={shippingLoading}
+                                        >
+                                            <i className="bi bi-eye-slash me-2"></i>
+                                            Ocultar coste de envio
+                                        </Button>
                                     )}
-                                </Button>
+                                </div>
 
                                 {shippingPanelVisible && (
                                     <>
