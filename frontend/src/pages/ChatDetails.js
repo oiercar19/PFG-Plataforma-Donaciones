@@ -349,22 +349,24 @@ function ChatDetails() {
 
                                         {shippingEstimate && (
                                             <Alert variant="success" className="mt-2 mb-0 py-2">
-                                                <div><strong>Coste estimado:</strong> {formatMoney(shippingEstimate.amount)}</div>
-                                                <div><strong>Base por peso y bultos:</strong> {formatMoney(shippingEstimate.baseAmount)}</div>
-                                                {shippingEstimate.expressSurcharge > 0 && (
-                                                    <div><strong>Recargo urgente 24h:</strong> {formatMoney(shippingEstimate.expressSurcharge)}</div>
-                                                )}
-                                                <div><strong>Peso:</strong> {shippingEstimate.weightKg} kg</div>
-                                                <div><strong>Bultos:</strong> {shippingEstimate.packages}</div>
-                                                {shippingEstimate.distanceKm !== null && (
-                                                    <div><strong>Distancia estimada:</strong> {shippingEstimate.distanceKm} km</div>
-                                                )}
-                                                {shippingEstimate.origin && (
-                                                    <div><strong>Origen:</strong> {shippingEstimate.origin}</div>
-                                                )}
-                                                {shippingEstimate.destination && (
-                                                    <div><strong>Destino:</strong> {shippingEstimate.destination}</div>
-                                                )}
+                                                <div className="shipping-summary">
+                                                    <div><strong>Coste estimado:</strong> {formatMoney(shippingEstimate.amount)}</div>
+                                                    <div><strong>Base por peso y bultos:</strong> {formatMoney(shippingEstimate.baseAmount)}</div>
+                                                    {shippingEstimate.expressSurcharge > 0 && (
+                                                        <div><strong>Recargo urgente 24h:</strong> {formatMoney(shippingEstimate.expressSurcharge)}</div>
+                                                    )}
+                                                    <div><strong>Peso:</strong> {shippingEstimate.weightKg} kg</div>
+                                                    <div><strong>Bultos:</strong> {shippingEstimate.packages}</div>
+                                                    {shippingEstimate.distanceKm !== null && (
+                                                        <div><strong>Distancia estimada:</strong> {shippingEstimate.distanceKm} km</div>
+                                                    )}
+                                                    {shippingEstimate.origin && (
+                                                        <div><strong>Origen:</strong> {shippingEstimate.origin}</div>
+                                                    )}
+                                                    {shippingEstimate.destination && (
+                                                        <div><strong>Destino:</strong> {shippingEstimate.destination}</div>
+                                                    )}
+                                                </div>
                                             </Alert>
                                         )}
 

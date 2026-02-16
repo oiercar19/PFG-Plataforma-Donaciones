@@ -58,6 +58,7 @@
 
     .navbar .navbar-collapse {
         padding: 0.75rem 0 0.5rem;
+        overflow-x: hidden;
     }
 
     .navbar .navbar-nav {
@@ -71,6 +72,8 @@
         align-items: center;
         padding: 0.55rem 0.75rem;
         border-radius: 10px;
+        white-space: normal;
+        word-break: break-word;
     }
 
     .navbar .nav-link:hover,
@@ -91,5 +94,9 @@
     .chat-nav-link .chat-badge {
         top: 6px;
         right: 10px;
+    }
+
+    .navbar .dropdown-menu {
+        max-width: 100%;
     }
 }

@@ -57,6 +57,13 @@ body {
     line-height: 1.6;
 }
 
+html,
+body,
+#root {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 code {
     font-family: 'Courier New', monospace;
 }

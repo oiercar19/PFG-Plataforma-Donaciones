@@ -120,6 +120,26 @@
     color: var(--color-muted);
 }
 
+.details-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.details-toolbar-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin-left: auto;
+}
+
+.details-toolbar-actions .btn {
+    white-space: normal;
+}
+
 @media (max-width: 992px) {
     .main-image-container {
         height: 300px;
@@ -213,6 +233,20 @@
     .donation-details-card .row {
         --bs-gutter-x: 1rem;
     }
+
+    .details-toolbar > .btn {
+        width: 100%;
+    }
+
+    .details-toolbar-actions {
+        width: 100%;
+        justify-content: stretch;
+        margin-left: 0;
+    }
+
+    .details-toolbar-actions .btn {
+        flex: 1 1 calc(50% - 0.5rem);
+    }
 }
 
 @media (max-width: 576px) {
@@ -231,5 +265,9 @@
 
     .donation-details-card .card-body {
         padding: 1rem !important;
+    }
+
+    .details-toolbar-actions .btn {
+        flex-basis: 100%;
     }
 }

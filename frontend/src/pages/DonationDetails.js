@@ -148,7 +148,7 @@ function DonationDetails() {
         <>
             <Container className="py-4">
             {/* Botón volver */}
-            <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="details-toolbar mb-3">
                 <Button
                     variant="outline-secondary"
                     onClick={() => navigate('/my-donations')}
@@ -158,7 +158,7 @@ function DonationDetails() {
                 </Button>
 
                 {/* Botones de acción */}
-                <div className="d-flex gap-2">
+                <div className="details-toolbar-actions">
                     {donation.status === 'DISPONIBLE' && (
                         <>
                             <Button
