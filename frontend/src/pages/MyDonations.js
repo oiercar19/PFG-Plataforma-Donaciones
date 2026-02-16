@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Alert, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Badge, Alert, Spinner, Modal } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { donationAPI } from '../services/api';
 import './MyDonations.css';
@@ -11,6 +11,13 @@ function MyDonations() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [confirmDialog, setConfirmDialog] = useState({
+        show: false,
+        action: null,
+        donationId: null,
+        title: '',
+        message: ''
+    });
 
     useEffect(() => {
         loadMyDonations();
@@ -44,18 +51,13 @@ function MyDonations() {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('¿Estás seguro de que quieres eliminar esta donación?')) {
-            try {
-                await donationAPI.deleteDonation(id);
-                setDonations(donations.filter(d => d.id !== id));
-                setSuccessMessage('Donación eliminada exitosamente');
-                setTimeout(() => setSuccessMessage(''), 5000);
-            } catch (err) {
-                console.error('Error al eliminar:', err);
-                setError(err.response?.data?.error || 'Error al eliminar la donación');
-                setTimeout(() => setError(''), 5000);
-            }
-        }
+        setConfirmDialog({
+            show: true,
+            action: 'DELETE',
+            donationId: id,
+            title: 'Eliminar donación',
+            message: '¿Estás seguro de que quieres eliminar esta donación?'
+        });
     };
 
     const handleEdit = (id) => {
@@ -63,18 +65,47 @@ function MyDonations() {
     };
 
     const handleMarkAsDelivered = async (id) => {
-        if (window.confirm('¿Confirmas que esta donación ha sido entregada?')) {
-            try {
-                await donationAPI.markAsDelivered(id);
-                // Recargar las donaciones para mostrar el estado actualizado
+        setConfirmDialog({
+            show: true,
+            action: 'DELIVER',
+            donationId: id,
+            title: 'Confirmar entrega',
+            message: '¿Confirmas que esta donación ha sido entregada?'
+        });
+    };
+
+    const handleConfirmAction = async () => {
+        const { action, donationId } = confirmDialog;
+        if (!action || !donationId) return;
+
+        try {
+            if (action === 'DELETE') {
+                await donationAPI.deleteDonation(donationId);
+                setDonations((prevDonations) => prevDonations.filter((d) => d.id !== donationId));
+                setSuccessMessage('Donación eliminada exitosamente');
+            } else if (action === 'DELIVER') {
+                await donationAPI.markAsDelivered(donationId);
                 loadMyDonations();
                 setSuccessMessage('Donación marcada como entregada');
-                setTimeout(() => setSuccessMessage(''), 5000);
-            } catch (err) {
+            }
+            setTimeout(() => setSuccessMessage(''), 5000);
+        } catch (err) {
+            if (action === 'DELETE') {
+                console.error('Error al eliminar:', err);
+                setError(err.response?.data?.error || 'Error al eliminar la donación');
+            } else {
                 console.error('Error al marcar como entregada:', err);
                 setError(err.response?.data?.error || 'Error al marcar como entregada');
-                setTimeout(() => setError(''), 5000);
             }
+            setTimeout(() => setError(''), 5000);
+        } finally {
+            setConfirmDialog({
+                show: false,
+                action: null,
+                donationId: null,
+                title: '',
+                message: ''
+            });
         }
     };
 
@@ -128,7 +159,8 @@ function MyDonations() {
     }
 
     return (
-        <Container className="py-4">
+        <>
+            <Container className="py-4">
             <div className="page-header mb-4">
                 <div className="d-flex justify-content-between align-items-center flex-wrap">
                     <div>
@@ -307,7 +339,29 @@ function MyDonations() {
                     </Row>
                 </>
             )}
-        </Container>
+            </Container>
+            <Modal
+                show={confirmDialog.show}
+                onHide={() => setConfirmDialog({ show: false, action: null, donationId: null, title: '', message: '' })}
+                centered
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title>{confirmDialog.title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{confirmDialog.message}</Modal.Body>
+                <Modal.Footer>
+                    <Button
+                        variant="outline-secondary"
+                        onClick={() => setConfirmDialog({ show: false, action: null, donationId: null, title: '', message: '' })}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button variant="primary" onClick={handleConfirmAction}>
+                        Aceptar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     );
 }
 

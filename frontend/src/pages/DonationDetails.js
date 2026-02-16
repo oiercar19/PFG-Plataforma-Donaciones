@@ -16,6 +16,12 @@ function DonationDetails() {
     const [selectedImage, setSelectedImage] = useState(0);
     const [showImageModal, setShowImageModal] = useState(false);
     const [modalImage, setModalImage] = useState('');
+    const [confirmDialog, setConfirmDialog] = useState({
+        show: false,
+        action: null,
+        title: '',
+        message: ''
+    });
 
     const openImageModal = (imageUrl) => {
         setModalImage(imageUrl);
@@ -38,45 +44,72 @@ function DonationDetails() {
 
     useEffect(() => {
         loadDonation();
-    }, [loadDonation]);
-
-    const handleDelete = async () => {
-        if (window.confirm('¿Estás seguro de que quieres eliminar esta donación?')) {
-            try {
-                await donationAPI.deleteDonation(id);
-                navigate('/my-donations', {
-                    state: { message: 'Donación eliminada exitosamente' }
-                });
-            } catch (err) {
-                console.error('Error al eliminar:', err);
-                setError(err.response?.data?.error || 'Error al eliminar la donación');
-            }
-        }
+    }, [loadDonation]);    const handleDelete = async () => {
+        setConfirmDialog({
+            show: true,
+            action: 'DELETE',
+            title: 'Eliminar donacion',
+            message: 'Estas seguro de que quieres eliminar esta donacion?'
+        });
     };
 
     const handleMarkAsDelivered = async () => {
-        if (window.confirm('¿Confirmas que esta donación ha sido entregada?')) {
-            try {
-                await donationAPI.markAsDelivered(id);
-                setSuccess('Donación marcada como entregada exitosamente');
-                loadDonation();
-            } catch (err) {
-                console.error('Error al marcar como entregada:', err);
-                setError(err.response?.data?.error || 'Error al marcar como entregada');
-            }
-        }
+        setConfirmDialog({
+            show: true,
+            action: 'DELIVER',
+            title: 'Confirmar entrega',
+            message: 'Confirmas que esta donacion ha sido entregada?'
+        });
     };
 
     const handleRejectDonation = async () => {
-        if (window.confirm('?Deseas rechazar esta donaci?n y dejarla disponible nuevamente?')) {
-            try {
-                await donationAPI.rejectDonation(id);
-                setSuccess('Donación rechazada y puesta como disponible');
-                loadDonation();
-            } catch (err) {
-                console.error('Error al rechazar:', err);
-                setError(err.response?.data?.error || 'Error al rechazar la donaci?n');
+        setConfirmDialog({
+            show: true,
+            action: 'REJECT',
+            title: 'Rechazar donacion',
+            message: 'Deseas rechazar esta donacion y dejarla disponible nuevamente?'
+        });
+    };
+
+    const handleConfirmAction = async () => {
+        try {
+            if (confirmDialog.action === 'DELETE') {
+                await donationAPI.deleteDonation(id);
+                navigate('/my-donations', {
+                    state: { message: 'Donacion eliminada exitosamente' }
+                });
+                return;
             }
+
+            if (confirmDialog.action === 'DELIVER') {
+                await donationAPI.markAsDelivered(id);
+                setSuccess('Donacion marcada como entregada exitosamente');
+                loadDonation();
+            }
+
+            if (confirmDialog.action === 'REJECT') {
+                await donationAPI.rejectDonation(id);
+                setSuccess('Donacion rechazada y puesta como disponible');
+                loadDonation();
+            }
+        } catch (err) {
+            if (confirmDialog.action === 'DELETE') {
+                console.error('Error al eliminar:', err);
+                setError(err.response?.data?.error || 'Error al eliminar la donacion');
+            } else if (confirmDialog.action === 'DELIVER') {
+                console.error('Error al marcar como entregada:', err);
+                setError(err.response?.data?.error || 'Error al marcar como entregada');
+            } else if (confirmDialog.action === 'REJECT') {
+                console.error('Error al rechazar:', err);
+                setError(err.response?.data?.error || 'Error al rechazar la donacion');
+            }
+        } finally {
+            setConfirmDialog({
+                show: false,
+                action: null,
+                title: '',
+                message: ''
+            });
         }
     };
 
@@ -390,8 +423,31 @@ function DonationDetails() {
                     )}
                 </Modal.Body>
             </Modal>
+
+            <Modal
+                show={confirmDialog.show}
+                onHide={() => setConfirmDialog({ show: false, action: null, title: '', message: '' })}
+                centered
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title>{confirmDialog.title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{confirmDialog.message}</Modal.Body>
+                <Modal.Footer>
+                    <Button
+                        variant="outline-secondary"
+                        onClick={() => setConfirmDialog({ show: false, action: null, title: '', message: '' })}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button variant="primary" onClick={handleConfirmAction}>
+                        Aceptar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </>
     );
 }
 
 export default DonationDetails;
+
