@@ -3,6 +3,36 @@ const { hashPassword, comparePassword } = require('../utils/password');
 const { generateToken } = require('../utils/jwt');
 const { geocodeAddress } = require('../services/geocoding');
 const { sendDonorWelcomeEmail, sendOngWelcomeReviewEmail } = require('../services/mailjet');
+const { verifyGoogleIdToken } = require('../services/googleAuth');
+
+function sanitizeUsernameBase(value) {
+    return (value || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9._-]/g, '')
+        .slice(0, 30);
+}
+
+async function createUniqueUsername(name, email) {
+    const emailBase = (email || '').split('@')[0];
+    const base = sanitizeUsernameBase(emailBase) || sanitizeUsernameBase(name) || `donante${Date.now().toString().slice(-6)}`;
+    let candidate = base;
+    let counter = 1;
+
+    while (true) {
+        const existing = await prisma.user.findUnique({
+            where: { username: candidate },
+            select: { id: true },
+        });
+
+        if (!existing) {
+            return candidate;
+        }
+
+        counter += 1;
+        candidate = `${base}${counter}`;
+    }
+}
 
 /**
  * Registro de usuario donante
@@ -337,6 +367,82 @@ async function login(req, res) {
 }
 
 /**
+ * Login social con Google (solo DONANTE)
+ */
+async function loginWithGoogle(req, res) {
+    try {
+        const { idToken, location } = req.body;
+
+        if (!idToken) {
+            return res.status(400).json({ error: 'Falta idToken de Google' });
+        }
+
+        const googleUser = await verifyGoogleIdToken(idToken);
+
+        let user = await prisma.user.findUnique({
+            where: { email: googleUser.email },
+            include: { ong: true },
+        });
+
+        if (user && user.role !== 'DONANTE') {
+            return res.status(403).json({
+                error: 'El login con Google solo esta disponible para cuentas donante',
+            });
+        }
+
+        let isNewUser = false;
+
+        if (!user) {
+            const username = await createUniqueUsername(googleUser.name, googleUser.email);
+            const randomPassword = await hashPassword(`${googleUser.googleId}:${Date.now()}`);
+
+            user = await prisma.user.create({
+                data: {
+                    username,
+                    email: googleUser.email,
+                    password: randomPassword,
+                    role: 'DONANTE',
+                    location: location || null,
+                    authProvider: 'google',
+                },
+            });
+
+            isNewUser = true;
+        }
+
+        const token = generateToken(user);
+
+        if (isNewUser) {
+            try {
+                await sendDonorWelcomeEmail({
+                    toEmail: user.email,
+                    toName: user.username,
+                    registeredAt: user.createdAt,
+                });
+            } catch (mailError) {
+                console.error('Error enviando correo de bienvenida:', mailError.message);
+            }
+        }
+
+        res.json({
+            message: isNewUser ? 'Usuario donante creado con Google' : 'Login con Google exitoso',
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                location: user.location,
+                authProvider: user.authProvider,
+                token,
+            },
+        });
+    } catch (error) {
+        console.error('Error en login con Google:', error);
+        res.status(401).json({ error: 'No se pudo validar el acceso con Google' });
+    }
+}
+
+/**
  * Obtener perfil de usuario actual
  */
 async function getProfile(req, res) {
@@ -643,6 +749,7 @@ module.exports = {
     registerDonor,
     registerOng,
     login,
+    loginWithGoogle,
     getProfile,
     updateProfile,
     getMyOngData,
