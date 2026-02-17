@@ -51,6 +51,23 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const loginWithGoogle = async (idToken) => {
+        try {
+            const response = await authAPI.loginWithGoogle({ idToken });
+            const { user: userData } = response.data;
+            const { token, ...userInfo } = userData;
+
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(userInfo));
+
+            setUser(userInfo);
+            return { success: true };
+        } catch (error) {
+            const message = error.response?.data?.error || 'Error al iniciar sesion con Google';
+            return { success: false, error: message };
+        }
+    };
+
     const registerDonor = async (data) => {
         try {
             const response = await authAPI.registerDonor(data);
@@ -116,6 +133,7 @@ export const AuthProvider = ({ children }) => {
         user,
         loading,
         login,
+        loginWithGoogle,
         logout,
         registerDonor,
         registerOng,

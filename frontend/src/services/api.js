@@ -56,6 +56,7 @@ export const authAPI = {
         return api.post('/auth/register/ong', data, config);
     },
     login: (data) => api.post('/auth/login', data),
+    loginWithGoogle: (data) => api.post('/auth/login/google', data),
     getProfile: () => api.get('/auth/profile'),
     updateProfile: (data) => api.put('/auth/profile', data),
     getMyOngData: () => api.get('/auth/my-ong'),

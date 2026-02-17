@@ -10,11 +10,13 @@ const Login = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
 
-    const { login } = useAuth();
+    const { login, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
+    const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
-    // Verificar si hay un mensaje de error de autenticación guardado
+    // Verificar si hay un mensaje de error de autenticacion guardado
     useEffect(() => {
         const authError = localStorage.getItem('authError');
         if (authError) {
@@ -22,6 +24,74 @@ const Login = () => {
             localStorage.removeItem('authError');
         }
     }, []);
+
+    useEffect(() => {
+        if (!googleClientId) {
+            return undefined;
+        }
+
+        const initializeGoogleButton = () => {
+            if (!window.google?.accounts?.id) return;
+
+            window.google.accounts.id.initialize({
+                client_id: googleClientId,
+                callback: async (response) => {
+                    if (!response?.credential) {
+                        setError('No se recibio el token de Google');
+                        return;
+                    }
+
+                    setError('');
+                    setGoogleLoading(true);
+
+                    const result = await loginWithGoogle(response.credential);
+
+                    if (result.success) {
+                        navigate('/');
+                    } else {
+                        setError(result.error);
+                    }
+
+                    setGoogleLoading(false);
+                },
+            });
+
+            const buttonContainer = document.getElementById('google-signin-button');
+            if (!buttonContainer) return;
+
+            buttonContainer.innerHTML = '';
+            window.google.accounts.id.renderButton(buttonContainer, {
+                theme: 'outline',
+                size: 'large',
+                type: 'standard',
+                text: 'signin_with',
+                shape: 'pill',
+                logo_alignment: 'left',
+                width: 320,
+            });
+        };
+
+        if (window.google?.accounts?.id) {
+            initializeGoogleButton();
+            return undefined;
+        }
+
+        const existingScript = document.querySelector('script[data-google-signin="true"]');
+        if (existingScript) {
+            existingScript.addEventListener('load', initializeGoogleButton);
+            return () => existingScript.removeEventListener('load', initializeGoogleButton);
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.dataset.googleSignin = 'true';
+        script.addEventListener('load', initializeGoogleButton);
+        document.head.appendChild(script);
+
+        return () => script.removeEventListener('load', initializeGoogleButton);
+    }, [googleClientId, loginWithGoogle, navigate]);
 
     const handleChange = (e) => {
         setFormData({
@@ -54,7 +124,7 @@ const Login = () => {
                         <Card.Body className="p-5">
                             <div className="text-center mb-4">
                                 <i className="bi bi-box-arrow-in-right text-primary" style={{ fontSize: '3rem' }}></i>
-                                <h2 className="mt-3 fw-bold">Iniciar Sesión</h2>
+                                <h2 className="mt-3 fw-bold">Iniciar Sesion</h2>
                                 <p className="text-muted">Bienvenido de nuevo</p>
                             </div>
 
@@ -75,14 +145,14 @@ const Login = () => {
                                 </Form.Group>
 
                                 <Form.Group className="mb-4">
-                                    <Form.Label>Contraseña</Form.Label>
+                                    <Form.Label>Contrasena</Form.Label>
                                     <Form.Control
                                         type="password"
                                         name="password"
                                         value={formData.password}
                                         onChange={handleChange}
                                         required
-                                        placeholder="Tu contraseña"
+                                        placeholder="Tu contrasena"
                                         size="lg"
                                     />
                                 </Form.Group>
@@ -92,22 +162,38 @@ const Login = () => {
                                     variant="primary"
                                     size="lg"
                                     className="w-100"
-                                    disabled={loading}
+                                    disabled={loading || googleLoading}
                                 >
                                     {loading ? (
                                         <>
                                             <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                            Iniciando sesión...
+                                            Iniciando sesion...
                                         </>
                                     ) : (
-                                        'Iniciar Sesión'
+                                        'Iniciar Sesion'
                                     )}
                                 </Button>
                             </Form>
 
+                            {googleClientId && (
+                                <>
+                                    <div className="d-flex align-items-center my-4">
+                                        <hr className="flex-grow-1" />
+                                        <span className="px-2 text-muted small">o continua con</span>
+                                        <hr className="flex-grow-1" />
+                                    </div>
+                                    <div className="d-flex justify-content-center">
+                                        <div id="google-signin-button"></div>
+                                    </div>
+                                    <p className="text-muted small text-center mt-3 mb-0">
+                                        Disponible solo para cuentas donante.
+                                    </p>
+                                </>
+                            )}
+
                             <div className="text-center mt-4">
                                 <p className="text-muted">
-                                    ¿No tienes cuenta? <Link to="/register" className="text-decoration-none fw-semibold">Regístrate aquí</Link>
+                                    No tienes cuenta? <Link to="/register" className="text-decoration-none fw-semibold">Registrate aqui</Link>
                                 </p>
                             </div>
                         </Card.Body>
