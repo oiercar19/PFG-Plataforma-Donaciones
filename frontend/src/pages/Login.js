@@ -30,6 +30,27 @@ const Login = () => {
             return undefined;
         }
 
+        const renderGoogleButton = () => {
+            if (!window.google?.accounts?.id) return;
+
+            const buttonContainer = document.getElementById('google-signin-button');
+            if (!buttonContainer) return;
+
+            const parentWidth = buttonContainer.parentElement?.clientWidth ?? 320;
+            const buttonWidth = Math.min(320, Math.max(220, Math.floor(parentWidth - 8)));
+
+            buttonContainer.innerHTML = '';
+            window.google.accounts.id.renderButton(buttonContainer, {
+                theme: 'outline',
+                size: 'large',
+                type: 'standard',
+                text: 'signin_with',
+                shape: 'pill',
+                logo_alignment: 'left',
+                width: buttonWidth,
+            });
+        };
+
         const initializeGoogleButton = () => {
             if (!window.google?.accounts?.id) return;
 
@@ -56,30 +77,23 @@ const Login = () => {
                 },
             });
 
-            const buttonContainer = document.getElementById('google-signin-button');
-            if (!buttonContainer) return;
-
-            buttonContainer.innerHTML = '';
-            window.google.accounts.id.renderButton(buttonContainer, {
-                theme: 'outline',
-                size: 'large',
-                type: 'standard',
-                text: 'signin_with',
-                shape: 'pill',
-                logo_alignment: 'left',
-                width: 320,
-            });
+            renderGoogleButton();
         };
 
         if (window.google?.accounts?.id) {
             initializeGoogleButton();
-            return undefined;
+            window.addEventListener('resize', renderGoogleButton);
+            return () => window.removeEventListener('resize', renderGoogleButton);
         }
 
         const existingScript = document.querySelector('script[data-google-signin="true"]');
         if (existingScript) {
             existingScript.addEventListener('load', initializeGoogleButton);
-            return () => existingScript.removeEventListener('load', initializeGoogleButton);
+            window.addEventListener('resize', renderGoogleButton);
+            return () => {
+                existingScript.removeEventListener('load', initializeGoogleButton);
+                window.removeEventListener('resize', renderGoogleButton);
+            };
         }
 
         const script = document.createElement('script');
@@ -88,9 +102,13 @@ const Login = () => {
         script.defer = true;
         script.dataset.googleSignin = 'true';
         script.addEventListener('load', initializeGoogleButton);
+        window.addEventListener('resize', renderGoogleButton);
         document.head.appendChild(script);
 
-        return () => script.removeEventListener('load', initializeGoogleButton);
+        return () => {
+            script.removeEventListener('load', initializeGoogleButton);
+            window.removeEventListener('resize', renderGoogleButton);
+        };
     }, [googleClientId, loginWithGoogle, navigate]);
 
     const handleChange = (e) => {
