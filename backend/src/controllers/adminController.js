@@ -1,4 +1,5 @@
 const prisma = require('../config/database');
+const { sendOngApprovedEmail } = require('../services/mailjet');
 
 /**
  * Obtener todas las ONGs pendientes de validación
@@ -112,6 +113,38 @@ async function approveOng(req, res) {
                 },
             },
         });
+
+        // Notificar aprobacion por email (no bloquea la respuesta si falla)
+        try {
+            const recipients = Array.from(
+                new Set(
+                    [updatedOng.user?.email, updatedOng.contactEmail]
+                        .filter(Boolean)
+                        .map((email) => String(email).trim().toLowerCase())
+                )
+            );
+
+            if (recipients.length > 0) {
+                const results = await Promise.allSettled(
+                    recipients.map((email) =>
+                        sendOngApprovedEmail({
+                            toEmail: email,
+                            toName: updatedOng.user?.username || updatedOng.name,
+                            ongName: updatedOng.name,
+                            approvedAt: updatedOng.approvedAt,
+                        })
+                    )
+                );
+
+                results.forEach((result, index) => {
+                    if (result.status === 'rejected') {
+                        console.error(`Error enviando correo de aprobacion ONG a ${recipients[index]}:`, result.reason?.message || result.reason);
+                    }
+                });
+            }
+        } catch (mailError) {
+            console.error('Error enviando correos de aprobacion ONG:', mailError.message);
+        }
 
         res.json({
             message: 'ONG aprobada exitosamente',

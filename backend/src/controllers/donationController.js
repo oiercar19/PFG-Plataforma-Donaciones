@@ -1,5 +1,6 @@
 const prisma = require('../config/database');
 const { geocodeAddress } = require('../services/geocoding');
+const { sendDonationRequestToDonorEmail, sendDonationStatusToOngEmail } = require('../services/mailjet');
 
 function normalizeCategoryValue(value) {
     return String(value || '')
@@ -339,6 +340,25 @@ async function deleteDonation(req, res) {
         // Verificar que la donación existe y pertenece al usuario
         const donation = await prisma.donation.findUnique({
             where: { id },
+            include: {
+                donor: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                    },
+                },
+                assignedOng: {
+                    include: {
+                        user: {
+                            select: {
+                                email: true,
+                                username: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
 
         if (!donation) {
@@ -444,6 +464,40 @@ async function requestDonation(req, res) {
             data: { status: 'CLOSED', closedAt: new Date() },
         });
 
+        // Notificar a la entidad social que la solicitud fue rechazada
+        try {
+            const recipients = Array.from(
+                new Set(
+                    [donation.assignedOng?.contactEmail, donation.assignedOng?.user?.email]
+                        .filter(Boolean)
+                        .map((email) => String(email).trim().toLowerCase())
+                )
+            );
+
+            if (recipients.length > 0) {
+                const results = await Promise.allSettled(
+                    recipients.map((email) =>
+                        sendDonationStatusToOngEmail({
+                            toEmail: email,
+                            toName: donation.assignedOng?.user?.username || donation.assignedOng?.name,
+                            donation,
+                            ong: donation.assignedOng,
+                            donor: donation.donor,
+                            statusType: 'REJECTED',
+                        })
+                    )
+                );
+
+                results.forEach((result, index) => {
+                    if (result.status === 'rejected') {
+                        console.error(`Error enviando correo de rechazo a ONG (${recipients[index]}):`, result.reason?.message || result.reason);
+                    }
+                });
+            }
+        } catch (mailError) {
+            console.error('Error notificando rechazo de donacion a ONG:', mailError.message);
+        }
+
         const conversation = await prisma.conversation.create({
             data: {
                 donationId: id,
@@ -451,6 +505,21 @@ async function requestDonation(req, res) {
                 status: 'OPEN',
             },
         });
+
+        // Notificar al donante por email con detalles de la solicitud y chat abierto
+        try {
+            if (updatedDonation?.donor?.email) {
+                await sendDonationRequestToDonorEmail({
+                    toEmail: updatedDonation.donor.email,
+                    toName: updatedDonation.donor.username,
+                    donation: updatedDonation,
+                    ong: user.ong,
+                    conversationId: conversation.id,
+                });
+            }
+        } catch (mailError) {
+            console.error('Error enviando correo de solicitud al donante:', mailError.message);
+        }
 
         res.json({
             message: 'Donación solicitada exitosamente',
@@ -474,6 +543,25 @@ async function rejectDonation(req, res) {
 
         const donation = await prisma.donation.findUnique({
             where: { id },
+            include: {
+                donor: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                    },
+                },
+                assignedOng: {
+                    include: {
+                        user: {
+                            select: {
+                                email: true,
+                                username: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
 
         if (!donation) {
@@ -510,6 +598,40 @@ async function rejectDonation(req, res) {
             where: { donationId: id, status: 'OPEN' },
             data: { status: 'CLOSED', closedAt: new Date() },
         });
+
+        // Notificar a la entidad social que la donacion fue marcada como entregada
+        try {
+            const recipients = Array.from(
+                new Set(
+                    [donation.assignedOng?.contactEmail, donation.assignedOng?.user?.email]
+                        .filter(Boolean)
+                        .map((email) => String(email).trim().toLowerCase())
+                )
+            );
+
+            if (recipients.length > 0) {
+                const results = await Promise.allSettled(
+                    recipients.map((email) =>
+                        sendDonationStatusToOngEmail({
+                            toEmail: email,
+                            toName: donation.assignedOng?.user?.username || donation.assignedOng?.name,
+                            donation: updatedDonation,
+                            ong: donation.assignedOng,
+                            donor: donation.donor,
+                            statusType: 'DELIVERED',
+                        })
+                    )
+                );
+
+                results.forEach((result, index) => {
+                    if (result.status === 'rejected') {
+                        console.error(`Error enviando correo de entrega a ONG (${recipients[index]}):`, result.reason?.message || result.reason);
+                    }
+                });
+            }
+        } catch (mailError) {
+            console.error('Error notificando entrega de donacion a ONG:', mailError.message);
+        }
 
         res.json({
             message: 'Donación rechazada y puesta nuevamente como disponible',
@@ -646,5 +768,6 @@ module.exports = {
     markAsDelivered,
     getMyAssignedDonations,
 };
+
 
 

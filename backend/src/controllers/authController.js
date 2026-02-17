@@ -2,6 +2,7 @@ const prisma = require('../config/database');
 const { hashPassword, comparePassword } = require('../utils/password');
 const { generateToken } = require('../utils/jwt');
 const { geocodeAddress } = require('../services/geocoding');
+const { sendDonorWelcomeEmail, sendOngWelcomeReviewEmail } = require('../services/mailjet');
 
 /**
  * Registro de usuario donante
@@ -50,6 +51,17 @@ async function registerDonor(req, res) {
 
         // Generar token
         const token = generateToken(user);
+
+        // Enviar correo de bienvenida (no bloquea el registro si falla)
+        try {
+            await sendDonorWelcomeEmail({
+                toEmail: user.email,
+                toName: user.username,
+                registeredAt: user.createdAt,
+            });
+        } catch (mailError) {
+            console.error('Error enviando correo de bienvenida:', mailError.message);
+        }
 
         res.status(201).json({
             message: 'Usuario registrado exitosamente',
@@ -224,6 +236,18 @@ async function registerOng(req, res) {
 
         // Generar token
         const token = generateToken(result.user);
+
+        // Enviar correo para entidad social en revision (no bloquea el registro si falla)
+        try {
+            await sendOngWelcomeReviewEmail({
+                toEmail: result.user.email,
+                toName: result.user.username,
+                ongName: result.ong.name,
+                registeredAt: result.user.createdAt,
+            });
+        } catch (mailError) {
+            console.error('Error enviando correo de revision para ONG:', mailError.message);
+        }
 
         res.status(201).json({
             message: 'ONG registrada exitosamente. Pendiente de validación.',
