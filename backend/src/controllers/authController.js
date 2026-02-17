@@ -413,15 +413,14 @@ async function loginWithGoogle(req, res) {
         const token = generateToken(user);
 
         if (isNewUser) {
-            try {
-                await sendDonorWelcomeEmail({
-                    toEmail: user.email,
-                    toName: user.username,
-                    registeredAt: user.createdAt,
-                });
-            } catch (mailError) {
+            // No bloquear el login por latencia/fallo de correo en el primer acceso con Google
+            sendDonorWelcomeEmail({
+                toEmail: user.email,
+                toName: user.username,
+                registeredAt: user.createdAt,
+            }).catch((mailError) => {
                 console.error('Error enviando correo de bienvenida:', mailError.message);
-            }
+            });
         }
 
         res.json({

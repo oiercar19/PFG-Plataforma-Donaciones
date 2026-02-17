@@ -1,4 +1,5 @@
 const https = require('https');
+const dns = require('dns').promises;
 const nodemailer = require('nodemailer');
 
 function isSmtpConfigured() {
@@ -65,20 +66,40 @@ function sendMailjetEmail(payload) {
     });
 }
 
-function sendSmtpEmail({ toEmail, toName, subject, textPart, htmlPart, supportEmail, supportName }) {
+async function sendSmtpEmail({ toEmail, toName, subject, textPart, htmlPart, supportEmail, supportName }) {
     const port = Number(process.env.SMTP_PORT);
     const secure = process.env.SMTP_SECURE
         ? process.env.SMTP_SECURE === 'true'
         : port === 465;
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpFamily = Number(process.env.SMTP_IP_FAMILY || 0);
+
+    let transportHost = smtpHost;
+    let tlsOptions = {};
+
+    // Some platforms (eg. Railway) might not have outbound IPv6 routes.
+    // If SMTP_IP_FAMILY=4, resolve SMTP host to an IPv4 address explicitly.
+    if (smtpFamily === 4 && smtpHost) {
+        try {
+            const ipv4Addresses = await dns.resolve4(smtpHost);
+            if (ipv4Addresses.length > 0) {
+                transportHost = ipv4Addresses[0];
+                tlsOptions.servername = smtpHost;
+            }
+        } catch (resolveError) {
+            console.warn(`SMTP IPv4 resolution failed for ${smtpHost}: ${resolveError.message}`);
+        }
+    }
 
     const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
+        host: transportHost,
         port,
         secure,
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
+        tls: tlsOptions,
     });
 
     const mailOptions = {
