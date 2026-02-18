@@ -34,6 +34,12 @@ async function createUniqueUsername(name, email) {
     }
 }
 
+function sendEmailInBackground(emailPromiseFactory, errorLabel) {
+    emailPromiseFactory().catch((mailError) => {
+        console.error(`${errorLabel}:`, mailError.message);
+    });
+}
+
 /**
  * Registro de usuario donante
  */
@@ -82,16 +88,12 @@ async function registerDonor(req, res) {
         // Generar token
         const token = generateToken(user);
 
-        // Enviar correo de bienvenida (no bloquea el registro si falla)
-        try {
-            await sendDonorWelcomeEmail({
-                toEmail: user.email,
-                toName: user.username,
-                registeredAt: user.createdAt,
-            });
-        } catch (mailError) {
-            console.error('Error enviando correo de bienvenida:', mailError.message);
-        }
+        // No bloquear el registro por latencia/fallo de email
+        sendEmailInBackground(() => sendDonorWelcomeEmail({
+            toEmail: user.email,
+            toName: user.username,
+            registeredAt: user.createdAt,
+        }), 'Error enviando correo de bienvenida');
 
         res.status(201).json({
             message: 'Usuario registrado exitosamente',
@@ -267,17 +269,13 @@ async function registerOng(req, res) {
         // Generar token
         const token = generateToken(result.user);
 
-        // Enviar correo para entidad social en revision (no bloquea el registro si falla)
-        try {
-            await sendOngWelcomeReviewEmail({
-                toEmail: result.user.email,
-                toName: result.user.username,
-                ongName: result.ong.name,
-                registeredAt: result.user.createdAt,
-            });
-        } catch (mailError) {
-            console.error('Error enviando correo de revision para ONG:', mailError.message);
-        }
+        // No bloquear el registro por latencia/fallo de email
+        sendEmailInBackground(() => sendOngWelcomeReviewEmail({
+            toEmail: result.user.email,
+            toName: result.user.username,
+            ongName: result.ong.name,
+            registeredAt: result.user.createdAt,
+        }), 'Error enviando correo de revision para ONG');
 
         res.status(201).json({
             message: 'ONG registrada exitosamente. Pendiente de validación.',
