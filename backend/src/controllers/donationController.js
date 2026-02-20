@@ -506,19 +506,17 @@ async function requestDonation(req, res) {
             },
         });
 
-        // Notificar al donante por email con detalles de la solicitud y chat abierto
-        try {
-            if (updatedDonation?.donor?.email) {
-                await sendDonationRequestToDonorEmail({
-                    toEmail: updatedDonation.donor.email,
-                    toName: updatedDonation.donor.username,
-                    donation: updatedDonation,
-                    ong: user.ong,
-                    conversationId: conversation.id,
-                });
-            }
-        } catch (mailError) {
-            console.error('Error enviando correo de solicitud al donante:', mailError.message);
+        // Enviar en segundo plano para no bloquear la respuesta.
+        if (updatedDonation?.donor?.email) {
+            sendDonationRequestToDonorEmail({
+                toEmail: updatedDonation.donor.email,
+                toName: updatedDonation.donor.username,
+                donation: updatedDonation,
+                ong: user.ong,
+                conversationId: conversation.id,
+            }).catch((mailError) => {
+                console.error('Error enviando correo de solicitud al donante:', mailError.message);
+            });
         }
 
         res.json({

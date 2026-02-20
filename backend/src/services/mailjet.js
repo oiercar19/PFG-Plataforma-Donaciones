@@ -2,6 +2,16 @@ const https = require('https');
 const dns = require('dns').promises;
 const nodemailer = require('nodemailer');
 
+function readPositiveIntEnv(name, fallback) {
+    const value = Number(process.env[name]);
+    return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+const MAILJET_REQUEST_TIMEOUT_MS = readPositiveIntEnv('MAILJET_REQUEST_TIMEOUT_MS', 10000);
+const SMTP_CONNECTION_TIMEOUT_MS = readPositiveIntEnv('SMTP_CONNECTION_TIMEOUT_MS', 10000);
+const SMTP_GREETING_TIMEOUT_MS = readPositiveIntEnv('SMTP_GREETING_TIMEOUT_MS', 10000);
+const SMTP_SOCKET_TIMEOUT_MS = readPositiveIntEnv('SMTP_SOCKET_TIMEOUT_MS', 20000);
+
 function isSmtpConfigured() {
     return Boolean(
         process.env.SMTP_HOST &&
@@ -24,6 +34,20 @@ function isMailjetConfigured() {
 
 function sendMailjetEmail(payload) {
     return new Promise((resolve, reject) => {
+        let settled = false;
+        const safeResolve = (value) => {
+            if (!settled) {
+                settled = true;
+                resolve(value);
+            }
+        };
+        const safeReject = (error) => {
+            if (!settled) {
+                settled = true;
+                reject(error);
+            }
+        };
+
         const auth = Buffer.from(
             `${process.env.MAILJET_API_KEY}:${process.env.MAILJET_API_SECRET}`
         ).toString('base64');
@@ -49,18 +73,21 @@ function sendMailjetEmail(payload) {
 
                 res.on('end', () => {
                     if (res.statusCode >= 200 && res.statusCode < 300) {
-                        resolve({ statusCode: res.statusCode, body });
+                        safeResolve({ statusCode: res.statusCode, body });
                         return;
                     }
 
-                    reject(
+                    safeReject(
                         new Error(`Mailjet error ${res.statusCode}: ${body}`)
                     );
                 });
             }
         );
 
-        req.on('error', reject);
+        req.setTimeout(MAILJET_REQUEST_TIMEOUT_MS, () => {
+            req.destroy(new Error(`Mailjet request timeout after ${MAILJET_REQUEST_TIMEOUT_MS}ms`));
+        });
+        req.on('error', safeReject);
         req.write(data);
         req.end();
     });
@@ -95,6 +122,9 @@ async function sendSmtpEmail({ toEmail, toName, subject, textPart, htmlPart, sup
         host: transportHost,
         port,
         secure,
+        connectionTimeout: SMTP_CONNECTION_TIMEOUT_MS,
+        greetingTimeout: SMTP_GREETING_TIMEOUT_MS,
+        socketTimeout: SMTP_SOCKET_TIMEOUT_MS,
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
@@ -433,7 +463,7 @@ async function sendDonationRequestToDonorEmail({
     const unsubscribeUrl = process.env.MAILJET_UNSUBSCRIBE_URL;
     const displayName = toName || toEmail;
     const subject = `Nueva solicitud para tu donacion - ${appName}`;
-    const chatUrl = `${frontendUrl}/chat`;
+    const chatUrl = `${frontendUrl}/chats/${conversationId}`;
     const ongName = ong?.name || 'Entidad social';
     const ongType = ong?.type || 'No especificado';
     const ongContactEmail = ong?.contactEmail || 'No especificado';
