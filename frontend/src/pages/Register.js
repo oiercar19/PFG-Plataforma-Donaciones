@@ -309,7 +309,6 @@ const Register = () => {
                                                         value={formData.username}
                                                         onChange={handleChange}
                                                         required
-                                                        placeholder="juan_perez"
                                                         size="lg"
                                                     />
                                                 </Form.Group>
@@ -324,7 +323,6 @@ const Register = () => {
                                                         value={formData.email}
                                                         onChange={handleChange}
                                                         required
-                                                        placeholder="tu@email.com"
                                                         size="lg"
                                                     />
                                                 </Form.Group>
@@ -340,7 +338,6 @@ const Register = () => {
                                                         onChange={handleChange}
                                                         required
                                                         minLength="6"
-                                                        placeholder="Mínimo 6 caracteres"
                                                         size="lg"
                                                     />
                                                 </Form.Group>
@@ -356,7 +353,6 @@ const Register = () => {
                                                         onChange={handleChange}
                                                         required
                                                         minLength="6"
-                                                        placeholder="Repite tu contraseña"
                                                         size="lg"
                                                     />
                                                 </Form.Group>
@@ -371,7 +367,6 @@ const Register = () => {
                                                         value={formData.location}
                                                         onChange={handleChange}
                                                         required
-                                                        placeholder="Madrid"
                                                         size="lg"
                                                     />
                                                 </Form.Group>
@@ -394,7 +389,6 @@ const Register = () => {
                                                             value={formData.name}
                                                             onChange={handleChange}
                                                             required
-                                                            placeholder="Cruz Roja Barcelona"
                                                             size="lg"
                                                         />
                                                     </Form.Group>
@@ -409,7 +403,6 @@ const Register = () => {
                                                             value={formData.cif}
                                                             onChange={handleChange}
                                                             required
-                                                            placeholder="G12345678"
                                                             size="lg"
                                                         />
                                                     </Form.Group>
@@ -442,7 +435,6 @@ const Register = () => {
                                                             value={formData.ongCity}
                                                             onChange={handleChange}
                                                             required
-                                                            placeholder="Barcelona"
                                                             size="lg"
                                                         />
                                                     </Form.Group>
@@ -456,7 +448,6 @@ const Register = () => {
                                                             name="ongAddress"
                                                             value={formData.ongAddress}
                                                             onChange={handleChange}
-                                                            placeholder="Calle, número, piso..."
                                                             size="lg"
                                                         />
                                                     </Form.Group>
@@ -470,7 +461,6 @@ const Register = () => {
                                                             name="ongPostalCode"
                                                             value={formData.ongPostalCode}
                                                             onChange={handleChange}
-                                                            placeholder="08001"
                                                             size="lg"
                                                             maxLength="5"
                                                             pattern="[0-9]{5}"
@@ -561,7 +551,6 @@ const Register = () => {
                                                             value={formData.description}
                                                             onChange={handleChange}
                                                             rows="3"
-                                                            placeholder="Describe brevemente las actividades de tu entidad"
                                                         />
                                                     </Form.Group>
                                                 </Col>
@@ -575,7 +564,6 @@ const Register = () => {
                                                             value={formData.contactEmail}
                                                             onChange={handleChange}
                                                             required
-                                                            placeholder="contacto@entidad.org"
                                                             size="lg"
                                                         />
                                                     </Form.Group>
@@ -590,7 +578,6 @@ const Register = () => {
                                                             value={formData.contactPhone}
                                                             onChange={handleChange}
                                                             required
-                                                            placeholder="+34 600 123 456"
                                                             size="lg"
                                                         />
                                                     </Form.Group>
