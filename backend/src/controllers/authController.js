@@ -45,11 +45,15 @@ function sendEmailInBackground(emailPromiseFactory, errorLabel) {
  */
 async function registerDonor(req, res) {
     try {
-        const { username, email, password, location } = req.body;
+        const { username, email, password, confirmPassword, location } = req.body;
 
         // Validaciones básicas
         if (!username || !email || !password) {
             return res.status(400).json({ error: 'Faltan campos obligatorios' });
+        }
+
+        if (typeof confirmPassword !== 'undefined' && password !== confirmPassword) {
+            return res.status(400).json({ error: 'Las contraseñas no coinciden' });
         }
 
         // Verificar si el usuario ya existe
@@ -116,6 +120,7 @@ async function registerOng(req, res) {
             username,
             email,
             password,
+            confirmPassword,
             location: userLocation,
             // Datos de ONG
             name,
@@ -140,6 +145,10 @@ async function registerOng(req, res) {
         // Validaciones básicas
         if (!username || !email || !password || !name || !cif || !type || !ongCity || !contactEmail || !contactPhone) {
             return res.status(400).json({ error: 'Faltan campos obligatorios' });
+        }
+
+        if (typeof confirmPassword !== 'undefined' && password !== confirmPassword) {
+            return res.status(400).json({ error: 'Las contraseñas no coinciden' });
         }
 
         // Verificar si el usuario ya existe

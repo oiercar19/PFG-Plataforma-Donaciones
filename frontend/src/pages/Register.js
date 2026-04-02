@@ -22,6 +22,7 @@ const Register = () => {
         username: '',
         email: '',
         password: '',
+        confirmPassword: '',
         location: '',
         // Datos de ONG
         name: '',
@@ -155,6 +156,12 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        if (formData.password !== formData.confirmPassword) {
+            setError('Las contraseñas no coinciden');
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -181,6 +188,7 @@ const Register = () => {
                 ongFormData.append('username', formData.username);
                 ongFormData.append('email', formData.email);
                 ongFormData.append('password', formData.password);
+                ongFormData.append('confirmPassword', formData.confirmPassword);
                 ongFormData.append('location', formData.ongCity);
                 ongFormData.append('city', formData.ongCity);
                 if (formData.ongAddress) {
@@ -223,6 +231,7 @@ const Register = () => {
                     username: formData.username,
                     email: formData.email,
                     password: formData.password,
+                    confirmPassword: formData.confirmPassword,
                     location: formData.location,
                 };
 
@@ -332,6 +341,22 @@ const Register = () => {
                                                         required
                                                         minLength="6"
                                                         placeholder="Mínimo 6 caracteres"
+                                                        size="lg"
+                                                    />
+                                                </Form.Group>
+                                            </Col>
+
+                                            <Col md={6} className="mb-3">
+                                                <Form.Group>
+                                                    <Form.Label>Confirmar contraseña *</Form.Label>
+                                                    <Form.Control
+                                                        type="password"
+                                                        name="confirmPassword"
+                                                        value={formData.confirmPassword}
+                                                        onChange={handleChange}
+                                                        required
+                                                        minLength="6"
+                                                        placeholder="Repite tu contraseña"
                                                         size="lg"
                                                     />
                                                 </Form.Group>
