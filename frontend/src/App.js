@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -34,15 +35,16 @@ import TermsOfUse from './pages/TermsOfUse';
 function App() {
     return (
         <Router>
-            <AuthProvider>
-                <div className="App" style={{
-                    minHeight: '100vh',
-                    display: 'flex',
-                    flexDirection: 'column'
-                }}>
-                    <Navbar />
-                    <div className="app-content" style={{ flex: 1 }}>
-                        <Routes>
+            <LanguageProvider>
+                <AuthProvider>
+                    <div className="App" style={{
+                        minHeight: '100vh',
+                        display: 'flex',
+                        flexDirection: 'column'
+                    }}>
+                        <Navbar />
+                        <div className="app-content" style={{ flex: 1 }}>
+                            <Routes>
                             {/* Rutas públicas */}
                             <Route path="/" element={<Home />} />
 
@@ -248,11 +250,12 @@ function App() {
                                     </div>
                                 }
                             />
-                        </Routes>
+                            </Routes>
+                        </div>
+                        <Footer />
                     </div>
-                    <Footer />
-                </div>
-            </AuthProvider>
+                </AuthProvider>
+            </LanguageProvider>
         </Router>
     );
 }

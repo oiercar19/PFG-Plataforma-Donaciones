@@ -36,6 +36,33 @@
     background: rgba(255, 255, 255, 0.9) !important;
 }
 
+.language-toggle-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.language-toggle-title .bi {
+    font-size: 1rem;
+}
+
+.language-code,
+.language-item-code {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.language-item-code {
+    display: inline-block;
+    width: 2rem;
+    color: #64748b;
+}
+
+.language-nav-dropdown .dropdown-item.active .language-item-code {
+    color: #ffffff;
+}
+
 /* Responsive navbar tweaks */
 .navbar .navbar-brand {
     display: flex;
@@ -98,5 +125,10 @@
 
     .navbar .dropdown-menu {
         max-width: 100%;
+    }
+
+    .language-toggle-title {
+        width: 100%;
+        justify-content: flex-start;
     }
 }
