@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const prisma = require('./config/database');
+const { openApiSpec, getSwaggerUiHtml } = require('./docs/openapi');
 
 // Importar rutas
 const authRoutes = require('./routes/authRoutes');
@@ -36,6 +37,20 @@ app.use('/api/', limiter);
 // Body parser con límite aumentado para aceptar imágenes en base64
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Route-level CSP for Swagger UI assets loaded from CDN.
+app.use(
+    '/api/docs',
+    helmet.contentSecurityPolicy({
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", 'https://unpkg.com'],
+            scriptSrc: ["'self'", "'unsafe-inline'", 'https://unpkg.com'],
+            imgSrc: ["'self'", 'data:', 'https:'],
+            fontSrc: ["'self'", 'https://unpkg.com', 'https://fonts.gstatic.com'],
+            connectSrc: ["'self'"],
+        },
+    }),
+);
 
 // Servir archivos estáticos (uploads)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -46,6 +61,13 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/needs', needRoutes);
 app.use('/api/conversations', conversationRoutes);
+app.get('/api/openapi.json', (req, res) => {
+    res.json(openApiSpec);
+});
+
+app.get('/api/docs', (req, res) => {
+    res.type('html').send(getSwaggerUiHtml());
+});
 
 // Ruta de health check
 app.get('/health', (req, res) => {
@@ -90,5 +112,6 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
+
 
 

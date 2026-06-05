@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Navbar, Nav, Container, Button, NavDropdown } from 'react-bootstrap';
 import './Navbar.css';
 import { conversationAPI } from '../services/api';
 
 const NavigationBar = () => {
     const { user, logout, isAuthenticated, isAdmin, isDonor, isOng } = useAuth();
+    const { language, languages, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
     const location = useLocation();
     const [unreadTotal, setUnreadTotal] = useState(0);
@@ -75,6 +77,30 @@ const NavigationBar = () => {
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="ms-auto align-items-lg-center">
+                        <NavDropdown
+                            align="end"
+                            title={
+                                <span className="language-toggle-title">
+                                    <i className="bi bi-translate"></i>
+                                    <span className="language-code">{languages[language].code}</span>
+                                </span>
+                            }
+                            id="language-nav-dropdown"
+                            className="language-nav-dropdown text-white me-2"
+                            aria-label={t('Seleccionar idioma')}
+                        >
+                            {Object.entries(languages).map(([code, config]) => (
+                                <NavDropdown.Item
+                                    key={code}
+                                    active={language === code}
+                                    onClick={() => setLanguage(code)}
+                                >
+                                    <span className="language-item-code">{config.code}</span>
+                                    {config.nativeName}
+                                </NavDropdown.Item>
+                            ))}
+                        </NavDropdown>
+
                         {!isAuthenticated ? (
                             <>
                                 <Nav.Link as={Link} to="/login" className="text-white me-2">
