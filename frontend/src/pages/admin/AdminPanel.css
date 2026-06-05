@@ -26,6 +26,7 @@
     gap: 1.5rem;
     border: 2px solid var(--border-color);
     transition: all 0.3s ease;
+    min-height: 138px;
 }
 
 .stat-card:hover {
@@ -34,14 +35,29 @@
     border-color: var(--primary-color);
 }
 
-.stat-card.pending {
+.stat-card-pending {
     border-left: 5px solid var(--warning-color);
     background: linear-gradient(135deg, #fffbeb 0%, white 100%);
 }
 
 .stat-icon {
-    font-size: 3.5rem;
-    filter: grayscale(0.2);
+    width: 4rem;
+    height: 4rem;
+    flex: 0 0 4rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--secondary-color);
+    background: rgba(29, 78, 216, 0.1);
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.stat-icon-pending {
+    font-size: 2.35rem;
+    font-weight: 800;
+    font-family: inherit;
 }
 
 .stat-info h3 {
@@ -61,6 +77,26 @@
 .stat-info small {
     font-size: 0.875rem;
     color: var(--text-light);
+}
+
+.admin-section-card {
+    padding: 1.75rem;
+}
+
+.admin-section-card h2 {
+    margin-bottom: 1.5rem;
+}
+
+.admin-button-icon,
+.admin-document-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.admin-document-icon {
+    font-size: 1.125rem;
 }
 
 .ongs-list {
