@@ -282,7 +282,7 @@ const MyOng = () => {
 
     const getDonationStatusBadge = (status) => {
         const statusConfig = {
-            DISPONIBLE: { variant: 'success', text: 'Disponible' },
+            DISPONIBLE: { variant: 'primary', text: 'Disponible' },
             ASIGNADO: { variant: 'primary', text: 'Asignado' },
             ASIGNADA: { variant: 'primary', text: 'Asignado' },
             ENTREGADO: { variant: 'secondary', text: 'Entregado' },
@@ -294,7 +294,7 @@ const MyOng = () => {
 
     const getNeedStatusBadge = (status) => {
         const statusConfig = {
-            OPEN: { variant: 'success', text: 'Abierta' },
+            OPEN: { variant: 'primary', text: 'Abierta' },
             CLOSED: { variant: 'secondary', text: 'Cerrada' },
         };
         const config = statusConfig[status] || { variant: 'secondary', text: status };
@@ -632,7 +632,7 @@ const MyOng = () => {
                                                 <i className="bi bi-inbox fs-1 text-muted"></i>
                                                 <p className="text-muted mt-3">Aun no has publicado necesidades</p>
                                                 <Button
-                                                    variant="danger"
+                                                    variant="primary"
                                                     onClick={() => navigate('/create-need')}
                                                 >
                                                     <i className="bi bi-flag me-2"></i>
@@ -672,7 +672,7 @@ const MyOng = () => {
                                                 {myNeeds.length > 5 && (
                                                     <div className="text-center mt-3">
                                                         <Button
-                                                            variant="outline-danger"
+                                                            variant="outline-primary"
                                                             onClick={() => navigate('/my-needs')}
                                                         >
                                                             Ver todas las necesidades
@@ -710,7 +710,7 @@ const MyOng = () => {
                                     </Col>
                                     <Col md={4} className="mb-3">
                                         <Button
-                                            variant="success"
+                                            variant="primary"
                                             className="w-100 action-btn"
                                             onClick={() => navigate('/donations')}
                                         >
@@ -720,8 +720,8 @@ const MyOng = () => {
                                     </Col>
                                     <Col md={4} className="mb-3">
                                         <Button
-                                            variant="info"
-                                            className="w-100 action-btn text-white"
+                                            variant="primary"
+                                            className="w-100 action-btn"
                                             onClick={() => navigate('/create-donation')}
                                         >
                                             <i className="bi bi-plus-circle fs-4 d-block mb-2"></i>
@@ -732,7 +732,7 @@ const MyOng = () => {
                                 <Row>
                                     <Col md={6} className="mb-3">
                                         <Button
-                                            variant="danger"
+                                            variant="primary"
                                             className="w-100 action-btn"
                                             onClick={() => navigate('/create-need')}
                                         >
@@ -742,7 +742,7 @@ const MyOng = () => {
                                     </Col>
                                     <Col md={6} className="mb-3">
                                         <Button
-                                            variant="outline-danger"
+                                            variant="outline-primary"
                                             className="w-100 action-btn"
                                             onClick={() => navigate('/my-needs')}
                                         >

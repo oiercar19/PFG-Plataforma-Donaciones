@@ -134,7 +134,7 @@ const AdminPanel = () => {
             {stats && (
                 <div className="stats-grid">
                     <div className="stat-card">
-                        <div className="stat-icon">ðŸ‘¥</div>
+                        <div className="stat-icon" aria-hidden="true"><i className="bi bi-people-fill"></i></div>
                         <div className="stat-info">
                             <h3>{stats.users.total}</h3>
                             <p>Usuarios Totales</p>
@@ -143,7 +143,7 @@ const AdminPanel = () => {
                     </div>
 
                     <div className="stat-card">
-                        <div className="stat-icon">ðŸ¢</div>
+                        <div className="stat-icon" aria-hidden="true"><i className="bi bi-building-fill"></i></div>
                         <div className="stat-info">
                             <h3>{stats.ongs.total}</h3>
                             <p>ONGs Registradas</p>
@@ -151,8 +151,8 @@ const AdminPanel = () => {
                         </div>
                     </div>
 
-                    <div className="stat-card pending">
-                        <div className="stat-icon">â³</div>
+                    <div className="stat-card stat-card-pending">
+                        <div className="stat-icon" aria-hidden="true"><i className="bi-clock-history"></i></div>
                         <div className="stat-info">
                             <h3>{stats.ongs.pending}</h3>
                             <p>ONGs Pendientes</p>
@@ -161,7 +161,7 @@ const AdminPanel = () => {
                     </div>
 
                     <div className="stat-card">
-                        <div className="stat-icon">ðŸŽ</div>
+                        <div className="stat-icon" aria-hidden="true"><i className="bi bi-gift-fill"></i></div>
                         <div className="stat-info">
                             <h3>{stats.donations.total}</h3>
                             <p>Donaciones</p>
@@ -171,7 +171,7 @@ const AdminPanel = () => {
             )}
 
             {/* ONGs Pendientes */}
-            <div className="card mt-3">
+            <div className="card mt-3 admin-section-card">
                 <h2>ONGs Pendientes de Validación</h2>
 
                 {pendingOngs.length === 0 ? (
@@ -217,7 +217,7 @@ const AdminPanel = () => {
                                         onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-text)'}
                                         onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--color-muted)'}
                                     >
-                                        ðŸ‘ï¸ Ver Detalles
+                                        <span className="admin-button-icon" aria-hidden="true"><i className="bi bi-eye"></i></span> Ver Detalles
                                     </button>
                                     <button
                                         onClick={() => handleApprove(ong.id)}
@@ -236,7 +236,7 @@ const AdminPanel = () => {
                                         onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = 'var(--color-primary-600)')}
                                         onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = 'var(--color-primary)')}
                                     >
-                                        âœ“ Aprobar
+                                        <span className="admin-button-icon" aria-hidden="true"><i className="bi bi-check-lg"></i></span> Aprobar
                                     </button>
                                     <button
                                         onClick={() => setShowRejectModal(ong.id)}
@@ -255,7 +255,7 @@ const AdminPanel = () => {
                                         onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = '#b91c1c')}
                                         onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = 'var(--color-danger)')}
                                     >
-                                        âœ• Rechazar
+                                        <span className="admin-button-icon" aria-hidden="true"><i className="bi bi-x-lg"></i></span> Rechazar
                                     </button>
                                 </div>
                             </div>
@@ -323,9 +323,9 @@ const AdminPanel = () => {
                                                     onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-secondary-500)'}
                                                     onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--color-secondary)'}
                                                 >
-                                                    <span style={{ fontSize: '18px' }}>ðŸ“„</span>
+                                                    <span className="admin-document-icon" aria-hidden="true"><i className="bi bi-file-earmark-text"></i></span>
                                                     <span style={{ flex: 1, color: '#ffffff', fontWeight: '500' }}>{doc.originalName}</span>
-                                                    <span style={{ fontSize: '12px', color: '#ffffff' }}>â¬‡ï¸ Descargar ({(doc.size / 1024).toFixed(1)} KB)</span>
+                                                    <span style={{ fontSize: '12px', color: '#ffffff' }}>Descargar ({(doc.size / 1024).toFixed(1)} KB)</span>
                                                 </button>
                                             );
                                         })}
@@ -363,7 +363,7 @@ const AdminPanel = () => {
                                 onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = 'var(--color-primary-600)')}
                                 onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = 'var(--color-primary)')}
                             >
-                                âœ“ Aprobar
+                                <span className="admin-button-icon" aria-hidden="true"><i className="bi bi-check-lg"></i></span> Aprobar
                             </button>
                             <button
                                 onClick={() => {
@@ -385,7 +385,7 @@ const AdminPanel = () => {
                                 onMouseEnter={(e) => !actionLoading && (e.target.style.backgroundColor = '#b91c1c')}
                                 onMouseLeave={(e) => !actionLoading && (e.target.style.backgroundColor = 'var(--color-danger)')}
                             >
-                                âœ• Rechazar
+                                <span className="admin-button-icon" aria-hidden="true"><i className="bi bi-x-lg"></i></span> Rechazar
                             </button>
                             <button
                                 onClick={() => setSelectedOng(null)}

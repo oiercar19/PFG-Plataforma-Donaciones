@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Container, Row, Col, Card, Button, Badge, Carousel } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Badge, Carousel, Spinner, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { donationAPI, needAPI } from '../services/api';
 import './Home.css';
 
 const heroSlides = [
@@ -50,6 +51,209 @@ const features = [
 
 const Home = () => {
     const { user, isAuthenticated } = useAuth();
+    const [recentNeeds, setRecentNeeds] = useState([]);
+    const [recentDonations, setRecentDonations] = useState([]);
+    const [activityLoading, setActivityLoading] = useState(false);
+    const [activityError, setActivityError] = useState('');
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadRecentActivity = async () => {
+            if (!isAuthenticated || !user) {
+                setRecentNeeds([]);
+                setRecentDonations([]);
+                return;
+            }
+
+            const shouldLoadNeeds = user.role === 'DONANTE';
+            const shouldLoadDonations = user.role === 'ONG' && user.ong?.status === 'APPROVED';
+
+            if (!shouldLoadNeeds && !shouldLoadDonations) {
+                setRecentNeeds([]);
+                setRecentDonations([]);
+                return;
+            }
+
+            try {
+                setActivityLoading(true);
+                setActivityError('');
+
+                if (shouldLoadNeeds) {
+                    const response = await needAPI.getNeeds({ status: 'OPEN' });
+                    if (isMounted) {
+                        setRecentNeeds((response.data.needs || []).slice(0, 3));
+                    }
+                }
+
+                if (shouldLoadDonations) {
+                    const response = await donationAPI.getAvailableDonations({});
+                    if (isMounted) {
+                        setRecentDonations((response.data.donations || []).slice(0, 3));
+                    }
+                }
+            } catch (err) {
+                console.error('Error cargando actividad reciente:', err);
+                if (isMounted) {
+                    setActivityError('No se pudo cargar la actividad reciente');
+                }
+            } finally {
+                if (isMounted) {
+                    setActivityLoading(false);
+                }
+            }
+        };
+
+        loadRecentActivity();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [isAuthenticated, user]);
+
+    const formatRecentDate = (dateString) => {
+        if (!dateString) return '';
+        return new Date(dateString).toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'short',
+        });
+    };
+
+    const renderQuickActions = () => {
+        if (!user) return null;
+
+        const donorActions = [
+            { to: '/create-donation', icon: 'bi-plus-circle', title: 'Crear donacion', desc: 'Publica un recurso disponible', primary: true },
+            { to: '/needs', icon: 'bi-clipboard-heart', title: 'Ver necesidades', desc: 'Explora solicitudes de ONGs' },
+            { to: '/map', icon: 'bi-geo-alt', title: 'Mapa de ONGs', desc: 'Encuentra entidades cercanas' },
+            { to: '/donations', icon: 'bi-list-check', title: 'Mis donaciones', desc: 'Consulta tu seguimiento' },
+        ];
+
+        const ongActions = [
+            { to: '/available-donations', icon: 'bi-search', title: 'Buscar donaciones', desc: 'Recursos disponibles', primary: true },
+            { to: '/create-need', icon: 'bi-flag', title: 'Publicar necesidad', desc: 'Solicita lo que falta' },
+            { to: '/my-needs', icon: 'bi-clipboard-heart', title: 'Mis necesidades', desc: 'Gestiona solicitudes' },
+            { to: '/my-ong', icon: 'bi-building', title: 'Mi entidad', desc: 'Perfil y datos públicos' },
+        ];
+
+        const adminActions = [
+            { to: '/admin', icon: 'bi-shield-check', title: 'Panel admin', desc: 'Validaciones y estadisticas', primary: true },
+        ];
+
+        const actions = user.role === 'DONANTE'
+            ? donorActions
+            : user.role === 'ONG' && user.ong?.status === 'APPROVED'
+                ? ongActions
+                : user.role === 'ADMIN'
+                    ? adminActions
+                    : [];
+
+        if (actions.length === 0) return null;
+
+        return (
+            <div className="home-quick-actions">
+                {actions.map((action) => (
+                    <Link
+                        key={action.to}
+                        to={action.to}
+                        className={`home-quick-action ${action.primary ? 'primary' : ''}`}
+                    >
+                        <span className="home-quick-action-icon" aria-hidden="true">
+                            <i className={`bi ${action.icon}`}></i>
+                        </span>
+                        <span>
+                            <strong>{action.title}</strong>
+                            <small>{action.desc}</small>
+                        </span>
+                    </Link>
+                ))}
+            </div>
+        );
+    };
+
+    const renderActivityItem = (item, type) => {
+        const isNeed = type === 'need';
+        const detailPath = isNeed ? `/needs/${item.id}` : `/available-donations/${item.id}`;
+        const organization = isNeed ? item.ong?.name : item.donor?.username;
+        const metaLocation = isNeed
+            ? [item.ong?.city || item.ong?.location, item.ong?.postalCode].filter(Boolean).join(', ')
+            : [item.city, item.province].filter(Boolean).join(', ');
+
+        return (
+            <Link to={detailPath} className="home-activity-item" key={item.id}>
+                <div className="home-activity-icon" aria-hidden="true">
+                    <i className={`bi ${isNeed ? 'bi-megaphone' : 'bi-box-seam'}`}></i>
+                </div>
+                <div className="home-activity-content">
+                    <div className="home-activity-title">{item.title}</div>
+                    <div className="home-activity-meta">
+                        {organization && <span>{organization}</span>}
+                        {item.category && <span>{item.category}</span>}
+                        {metaLocation && <span>{metaLocation}</span>}
+                    </div>
+                </div>
+                <div className="home-activity-side">
+                    {isNeed && item.urgent && <Badge bg="danger">Urgente</Badge>}
+                    {!isNeed && item.quantity && <span className="home-activity-quantity">{item.quantity}</span>}
+                    <span className="home-activity-date">{formatRecentDate(item.createdAt)}</span>
+                </div>
+            </Link>
+        );
+    };
+
+    const renderRecentActivity = () => {
+        if (!isAuthenticated || !user) return null;
+
+        const isDonor = user.role === 'DONANTE';
+        const isApprovedOng = user.role === 'ONG' && user.ong?.status === 'APPROVED';
+
+        if (!isDonor && !isApprovedOng) return null;
+
+        const items = isDonor ? recentNeeds : recentDonations;
+        const title = isDonor ? 'Necesidades recientes' : 'Donaciones disponibles';
+        const subtitle = isDonor
+            ? 'Actividad publicada por entidades sociales'
+            : 'Oportunidades recientes para solicitar';
+        const emptyText = isDonor
+            ? 'No hay necesidades abiertas por ahora.'
+            : 'No hay donaciones disponibles por ahora.';
+        const ctaPath = isDonor ? '/needs' : '/available-donations';
+        const ctaText = isDonor ? 'Ver todas las necesidades' : 'Ver todas las donaciones';
+
+        return (
+            <div className="home-activity-panel">
+                <div className="home-activity-header">
+                    <div>
+                        <h3>{title}</h3>
+                        <p>{subtitle}</p>
+                    </div>
+                    <i className={`bi ${isDonor ? 'bi-clipboard-heart' : 'bi-gift'} home-activity-header-icon`}></i>
+                </div>
+
+                {activityLoading ? (
+                    <div className="home-activity-loading">
+                        <Spinner animation="border" size="sm" />
+                        <span>Cargando actividad...</span>
+                    </div>
+                ) : activityError ? (
+                    <Alert variant="warning" className="mb-0 py-2">{activityError}</Alert>
+                ) : items.length === 0 ? (
+                    <div className="home-activity-empty">{emptyText}</div>
+                ) : (
+                    <div className="home-activity-list">
+                        {items.map((item) => renderActivityItem(item, isDonor ? 'need' : 'donation'))}
+                    </div>
+                )}
+
+                <Button as={Link} to={ctaPath} variant="outline-primary" className="home-activity-cta">
+                    {ctaText}
+                    <i className="bi bi-arrow-right"></i>
+                </Button>
+            </div>
+        );
+    };
+
+    const welcomeActivity = renderRecentActivity();
 
     return (
         <div className="home-page">
@@ -123,27 +327,24 @@ const Home = () => {
             {isAuthenticated && (
                 <Container className="home-section">
                     <Card className="shadow-lg border-0 home-welcome-card">
-                        <Card.Body className="p-5">
+                        <Card.Body className="p-4 p-lg-5">
                             <h2 className="mb-4">
                                 Bienvenido, {user.username}! <i className="bi bi-emoji-smile text-warning"></i>
                             </h2>
 
+                            <Row className="g-4 align-items-stretch">
+                                <Col lg={welcomeActivity ? 6 : 12}>
+                                    <div className="home-welcome-main">
+
                             {user.role === 'DONANTE' && (
                                 <div>
-                                    <p className="lead">Como donante, puedes:</p>
-                                    <ul className="list-unstyled mb-4">
-                                        <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Publicar anuncios de donación</li>
-                                        <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Ver el mapa de ONGs cercanas</li>
-                                        <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Comunicarte con organizaciones</li>
-                                        <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Hacer seguimiento de tus donaciones</li>
-                                    </ul>
-                                    <Button as={Link} to="/create-donation" variant="primary" size="lg">
-                                        <i className="bi bi-plus-circle me-2"></i>
-                                        Crear nueva donación
-                                    </Button>
+                                    <span className="home-welcome-kicker">Panel de donante</span>
+                                    <p className="lead mb-3">
+                                        Publica recursos, revisa necesidades activas y coordina entregas desde un solo lugar.
+                                    </p>
+                                    {renderQuickActions()}
                                 </div>
                             )}
-
                             {user.role === 'ONG' && (
                                 <div>
                                     {user.ong?.status === 'PENDING' && (
@@ -176,24 +377,11 @@ const Home = () => {
 
                                     {user.ong?.status === 'APPROVED' && (
                                         <>
-                                            <p className="lead">Como ONG aprobada, puedes:</p>
-                                            <ul className="list-unstyled mb-4">
-                                                <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Publicar anuncios de donación</li>
-                                                <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Ver donaciones disponibles</li>
-                                                <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Solicitar recursos</li>
-                                                <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Comunicarte con donantes y otras ONGs</li>
-                                                <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Gestionar tu perfil</li>
-                                            </ul>
-                                            <div className="d-flex gap-3 flex-wrap">
-                                                <Button as={Link} to="/create-donation" variant="primary" size="lg">
-                                                    <i className="bi bi-plus-circle me-2"></i>
-                                                    Crear nueva donación
-                                                </Button>
-                                                <Button as={Link} to="/available-donations" variant="success" size="lg">
-                                                    <i className="bi bi-search me-2"></i>
-                                                    Buscar donaciones
-                                                </Button>
-                                            </div>
+                                            <span className="home-welcome-kicker">Panel de entidad social</span>
+                                            <p className="lead mb-3">
+                                                Encuentra donaciones disponibles, publica necesidades y gestiona la actividad de tu entidad.
+                                            </p>
+                                            {renderQuickActions()}
                                         </>
                                     )}
                                 </div>
@@ -206,18 +394,24 @@ const Home = () => {
                                         Administrador
                                     </Badge>
                                     <p className="lead">Como administrador, puedes:</p>
-                                    <ul className="list-unstyled mb-4">
+                                    <ul className="home-welcome-list mb-4">
                                         <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Validar nuevas ONGs</li>
                                         <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Ver estadísticas del sistema</li>
                                         <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Gestionar usuarios y donaciones</li>
                                         <li className="mb-2"><i className="bi bi-check-circle-fill text-success me-2"></i>Supervisar la plataforma</li>
                                     </ul>
-                                    <Button as={Link} to="/admin" variant="warning" size="lg">
-                                        <i className="bi bi-gear-fill me-2"></i>
-                                        Ir al Panel de Administración
-                                    </Button>
+                                    {renderQuickActions()}
                                 </div>
                             )}
+                                    </div>
+                                </Col>
+
+                                {welcomeActivity && (
+                                    <Col lg={6}>
+                                        {welcomeActivity}
+                                    </Col>
+                                )}
+                            </Row>
                         </Card.Body>
                     </Card>
                 </Container>

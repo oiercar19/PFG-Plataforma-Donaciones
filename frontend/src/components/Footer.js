@@ -8,30 +8,47 @@ const Footer = () => {
 
     return (
         <footer className="app-footer">
-            <Container className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-                <div className="footer-brand">Plataforma de Donaciones</div>
-                <div>
-                    <div className="footer-meta">{year} Todos los derechos reservados.</div>
-                    <div className="footer-warning">
-                        Primera version en pruebas - errores posibles.
-                        <br />
-                        Si encuentras un error, por favor registralo en este{' '}
-                        <a
-                            href="https://docs.google.com/forms/d/e/1FAIpQLSdZvtAXDrBKBSKZY8AarBrJOnAPgvXjW0Fb5krQWS6qz2GOgg/viewform?usp=publish-editor"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            formulario
-                        </a>
-                        .
+            <Container>
+                <div className="footer-shell">
+                    <div className="footer-main">
+                        <div className="footer-brand">
+                            <span className="footer-brand-mark" aria-hidden="true">
+                                <i className="bi bi-box2-heart"></i>
+                            </span>
+                            <span>Plataforma de Donaciones</span>
+                        </div>
+                        <p className="footer-description">
+                            Conectando donaciones disponibles con entidades sociales de forma clara y segura.
+                        </p>
                     </div>
-                    <div className="footer-links">
-                        <Link to="/aviso-legal">Aviso legal</Link>
-                        <span className="footer-links-sep">&middot;</span>
-                        <Link to="/proteccion-datos">Proteccion de datos</Link>
-                        <span className="footer-links-sep">&middot;</span>
-                        <Link to="/terminos-uso">Terminos de uso</Link>
+
+                    <div className="footer-side">
+                        <div className="footer-links" aria-label="Enlaces legales">
+                            <Link to="/aviso-legal">Aviso legal</Link>
+                            <Link to="/proteccion-datos">Proteccion de datos</Link>
+                            <Link to="/terminos-uso">Terminos de uso</Link>
+                        </div>
+
+                        <div className="footer-beta">
+                            <span className="footer-beta-label">Version en pruebas</span>
+                            <span>
+                                Puedes registrar errores en este{' '}
+                                <a
+                                    href="https://docs.google.com/forms/d/e/1FAIpQLSdZvtAXDrBKBSKZY8AarBrJOnAPgvXjW0Fb5krQWS6qz2GOgg/viewform?usp=publish-editor"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    formulario
+                                </a>
+                                .
+                            </span>
+                        </div>
                     </div>
+                </div>
+
+                <div className="footer-bottom">
+                    <span>&copy; {year} Plataforma de Donaciones.</span>
+                    <span>Todos los derechos reservados.</span>
                 </div>
             </Container>
         </footer>
