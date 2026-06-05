@@ -253,7 +253,7 @@ const Register = () => {
     };
 
     return (
-        <div style={{ background: 'var(--brand-gradient-soft)', minHeight: '100vh', paddingTop: '3rem', paddingBottom: '3rem' }}>
+        <div style={{ background: 'var(--color-bg)', minHeight: '100vh', paddingTop: '3rem', paddingBottom: '3rem' }}>
             <Container>
                 <Row className="justify-content-center">
                     <Col md={10} lg={8}>
