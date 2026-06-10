@@ -266,7 +266,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.875rem 2rem;
-    border: none;
+    border: 1px solid transparent;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 500;
@@ -275,21 +275,27 @@
 }
 
 .btn-cancel {
-    background: #f0f2f5;
-    color: #666;
+    background: var(--color-muted);
+    border-color: var(--color-muted);
+    color: #ffffff;
 }
 
 .btn-cancel:hover:not(:disabled) {
-    background: #e4e6eb;
+    background: #ffffff;
+    border-color: var(--color-muted);
+    color: var(--color-muted);
 }
 
 .btn-submit {
-    background: #4CAF50;
+    background: var(--color-primary);
+    border-color: var(--color-primary);
     color: white;
 }
 
 .btn-submit:hover:not(:disabled) {
-    background: #45a049;
+    background: #ffffff;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }

@@ -13,9 +13,11 @@ function Chats() {
     const [error, setError] = useState('');
     const [conversationsByStatus, setConversationsByStatus] = useState({ OPEN: [], CLOSED: [] });
 
-    const loadConversations = useCallback(async (status) => {
+    const loadConversations = useCallback(async (status, { silent = false } = {}) => {
         try {
-            setLoading(true);
+            if (!silent) {
+                setLoading(true);
+            }
             setError('');
             const response = await conversationAPI.listConversations(status);
             setConversationsByStatus((prev) => ({
@@ -27,12 +29,30 @@ function Chats() {
             console.error('Error loading conversations:', err);
             setError(err.response?.data?.error || 'Error loading conversations');
         } finally {
-            setLoading(false);
+            if (!silent) {
+                setLoading(false);
+            }
         }
     }, []);
 
     useEffect(() => {
         loadConversations(activeKey);
+    }, [activeKey, loadConversations]);
+
+    useEffect(() => {
+        const refreshActiveConversations = () => {
+            if (document.visibilityState === 'visible') {
+                loadConversations(activeKey, { silent: true });
+            }
+        };
+
+        const intervalId = setInterval(refreshActiveConversations, 10000);
+        document.addEventListener('visibilitychange', refreshActiveConversations);
+
+        return () => {
+            clearInterval(intervalId);
+            document.removeEventListener('visibilitychange', refreshActiveConversations);
+        };
     }, [activeKey, loadConversations]);
 
     const formatDateTime = (dateString) => {

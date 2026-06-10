@@ -18,6 +18,9 @@ const NavigationBar = () => {
 
         const loadUnread = async () => {
             try {
+                if (document.visibilityState !== 'visible') {
+                    return;
+                }
                 if (!isAuthenticated || (!isDonor() && !isOng())) {
                     setUnreadTotal(0);
                     return;
@@ -38,12 +41,14 @@ const NavigationBar = () => {
         };
 
         loadUnread();
-        intervalId = setInterval(loadUnread, 60000);
+        intervalId = setInterval(loadUnread, 10000);
         window.addEventListener('chat-read', handleChatRead);
+        document.addEventListener('visibilitychange', loadUnread);
 
         return () => {
             if (intervalId) clearInterval(intervalId);
             window.removeEventListener('chat-read', handleChatRead);
+            document.removeEventListener('visibilitychange', loadUnread);
         };
     }, [isAuthenticated, isDonor, isOng]);
 

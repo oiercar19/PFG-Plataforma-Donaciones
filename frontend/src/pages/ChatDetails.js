@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Container, Card, Button, Badge, Alert, Spinner, Form } from 'react-bootstrap';
+import { Container, Card, Button, Badge, Alert, Spinner, Form, Modal } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
-import { conversationAPI } from '../services/api';
+import { conversationAPI, donationAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import './ChatDetails.css';
 
@@ -32,11 +32,22 @@ function ChatDetails() {
     const [shippingWeightKg, setShippingWeightKg] = useState('1');
     const [shippingPackages, setShippingPackages] = useState('1');
     const [shippingExpress24h, setShippingExpress24h] = useState(false);
+    const [success, setSuccess] = useState('');
+    const [actionLoading, setActionLoading] = useState(false);
+    const [confirmDialog, setConfirmDialog] = useState({
+        show: false,
+        action: null,
+        title: '',
+        message: '',
+    });
     const messagesEndRef = useRef(null);
+    const previousMessageCountRef = useRef(0);
 
-    const loadConversation = useCallback(async () => {
+    const loadConversation = useCallback(async ({ silent = false } = {}) => {
         try {
-            setLoading(true);
+            if (!silent) {
+                setLoading(true);
+            }
             setError('');
             const response = await conversationAPI.getConversationById(id);
             setConversation(response.data.conversation);
@@ -45,7 +56,9 @@ function ChatDetails() {
             console.error('Error loading conversation:', err);
             setError(err.response?.data?.error || 'Error loading chat');
         } finally {
-            setLoading(false);
+            if (!silent) {
+                setLoading(false);
+            }
         }
     }, [id]);
 
@@ -54,7 +67,27 @@ function ChatDetails() {
     }, [loadConversation]);
 
     useEffect(() => {
-        if (messagesEndRef.current) {
+        const refreshConversation = () => {
+            if (document.visibilityState === 'visible') {
+                loadConversation({ silent: true });
+            }
+        };
+
+        const intervalId = setInterval(refreshConversation, 3000);
+        document.addEventListener('visibilitychange', refreshConversation);
+
+        return () => {
+            clearInterval(intervalId);
+            document.removeEventListener('visibilitychange', refreshConversation);
+        };
+    }, [loadConversation]);
+
+    useEffect(() => {
+        const messageCount = conversation?.messages?.length || 0;
+        const shouldScroll = messageCount !== previousMessageCountRef.current;
+        previousMessageCountRef.current = messageCount;
+
+        if (shouldScroll && messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [conversation]);
@@ -120,6 +153,68 @@ function ChatDetails() {
         await handleCalculateShippingCost();
     };
 
+    const openDonationActionDialog = (action) => {
+        if (action === 'ACCEPT') {
+            setConfirmDialog({
+                show: true,
+                action,
+                title: 'Aceptar donacion',
+                message: 'Confirmas que esta donacion ha sido aceptada y entregada?',
+            });
+            return;
+        }
+
+        setConfirmDialog({
+            show: true,
+            action,
+            title: 'Rechazar donacion',
+            message: 'Deseas rechazar esta donacion y dejarla disponible nuevamente?',
+        });
+    };
+
+    const closeDonationActionDialog = () => {
+        if (actionLoading) return;
+
+        setConfirmDialog({
+            show: false,
+            action: null,
+            title: '',
+            message: '',
+        });
+    };
+
+    const handleConfirmDonationAction = async () => {
+        const donationId = conversation?.donation?.id;
+        if (!donationId || !confirmDialog.action) return;
+
+        try {
+            setActionLoading(true);
+            setError('');
+            setSuccess('');
+
+            if (confirmDialog.action === 'ACCEPT') {
+                await donationAPI.markAsDelivered(donationId);
+                setSuccess('Donacion aceptada y marcada como entregada');
+            } else {
+                await donationAPI.rejectDonation(donationId);
+                setSuccess('Donacion rechazada y puesta como disponible');
+            }
+
+            setConfirmDialog({
+                show: false,
+                action: null,
+                title: '',
+                message: '',
+            });
+            await loadConversation({ silent: true });
+        } catch (err) {
+            console.error('Error al actualizar la donacion:', err);
+            setError(err.response?.data?.error || 'No se pudo actualizar la donacion');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const formatDateTime = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
@@ -179,6 +274,10 @@ function ChatDetails() {
     const showDonorInfo = isDonation && user?.role === 'ONG';
     const contactCardData = showDonorInfo ? donorInfo : ongInfo;
     const isClosed = conversation.status === 'CLOSED';
+    const canManageDonation = isDonation
+        && context?.status === 'ASIGNADO'
+        && context?.donorId === user?.id
+        && !isClosed;
     const ongAddress = ongInfo
         ? [ongInfo.address, ongInfo.postalCode, ongInfo.city || ongInfo.location].filter(Boolean).join(', ')
         : '';
@@ -203,6 +302,13 @@ function ChatDetails() {
                 </Alert>
             )}
 
+            {success && (
+                <Alert variant="success" dismissible onClose={() => setSuccess('')}>
+                    <i className="bi bi-check-circle me-2"></i>
+                    {success}
+                </Alert>
+            )}
+
             <Card className="chat-details-card shadow-sm mb-3">
                 <Card.Body>
                     <div className="d-flex justify-content-between flex-wrap gap-2">
@@ -217,14 +323,40 @@ function ChatDetails() {
                             )}
                         </div>
                         {context?.id && (
-                            <Button
-                                variant="outline-primary"
-                                size="sm"
-                                onClick={() => navigate(isNeed ? `/needs/${context.id}` : `/donations/${context.id}`)}
-                            >
-                                <i className="bi bi-box-seam me-1"></i>
-                                Ver {isNeed ? 'necesidad' : 'donacion'}
-                            </Button>
+                            <div className="chat-context-actions">
+                                {canManageDonation && (
+                                    <>
+                                        <Button
+                                            variant="outline-danger"
+                                            size="sm"
+                                            onClick={() => openDonationActionDialog('REJECT')}
+                                            disabled={actionLoading}
+                                        >
+                                            <i className="bi bi-x-circle me-1"></i>
+                                            Rechazar
+                                        </Button>
+                                        <Button
+                                            variant="success"
+                                            size="sm"
+                                            className="btn-delivered-action"
+                                            onClick={() => openDonationActionDialog('ACCEPT')}
+                                            disabled={actionLoading}
+                                        >
+                                            <i className="bi bi-check-circle me-1"></i>
+                                            Aceptar
+                                        </Button>
+                                    </>
+                                )}
+                                <Button
+                                    variant={isNeed ? 'outline-primary' : 'primary'}
+                                    size="sm"
+                                    className={!isNeed ? 'chat-context-donation-button' : ''}
+                                    onClick={() => navigate(isNeed ? `/needs/${context.id}` : `/donations/${context.id}`)}
+                                >
+                                    <i className="bi bi-box-seam me-1"></i>
+                                    Ver {isNeed ? 'necesidad' : 'donacion'}
+                                </Button>
+                            </div>
                         )}
                     </div>
                 </Card.Body>
@@ -467,6 +599,36 @@ function ChatDetails() {
                     </Button>
                 </Form>
             )}
+
+            <Modal show={confirmDialog.show} onHide={closeDonationActionDialog} centered>
+                <Modal.Header closeButton={!actionLoading}>
+                    <Modal.Title>{confirmDialog.title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{confirmDialog.message}</Modal.Body>
+                <Modal.Footer>
+                    <Button
+                        variant="outline-secondary"
+                        onClick={closeDonationActionDialog}
+                        disabled={actionLoading}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        variant={confirmDialog.action === 'REJECT' ? 'danger' : 'primary'}
+                        onClick={handleConfirmDonationAction}
+                        disabled={actionLoading}
+                    >
+                        {actionLoading ? (
+                            <>
+                                <Spinner animation="border" size="sm" className="me-2" />
+                                Procesando...
+                            </>
+                        ) : (
+                            'Aceptar'
+                        )}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </Container>
     );
 }
