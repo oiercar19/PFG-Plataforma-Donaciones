@@ -359,19 +359,20 @@
 .quick-actions-card .action-btn.btn-success:hover,
 .quick-actions-card .action-btn.btn-info:hover,
 .quick-actions-card .action-btn.btn-danger:hover {
-    background: var(--ong-accent-strong) !important;
-    border-color: var(--ong-accent-strong) !important;
-}
-
-.quick-actions-card .action-btn.btn-outline-danger {
     background: #ffffff !important;
     border-color: var(--ong-accent) !important;
     color: var(--ong-accent) !important;
 }
 
-.quick-actions-card .action-btn.btn-outline-danger:hover {
+.quick-actions-card .action-btn.btn-outline-danger {
     background: var(--ong-accent) !important;
+    border-color: var(--ong-accent) !important;
     color: #ffffff !important;
+}
+
+.quick-actions-card .action-btn.btn-outline-danger:hover {
+    background: #ffffff !important;
+    color: var(--ong-accent) !important;
 }
 
 .action-btn i {
