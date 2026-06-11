@@ -32,12 +32,14 @@
 .navbar .btn.btn-primary {
     background: #ffffff !important;
     color: #0f172a !important;
-    border-color: transparent !important;
+    border-color: #ffffff !important;
     font-weight: 700;
 }
 
 .navbar .btn.btn-primary:hover {
-    background: rgba(255, 255, 255, 0.9) !important;
+    background: transparent !important;
+    color: #ffffff !important;
+    border-color: #ffffff !important;
 }
 
 .language-toggle-title {

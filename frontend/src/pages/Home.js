@@ -173,6 +173,7 @@ const Home = () => {
 
     const renderActivityItem = (item, type) => {
         const isNeed = type === 'need';
+        const donationImage = !isNeed && item.images?.length > 0 ? item.images[0] : null;
         const detailPath = isNeed ? `/needs/${item.id}` : `/available-donations/${item.id}`;
         const organization = isNeed ? item.ong?.name : item.donor?.username;
         const metaLocation = isNeed
@@ -181,9 +182,18 @@ const Home = () => {
 
         return (
             <Link to={detailPath} className="home-activity-item" key={item.id}>
-                <div className="home-activity-icon" aria-hidden="true">
-                    <i className={`bi ${isNeed ? 'bi-megaphone' : 'bi-box-seam'}`}></i>
-                </div>
+                {donationImage ? (
+                    <img
+                        src={donationImage}
+                        alt=""
+                        className="home-activity-image"
+                        aria-hidden="true"
+                    />
+                ) : (
+                    <div className="home-activity-icon" aria-hidden="true">
+                        <i className={`bi ${isNeed ? 'bi-megaphone' : 'bi-box-seam'}`}></i>
+                    </div>
+                )}
                 <div className="home-activity-content">
                     <div className="home-activity-title">{item.title}</div>
                     <div className="home-activity-meta">

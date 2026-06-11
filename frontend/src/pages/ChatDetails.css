@@ -2,6 +2,20 @@
     border-radius: 12px;
 }
 
+.chat-context-donation-button:hover,
+.chat-context-donation-button:focus {
+    background-color: #ffffff !important;
+    border-color: var(--color-primary) !important;
+    color: var(--color-primary) !important;
+}
+
+.chat-context-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
 .chat-messages-card {
     border-radius: 12px;
     min-height: 320px;
@@ -120,5 +134,10 @@
 
     .shipping-options {
         gap: 8px;
+    }
+
+    .chat-context-actions {
+        justify-content: flex-start;
+        width: 100%;
     }
 }

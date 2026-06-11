@@ -451,6 +451,10 @@ async function getConversationByNeed(req, res) {
         const userId = req.user.id;
         const { needId } = req.params;
 
+        if (req.user.role === 'ONG') {
+            return res.status(403).json({ error: 'Only donors can access this chat by need' });
+        }
+
         const conversation = await prisma.conversation.findFirst({
             where: {
                 needId,

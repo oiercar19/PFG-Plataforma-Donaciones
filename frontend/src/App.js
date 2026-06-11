@@ -161,7 +161,7 @@ function App() {
                             <Route
                                 path="/needs"
                                 element={
-                                    <ProtectedRoute>
+                                    <ProtectedRoute requireDonor={true}>
                                         <Needs />
                                     </ProtectedRoute>
                                 }

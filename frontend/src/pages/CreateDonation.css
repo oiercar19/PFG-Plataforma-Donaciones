@@ -209,7 +209,7 @@
 .form-actions button {
     flex: 1;
     padding: 1rem 2rem;
-    border: none;
+    border: 1px solid transparent;
     border-radius: 10px;
     font-size: 1.05rem;
     font-weight: 600;
@@ -226,22 +226,28 @@
 }
 
 .btn-cancel {
-    background-color: #f8fafc;
-    color: var(--color-muted);
+    background-color: var(--color-muted);
+    border-color: var(--color-muted);
+    color: #ffffff;
 }
 
 .btn-cancel:hover:not(:disabled) {
-    background-color: var(--color-border);
-    color: var(--color-text);
+    background-color: #ffffff;
+    border-color: var(--color-muted);
+    color: var(--color-muted);
 }
 
 .btn-submit {
     background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%);
+    border-color: var(--color-primary);
     color: white;
 }
 
 .btn-submit:hover:not(:disabled) {
+    background: #ffffff;
+    color: var(--color-primary);
     transform: translateY(-2px);
+    border-color: var(--color-primary);
     box-shadow: 0 8px 25px rgba(29, 78, 216, 0.35);
 }
 

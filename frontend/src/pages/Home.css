@@ -452,6 +452,15 @@
     background: rgba(15, 118, 110, 0.08);
 }
 
+.home-activity-image {
+    width: 2.2rem;
+    height: 2.2rem;
+    display: block;
+    border-radius: 10px;
+    object-fit: cover;
+    background: rgba(15, 118, 110, 0.08);
+}
+
 .home-activity-content {
     min-width: 0;
 }
