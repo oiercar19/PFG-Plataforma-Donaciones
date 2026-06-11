@@ -84,6 +84,20 @@ async function listNeeds(req, res) {
         const normalizedSearch = (search || '').trim();
         const normalizedCategory = (category || '').trim();
         const where = {};
+        let currentOngId = null;
+
+        if (req.user.role === 'ONG') {
+            const ong = await prisma.ong.findUnique({
+                where: { userId: req.user.id },
+                select: { id: true },
+            });
+
+            if (!ong) {
+                return res.status(404).json({ error: 'ONG not found' });
+            }
+
+            currentOngId = ong.id;
+        }
 
         if (status && ['OPEN', 'CLOSED'].includes(status.toUpperCase())) {
             where.status = status.toUpperCase();
@@ -110,7 +124,12 @@ async function listNeeds(req, res) {
             ];
         }
 
-        if (ongId) {
+        if (currentOngId) {
+            if (ongId && ongId !== currentOngId) {
+                return res.json({ needs: [] });
+            }
+            where.ongId = currentOngId;
+        } else if (ongId) {
             where.ongId = ongId;
         }
 
@@ -166,6 +185,21 @@ async function getNeedById(req, res) {
 
         if (!need) {
             return res.status(404).json({ error: 'Need not found' });
+        }
+
+        if (req.user.role === 'ONG') {
+            const ong = await prisma.ong.findUnique({
+                where: { userId: req.user.id },
+                select: { id: true },
+            });
+
+            if (!ong) {
+                return res.status(404).json({ error: 'ONG not found' });
+            }
+
+            if (need.ongId !== ong.id) {
+                return res.status(403).json({ error: 'No puedes ver necesidades de otras entidades sociales' });
+            }
         }
 
         res.json({ need });
